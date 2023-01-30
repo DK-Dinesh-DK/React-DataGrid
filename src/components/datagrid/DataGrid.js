@@ -263,6 +263,9 @@ function DataGrid(props, ref) {
     );
   }, [rawRows, selectedRows, rowKeyGetter]);
 
+  function getColumnDefs() {
+    return columns;
+  }
   const {
     columns,
     colSpanColumns,
@@ -1001,6 +1004,7 @@ function DataGrid(props, ref) {
         row={row}
         allrow={rows}
         rowIndex={rowIdx}
+        api={{ getColumnDefs }}
         onRowChange={onRowChange}
         closeEditor={closeEditor}
       />
@@ -1130,6 +1134,7 @@ function DataGrid(props, ref) {
           rowIdx,
           rows,
           row,
+          api: { getColumnDefs },
           viewportColumns: rowColumns,
           isRowSelected,
           onRowClick: onRowClickLatest,

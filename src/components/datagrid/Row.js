@@ -17,6 +17,7 @@ function Row(
     copiedCellIdx,
     draggedOverCellIdx,
     lastFrozenColumnIndex,
+    api,
     row,
     rows,
     viewportColumns,
@@ -75,6 +76,7 @@ function Row(
           key={column.key}
           column={column}
           colSpan={colSpan}
+          api={api}
           row={row}
           allrow={rows}
           rowIndex={rowIdx}

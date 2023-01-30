@@ -24,7 +24,11 @@ const columns = [
   {
     field: "id",
     headerName: "ID",
-    width: 30,
+    width: 80,
+    cellRenderer: (props) => {
+      console.log(props.api.getColumnDefs());
+      return textEditor(props);
+    },
   },
   {
     field: "title",
@@ -35,7 +39,6 @@ const columns = [
     field: "firstName",
     headerName: "First Name",
     cellRenderer: (props) => {
-      console.log(props);
       return textEditor(props);
     },
   },
@@ -53,10 +56,11 @@ const columns = [
 function createFakeRowObjectData(index) {
   return {
     id: `id_${index}`,
-    email: faker.name.firstName(),
     title: faker.name.prefix(),
     firstName: faker.name.firstName(),
     lastName: faker.name.firstName(),
+    email: faker.internet.email(),
+    phone: faker.phone.phoneNumber(),
   };
 }
 
@@ -90,7 +94,7 @@ function loadMoreRows(newRowsCount, length) {
 }
 
 export default function InfiniteScrolling({ direction }) {
-  const [rows, setRows] = useState(() => createRows(10));
+  const [rows, setRows] = useState(() => createRows(50));
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleScroll(event) {
@@ -116,9 +120,9 @@ export default function InfiniteScrolling({ direction }) {
         className="fill-grid"
         direction={direction}
       />
-      {/* {isLoading && (
+      {isLoading && (
         <div className={loadMoreRowsClassname}>Loading more rows...</div>
-      )} */}
+      )}
     </>
   );
 }
