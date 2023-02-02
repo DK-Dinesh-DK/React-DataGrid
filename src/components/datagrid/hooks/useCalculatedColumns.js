@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { valueFormatter, toggleGroupFormatter } from "../formatters";
 import { SELECT_COLUMN_KEY } from "../Columns";
 import { clampColumnWidth, max, min } from "../utils";
+import { textEditorClassname } from "../editors/textEditor";
 
 const DEFAULT_COLUMN_WIDTH = "auto";
 const DEFAULT_COLUMN_MIN_WIDTH = 40;
@@ -57,7 +58,24 @@ export function useCalculatedColumns({
         if (rowGroup) {
           column.groupFormatter ??= toggleGroupFormatter;
         }
-
+        if (rawColumn.editable) {
+          column.cellEditor = column.cellEditor
+            ? column.cellEditor
+            : (props) => {
+                return (
+                  <input
+                    className={textEditorClassname}
+                    value={props.row[props.column.key]}
+                    onChange={(event) =>
+                      props.onRowChange({
+                        ...props.row,
+                        [props.column.key]: event.target.value,
+                      })
+                    }
+                  />
+                );
+              };
+        }
         if (frozen) {
           lastFrozenColumnIndex++;
         }
@@ -231,7 +249,7 @@ export function useCalculatedColumns({
     viewportWidth,
     enableVirtualization,
   ]);
-
+  console.log("columns", columns);
   return {
     columns,
     colSpanColumns,

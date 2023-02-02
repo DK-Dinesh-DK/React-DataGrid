@@ -116,7 +116,7 @@ export default function EditCell({
       onKeyDown={onKeyDown}
       onMouseDownCapture={commitOnOutsideClick ? cancelFrameRequest : undefined}
     >
-      {column.cellEditor != null && (
+      {(column.cellEditor != null || column.editable == true) && (
         <>
           {column.cellEditor({
             column,
@@ -132,6 +132,20 @@ export default function EditCell({
             onClose,
           })}
           {column.editorOptions?.renderFormatter &&
+            column.editable != true &&
+            column.formatter({
+              colDef: column,
+              column,
+              data: row,
+              row,
+              api,
+              value: row[column.key],
+              valueFormatted: column.valueFormatter,
+              onRowChange,
+              isCellSelected: true,
+              onRowChange,
+            })}
+          {column.editable &&
             column.formatter({
               colDef: column,
               column,

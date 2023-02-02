@@ -45,6 +45,7 @@ const columns = [
   {
     field: "lastName",
     headerName: "Last Name",
+    cellEditor: textEditor,
   },
   {
     field: "email",
