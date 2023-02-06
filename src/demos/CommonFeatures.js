@@ -353,8 +353,8 @@ export default function CommonFeatures({ direction }) {
       onRowsChange={setRows}
       // sortColumns={sortColumns}
       // onSortColumnsChange={setSortColumns}
-      // topSummaryRows={summaryRows}
-      // bottomSummaryRows={summaryRows}
+      topSummaryRows={summaryRows}
+      bottomSummaryRows={summaryRows}
       className="fill-grid"
       direction={direction}
     />

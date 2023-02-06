@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
-import { css } from '@linaria/core';
+import { useMemo, useState } from "react";
+import { css } from "@linaria/core";
 
-import { SelectColumn } from '../components/datagrid/Columns';
-import textEditor from '../components/datagrid/editors/textEditor';
+import { SelectColumn } from "../components/datagrid/Columns";
+import textEditor from "../components/datagrid/editors/textEditor";
 
-import DataGrid from '../components/datagrid/DataGrid';
+import DataGrid from "../components/datagrid/DataGrid";
 
 const selectCellClassname = css`
   display: flex;
@@ -21,8 +21,6 @@ const sortPriorityClassname = css`
   margin-left: 2px;
 `;
 
-
-
 function createRows() {
   const rows = [];
 
@@ -31,8 +29,12 @@ function createRows() {
       id: i,
       task: `Task ${i}`,
       complete: Math.min(100, Math.round(Math.random() * 110)),
-      priority: ['Critical', 'High', 'Medium', 'Low'][Math.round(Math.random() * 3)],
-      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.round(Math.random() * 3)]
+      priority: ["Critical", "High", "Medium", "Low"][
+        Math.round(Math.random() * 3)
+      ],
+      issueType: ["Bug", "Improvement", "Epic", "Story"][
+        Math.round(Math.random() * 3)
+      ],
     });
   }
 
@@ -43,34 +45,37 @@ const columns = [
   {
     ...SelectColumn,
     headerCellClass: selectCellClassname,
-    cellClass: selectCellClassname
+    cellClass: selectCellClassname,
   },
   {
-    field: 'id',
-    headerName: 'ID',
-    width: 80
+    field: "id",
+    headerName: "ID",
+    width: 80,
   },
   {
-    field: 'task',
-    headerName: 'Title',
-    editor: textEditor,
-    sortable: true
+    field: "task",
+    headerName: "Title",
+    cellEditor: (props) => {
+      console.log(props);
+      return textEditor(props);
+    },
+    sortable: true,
   },
   {
-    field: 'priority',
-    headerName: 'Priority',
-    sortable: true
+    field: "priority",
+    headerName: "Priority",
+    sortable: true,
   },
   {
-    field: 'issueType',
-    headerName: 'Issue Type',
-    sortable: true
+    field: "issueType",
+    headerName: "Issue Type",
+    sortable: true,
   },
   {
-    field: 'complete',
-    headerName: '% Complete',
-    sortable: true
-  }
+    field: "complete",
+    headerName: "% Complete",
+    sortable: true,
+  },
 ];
 
 export default function CustomizableComponents({ direction }) {
@@ -86,7 +91,7 @@ export default function CustomizableComponents({ direction }) {
         const comparator = getComparator(sort.columnKey);
         const compResult = comparator(a, b);
         if (compResult !== 0) {
-          return sort.direction === 'ASC' ? compResult : -compResult;
+          return sort.direction === "ASC" ? compResult : -compResult;
         }
       }
       return 0;
@@ -110,12 +115,9 @@ export default function CustomizableComponents({ direction }) {
   );
 }
 
-function checkboxFormatter(
-  { onChange, ...props },
-  ref
-) {
+function checkboxFormatter({ onChange, ...props }, ref) {
   function handleChange(e) {
-    onChange(e.target.checked, (e.nativeEvent).shiftKey);
+    onChange(e.target.checked, e.nativeEvent.shiftKey);
   }
 
   return <input type="checkbox" ref={ref} {...props} onChange={handleChange} />;
@@ -124,7 +126,11 @@ function checkboxFormatter(
 function sortStatus({ sortDirection, priority }) {
   return (
     <>
-      {sortDirection !== undefined ? (sortDirection === 'ASC' ? '\u2B9D' : '\u2B9F') : null}
+      {sortDirection !== undefined
+        ? sortDirection === "ASC"
+          ? "\u2B9D"
+          : "\u2B9F"
+        : null}
       <span className={sortPriorityClassname}>{priority}</span>
     </>
   );
@@ -133,16 +139,15 @@ function rowKeyGetter(row) {
   return row.id;
 }
 
-
 function getComparator(sortColumn) {
   switch (sortColumn) {
-    case 'task':
-    case 'priority':
-    case 'issueType':
+    case "task":
+    case "priority":
+    case "issueType":
       return (a, b) => {
         return a[sortColumn].localeCompare(b[sortColumn]);
       };
-    case 'complete':
+    case "complete":
       return (a, b) => {
         return a[sortColumn] - b[sortColumn];
       };

@@ -35,6 +35,7 @@ export default function EditCell({
   rowIndex,
   onRowChange,
   api,
+  node,
   closeEditor,
 }) {
   const frameRequestRef = useRef();
@@ -125,6 +126,7 @@ export default function EditCell({
             data: row,
             onRowChange,
             value: row[column.key],
+            node,
             valueFormatted: column.valueFormatter,
             allrow,
             rowIndex,
@@ -139,6 +141,7 @@ export default function EditCell({
               data: row,
               row,
               api,
+              node,
               value: row[column.key],
               valueFormatted: column.valueFormatter,
               onRowChange,
@@ -152,6 +155,7 @@ export default function EditCell({
               data: row,
               row,
               api,
+              node,
               value: row[column.key],
               valueFormatted: column.valueFormatter,
               onRowChange,

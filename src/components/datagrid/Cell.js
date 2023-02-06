@@ -42,6 +42,7 @@ function Cell({
   onRowDoubleClick,
   onRowChange,
   selectCell,
+  node,
   ...props
 }) {
   const { ref, tabIndex, onFocus } = useRovingCellRef(isCellSelected);
@@ -231,6 +232,7 @@ function Cell({
             onRowChange,
             allrow,
             api,
+            node,
             rowIndex,
             value: row[column.key],
             isCellSelected,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
 import textEditor from "../components/datagrid/editors/textEditor";
@@ -26,7 +26,6 @@ const columns = [
     headerName: "ID",
     width: 80,
     cellRenderer: (props) => {
-      console.log(props.api.getColumnDefs());
       return textEditor(props);
     },
   },
@@ -95,7 +94,7 @@ function loadMoreRows(newRowsCount, length) {
 }
 
 export default function InfiniteScrolling({ direction }) {
-  const [rows, setRows] = useState(() => createRows(50));
+  const [rows, setRows] = useState(() => createRows(10));
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleScroll(event) {
@@ -108,17 +107,29 @@ export default function InfiniteScrolling({ direction }) {
     setRows([...rows, ...newRows]);
     setIsLoading(false);
   }
-
+  const dataGridRef = useRef(null);
   return (
     <>
+      <button
+        onClick={() => {
+          console.log(dataGridRef);
+          // var rowNode = dataGridRef.current.api.getRowNodes(2);
+          // rowNode.setDataValue("email", "dineshkumar@gmail.com");
+        }}
+        style={{ color: "white", backgroundColor: "red" }}
+      >
+        ADD
+      </button>
       <DataGrid
         columnData={columns}
         rowData={rows}
         rowKeyGetter={rowKeyGetter}
         onRowsChange={setRows}
         rowHeight={25}
-        onScroll={handleScroll}
+        // onScroll={handleScroll}
         className="fill-grid"
+       // userRef={dataGridRef}
+        ref={dataGridRef}
         direction={direction}
       />
       {isLoading && (

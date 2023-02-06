@@ -20,6 +20,7 @@ function Row(
     api,
     row,
     rows,
+    node,
     viewportColumns,
     selectedCellEditor,
     selectedCellDragHandle,
@@ -80,6 +81,7 @@ function Row(
           row={row}
           allrow={rows}
           rowIndex={rowIdx}
+          node={node}
           isCopied={copiedCellIdx === idx}
           isDraggedOver={draggedOverCellIdx === idx}
           isCellSelected={isCellSelected}
@@ -98,6 +100,7 @@ function Row(
       <div
         role="row"
         ref={ref}
+        id={row.id ?? rowIdx}
         className={className}
         onMouseEnter={handleDragEnter}
         style={getRowStyle(gridRowStart, height)}

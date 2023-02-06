@@ -249,7 +249,7 @@ export function useCalculatedColumns({
     viewportWidth,
     enableVirtualization,
   ]);
-  console.log("columns", columns);
+
   return {
     columns,
     colSpanColumns,

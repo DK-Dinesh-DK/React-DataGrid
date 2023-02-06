@@ -78,7 +78,7 @@ const initialPosition = {
 function DataGrid(props, ref) {
   const {
     // Grid and data Props
-    columnData: rawColumns,
+    columnData: raawColumns,
     rowData: raawRows,
     topSummaryRows,
     bottomSummaryRows,
@@ -119,6 +119,7 @@ function DataGrid(props, ref) {
     "aria-labelledby": ariaLabelledBy,
     "aria-describedby": ariaDescribedBy,
     "data-testid": testId,
+    userRef,
   } = props;
 
   /**
@@ -147,6 +148,7 @@ function DataGrid(props, ref) {
   const rowHeight = rawRowHeight ?? 24;
   const headerWithFilter = enableFilter ? 70 : undefined;
   const headerRowHeight =
+    headerHeightFromRef ??
     rawHeaderRowHeight ??
     headerWithFilter ??
     (typeof rowHeight === "number" ? rowHeight : 24);
@@ -182,6 +184,8 @@ function DataGrid(props, ref) {
   const [draggedOverRowIdx, setOverRowIdx] = useState(undefined);
   const [sortColumns, setSortColumns] = useState([]);
   const [rawRows, setRawRows] = useState(raawRows);
+  const [rawColumns, setRawColumns] = useState(raawColumns);
+  const [headerHeightFromRef, setHeaderHeightFromRef] = useState();
   const onSortColumnsChange = (sortColumns) => {
     setSortColumns(sortColumns.slice(-1));
   };
@@ -263,9 +267,6 @@ function DataGrid(props, ref) {
     );
   }, [rawRows, selectedRows, rowKeyGetter]);
 
-  function getColumnDefs() {
-    return columns;
-  }
   const {
     columns,
     colSpanColumns,
@@ -418,6 +419,8 @@ function DataGrid(props, ref) {
       });
     },
     selectCell,
+    api: apiObject,
+    node,
   }));
 
   /**
@@ -1004,7 +1007,8 @@ function DataGrid(props, ref) {
         row={row}
         allrow={rows}
         rowIndex={rowIdx}
-        api={{ getColumnDefs }}
+        api={apiObject}
+        node={node}
         onRowChange={onRowChange}
         closeEditor={closeEditor}
       />
@@ -1031,6 +1035,40 @@ function DataGrid(props, ref) {
     }
     return viewportColumns;
   }
+
+  var node;
+  var RowNodes = [];
+  function getRowNodes(value) {
+    return RowNodes[value];
+  }
+
+  const getColumnDefs = () => {
+    return rawColumns;
+  };
+
+  function setColumnDefs(columns) {
+    return setRawColumns(columns);
+  }
+  const setHeaderHeight = (height) => {
+    return setHeaderHeightFromRef(height);
+  };
+  function setRowData(rowData) {
+    if (rowData) {
+      setRawRows(rowData);
+    }
+  }
+  
+  var apiObject = {
+    getColumnDefs: getColumnDefs(),
+    setColumnDefs: setColumnDefs,
+    setRowData: setRowData,
+    setHeaderHeight: setHeaderHeight,
+    getDisplayedRowCount: rawRows.length,
+    getDisplayedRowAtIndex: (index) => rawRows[index],
+    getFirstDisplayedRow: rawRows[0],
+    getLastDisplayedRow: raawRows[raawRows.length - 1],
+  };
+
 
   function getViewportRows() {
     const rowElements = [];
@@ -1122,6 +1160,36 @@ function DataGrid(props, ref) {
         key = hasGroups ? startRowIndex : rowIdx;
       }
 
+      function setDataValue(key, newValue) {
+        let data = row;
+        data[key] = newValue;
+        let list = [...rawRows];
+        list[rowIdx] = data;
+        console.log("newList", list);
+        setRawRows(list);
+      }
+      function setData(newValue) {
+        let list = [...rawRows];
+        list[rowIdx] = newValue;
+        setRawRows(list);
+      }
+      node = {
+        rowIndex: rowIdx,
+        childIndex: rowIdx + 1,
+        data: row,
+        rowHeight: rowHeight,
+        lastChild: raawRows.length == rowIdx + 1,
+        firstChild: rowIdx == 0,
+        id: row.id ?? String(rowIdx),
+        selected: selectedRowIdx === rowIdx,
+        setDataValue,
+        setData,
+        parent: { allLeafChildren: RowNodes },
+        // expanded:column.expanded?
+      };
+      RowNodes.push(node);
+
+
       rowElements.push(
         rowRenderer(key, {
           // aria-rowindex is 1 based
@@ -1134,7 +1202,8 @@ function DataGrid(props, ref) {
           rowIdx,
           rows,
           row,
-          api: { getColumnDefs },
+          api: apiObject,
+          node,
           viewportColumns: rowColumns,
           isRowSelected,
           onRowClick: onRowClickLatest,
