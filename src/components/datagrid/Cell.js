@@ -4,7 +4,7 @@ import { css } from "@linaria/core";
 
 import { getCellStyle, getCellClassname, isCellEditable } from "./utils";
 import { useRovingCellRef } from "./hooks";
-
+import { useDrag, useDrop } from "react-dnd";
 import moment from "moment";
 
 const cellCopied = css`
@@ -43,6 +43,7 @@ function Cell({
   onRowChange,
   selectCell,
   node,
+  handleReorderRow,
   ...props
 }) {
   const { ref, tabIndex, onFocus } = useRovingCellRef(isCellSelected);
@@ -203,6 +204,30 @@ function Cell({
       : alignmentUtils({ column, row, style });
   }
   /// -----------------------
+
+  const [{ isDragging }, drag] = useDrag({
+    type: "ROW_DRAG",
+    item: { index: rowIndex },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+  function onRowReorder(fromIndex, toIndex) {
+    console.log("fromIndex", fromIndex, "toIndex", toIndex);
+    const newRows = [...allrow];
+    newRows.splice(toIndex, 0, newRows.splice(fromIndex, 1)[0]);
+    handleReorderRow(newRows);
+  }
+  const [{ isOver }, drop] = useDrop({
+    accept: "ROW_DRAG",
+    drop({ index }) {
+      onRowReorder(index, rowIndex);
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  });
   return (
     <div
       role="gridcell"
@@ -224,7 +249,33 @@ function Cell({
     >
       {!column.rowGroup && (
         <>
-          {column.formatter({
+          {column.rowDrag && (
+            <div
+              ref={(ele) => {
+                drag(ele);
+                drop(ele);
+              }}
+            >
+              <span style={{ marginRight: "10px", cursor: "grab" }}>
+                &#9674;
+              </span>
+              {column.formatter({
+                column,
+                colDef: column,
+                row,
+                data: row,
+                onRowChange,
+                allrow,
+                api,
+                node,
+                rowIndex,
+                value: row[column.key],
+                isCellSelected,
+                onRowChange: handleRowChange,
+              })}
+            </div>
+          )}
+          {!column.rowDrag && column.formatter({
             column,
             colDef: column,
             row,

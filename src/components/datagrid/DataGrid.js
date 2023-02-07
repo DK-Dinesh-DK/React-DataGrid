@@ -372,6 +372,9 @@ function DataGrid(props, ref) {
       setRawColumns(value);
     }
   };
+  const handleReorderRow = (value) => {
+    setRawRows(value);
+  };
 
   /**
    * effects
@@ -1017,6 +1020,7 @@ function DataGrid(props, ref) {
         node={node}
         onRowChange={onRowChange}
         closeEditor={closeEditor}
+        handleReorderRow={handleReorderRow}
       />
     );
   }
@@ -1073,6 +1077,7 @@ function DataGrid(props, ref) {
     getDisplayedRowAtIndex: (index) => rawRows[index],
     getFirstDisplayedRow: rawRows[0],
     getLastDisplayedRow: raawRows[raawRows.length - 1],
+    getRowNodes: getRowNodes,
   };
 
   function getViewportRows() {
@@ -1228,6 +1233,7 @@ function DataGrid(props, ref) {
           selectCell: selectViewportCellLatest,
           selectedCellDragHandle: getDragHandle(rowIdx),
           selectedCellEditor: getCellEditor(rowIdx),
+          handleReorderRow: handleReorderRow,
         })
       );
     }

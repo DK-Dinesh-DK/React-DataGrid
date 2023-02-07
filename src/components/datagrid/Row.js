@@ -5,7 +5,8 @@ import Cell from "./Cell";
 import { RowSelectionProvider, useLatestFunc } from "./hooks";
 import { getColSpan, getRowStyle } from "./utils";
 import { rowClassname, rowSelectedClassname } from "./style";
-
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 function Row(
   {
     className,
@@ -31,6 +32,7 @@ function Row(
     onMouseEnter,
     onRowChange,
     selectCell,
+    handleReorderRow,
     ...props
   },
   ref
@@ -90,25 +92,28 @@ function Row(
           onRowDoubleClick={onRowDoubleClick}
           onRowChange={handleRowChange}
           selectCell={selectCell}
+          handleReorderRow={handleReorderRow}
         />
       );
     }
   }
 
   return (
-    <RowSelectionProvider value={isRowSelected}>
-      <div
-        role="row"
-        ref={ref}
-        id={row.id ?? rowIdx}
-        className={className}
-        onMouseEnter={handleDragEnter}
-        style={getRowStyle(gridRowStart, height)}
-        {...props}
-      >
-        {cells}
-      </div>
-    </RowSelectionProvider>
+    <DndProvider backend={HTML5Backend}>
+      <RowSelectionProvider value={isRowSelected}>
+        <div
+          role="row"
+          ref={ref}
+          id={row.id ?? rowIdx}
+          className={className}
+          onMouseEnter={handleDragEnter}
+          style={getRowStyle(gridRowStart, height)}
+          {...props}
+        >
+          {cells}
+        </div>
+      </RowSelectionProvider>
+    </DndProvider>
   );
 }
 
