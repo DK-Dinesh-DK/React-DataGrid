@@ -102,6 +102,7 @@ function getColumns(countries, direction) {
         <select
           className={textEditorClassname}
           value={p.row.country}
+          style={{width:"100%"}}
           onChange={(e) =>
             p.onRowChange({ ...p.row, country: e.target.value }, true)
           }
@@ -131,7 +132,7 @@ function getColumns(countries, direction) {
       field: "progress",
       headerName: "Completion",
       width: 110,
-      formatter(props) {
+      valueFormatter(props) {
         const value = props.row.progress;
         return (
           <>
@@ -140,7 +141,7 @@ function getColumns(countries, direction) {
           </>
         );
       },
-      editor({ row, onRowChange, onClose }) {
+      cellEditor({ row, onRowChange, onClose }) {
         return createPortal(
           <div
             dir={direction}
@@ -216,7 +217,7 @@ function getColumns(countries, direction) {
       field: "available",
       headerName: "Available",
       width: 80,
-      formatter({ row, onRowChange, isCellSelected }) {
+      valueFormatter({ row, onRowChange, isCellSelected }) {
         return (
           <SelectCellFormatter
             value={row.available}

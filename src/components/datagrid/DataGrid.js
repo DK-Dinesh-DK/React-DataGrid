@@ -119,7 +119,7 @@ function DataGrid(props, ref) {
     "aria-labelledby": ariaLabelledBy,
     "aria-describedby": ariaDescribedBy,
     "data-testid": testId,
-    userRef,
+    columnReordering,
   } = props;
 
   /**
@@ -366,6 +366,12 @@ function DataGrid(props, ref) {
     selectCell({ rowIdx, idx: column.idx });
   });
   const toggleGroupLatest = useLatestFunc(toggleGroup);
+
+  const handleReorderColumn = (value) => {
+    if (columnReordering) {
+      setRawColumns(value);
+    }
+  };
 
   /**
    * effects
@@ -1057,7 +1063,7 @@ function DataGrid(props, ref) {
       setRawRows(rowData);
     }
   }
-  
+
   var apiObject = {
     getColumnDefs: getColumnDefs(),
     setColumnDefs: setColumnDefs,
@@ -1068,7 +1074,6 @@ function DataGrid(props, ref) {
     getFirstDisplayedRow: rawRows[0],
     getLastDisplayedRow: raawRows[raawRows.length - 1],
   };
-
 
   function getViewportRows() {
     const rowElements = [];
@@ -1188,7 +1193,6 @@ function DataGrid(props, ref) {
         // expanded:column.expanded?
       };
       RowNodes.push(node);
-
 
       rowElements.push(
         rowRenderer(key, {
@@ -1337,6 +1341,7 @@ function DataGrid(props, ref) {
           <HeaderRow
             rows={rawRows}
             columns={getRowViewportColumns(-1)}
+            handleReorderColumn={handleReorderColumn}
             selectedPosition={selectedPosition}
             selectedCellHeaderStyle={selectedCellHeaderStyle}
             onColumnResize={handleColumnResizeLatest}
