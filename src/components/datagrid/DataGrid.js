@@ -99,6 +99,7 @@ function DataGrid(props, ref) {
     onRowClicked: onRowClick,
     onRowDoubleClicked: onRowDoubleClick,
     selectedCellHeaderStyle,
+    selectedCellRowStyle,
     onScroll,
     onColumnResize,
     onFill,
@@ -1234,6 +1235,7 @@ function DataGrid(props, ref) {
           selectedCellDragHandle: getDragHandle(rowIdx),
           selectedCellEditor: getCellEditor(rowIdx),
           handleReorderRow: handleReorderRow,
+          selectedCellRowStyle,
         })
       );
     }

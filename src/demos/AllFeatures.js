@@ -47,9 +47,6 @@ const columns = [
     headerName: "Title",
     width: 200,
     resizable: true,
-    formatter(props) {
-      return <>{props.row.title}</>;
-    },
     cellRenderer: dropDownEditor,
     editorOptions: {
       editOnClick: true,
@@ -61,29 +58,7 @@ const columns = [
     width: 200,
     resizable: true,
     frozen: true,
-    cellRenderer: (props) => {
-      console.log("props,", props);
-      return textEditor(props);
-    },
-    // cellRenderer: (props) => {
-    //   console.log("propss", props);
-    //   // return <input value={props.row.firstName} onChange={(e)=> { ...props.row, [props.column.key]: e.target.value }} />
-    //   return (
-    //     <input
-    //       value={props.row.firstName}
-    //       onChange={(e) => {
-    //         console.log("e.target.value", e.target.value);
-    //         setRows([
-    //           ...props.allrow,
-    //           (props.allrow[props.rowIndex] = {
-    //             ...props.row,
-    //             [props.column.key]: e.target.value,
-    //           }),
-    //         ]);
-    //       }}
-    //     />
-    //   );
-    // },
+    cellRenderer: textEditor,
   },
   {
     field: "lastName",
@@ -91,28 +66,28 @@ const columns = [
     width: 200,
     resizable: true,
     frozen: true,
-    cellRenderer: textEditor,
+    // cellRenderer: textEditor,
   },
   {
     field: "email",
     headerName: "Email",
     width: "max-content",
     resizable: true,
-    cellRenderer: textEditor,
+    // cellRenderer: textEditor,
   },
   {
     field: "street",
     headerName: "Street",
     width: 200,
     resizable: true,
-    cellRenderer: textEditor,
+    // cellRenderer: textEditor,
   },
   {
     field: "zipCode",
     headerName: "ZipCode",
     width: 200,
     resizable: true,
-    cellRenderer: textEditor,
+    // cellRenderer: textEditor,
   },
   {
     field: "date",
@@ -122,32 +97,25 @@ const columns = [
     cellRenderer: textEditor,
   },
   {
-    field: "bs",
-    headerName: "bs",
-    width: 200,
-    resizable: true,
-    cellRenderer: textEditor,
-  },
-  {
     field: "catchPhrase",
     headerName: "Catch Phrase",
     width: "max-content",
     resizable: true,
-    cellRenderer: textEditor,
+    // cellRenderer: textEditor,
   },
   {
     field: "companyName",
     headerName: "Company Name",
     width: 200,
     resizable: true,
-    cellRenderer: textEditor,
+    // cellRenderer: textEditor,
   },
   {
     field: "sentence",
     headerName: "Sentence",
     width: "max-content",
     resizable: true,
-    cellRenderer: textEditor,
+    // cellRenderer: textEditor,
   },
 ];
 
@@ -179,11 +147,11 @@ function createRows() {
 export default function AllFeatures({ direction }) {
   const [rows, setRows] = useState(createRows);
   const [selectedRows, setSelectedRows] = useState(() => new Set());
-  
+
   const selectedCellHeaderStyle = {
-    backgroundColor: 'red',
-    fontSize: "12px"
-  }
+    backgroundColor: "red",
+    fontSize: "12px",
+  };
   function handlePaste({
     sourceColumnKey,
     sourceRow,
@@ -221,6 +189,7 @@ export default function AllFeatures({ direction }) {
       onPaste={handlePaste}
       rowHeight={30}
       selectedCellHeaderStyle={selectedCellHeaderStyle}
+      selectedCellRowStyle={{ backgroundColor: "Blue", color: "white" }}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
       className="fill-grid"

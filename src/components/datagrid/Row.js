@@ -33,6 +33,7 @@ function Row(
     onRowChange,
     selectCell,
     handleReorderRow,
+    selectedCellRowStyle,
     ...props
   },
   ref
@@ -57,7 +58,7 @@ function Row(
   );
 
   const cells = [];
-
+  var selectedCellRowIndex;
   for (let index = 0; index < viewportColumns.length; index++) {
     const column = viewportColumns[index];
     const { idx } = column;
@@ -67,6 +68,9 @@ function Row(
     });
     if (colSpan !== undefined) {
       index += colSpan - 1;
+    }
+    if (isCellSelected) {
+      selectedCellRowIndex = rowIdx;
     }
 
     const isCellSelected = selectedCellIdx === idx;
@@ -97,6 +101,11 @@ function Row(
       );
     }
   }
+  var style = getRowStyle(gridRowStart, height);
+
+  if (rowIdx == selectedCellRowIndex) {
+    style = { ...style, ...selectedCellRowStyle };
+  }
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -107,7 +116,7 @@ function Row(
           id={row.id ?? rowIdx}
           className={className}
           onMouseEnter={handleDragEnter}
-          style={getRowStyle(gridRowStart, height)}
+          style={style}
           {...props}
         >
           {cells}
