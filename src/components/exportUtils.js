@@ -1,87 +1,93 @@
-import { cloneElement } from "react"
+import { cloneElement } from "react";
+import * as FileSaver from "file-saver";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
-export async function exportToCsv(gridElement, fileName) {
-  const { head, body, foot } = await getGridContent(gridElement)
-  const content = [...head, ...body, ...foot]
-    .map(cells => cells.map(serialiseCellValue).join(","))
-    .join("\n")
+export async function exportToCsv(fileData, columns, fileName) {
+  const field = columns?.map((ele) => ele.field);
+  const header = columns?.map((ele) => ele.headerName);
+
+  const data = fileData.map((f) => {
+    let sample = [];
+    field.map((d) => {
+      if (d != undefined) {
+        sample.push(f[d]);
+      } else {
+        sample.push("");
+      }
+    });
+    if (sample.length > 0) {
+      return sample;
+    }
+  });
+
+  const content = [header, ...data]
+    .map((cells) => cells.map(serialiseCellValue).join(","))
+    .join("\n");
 
   downloadFile(
     fileName,
     new Blob([content], { type: "text/csv;charset=utf-8;" })
-  )
+  );
 }
 
-export async function exportToXlsx(gridElement, fileName) {
-  const [{ utils, writeFile }, { head, body, foot }] = await Promise.all([
-    import("xlsx"),
-    getGridContent(gridElement)
-  ])
-  const wb = utils.book_new()
-  const ws = utils.aoa_to_sheet([...head, ...body, ...foot])
-  utils.book_append_sheet(wb, ws, "Sheet 1")
-  writeFile(wb, fileName)
-}
+export async function exportToPdf(fileData, columns, fileName) {
+  var field = [];
+  columns?.map((ele) => {
+    if (ele.field) {
+      field.push({ dataKey: ele.field, header: ele.headerName });
+    }
+  });
 
-export async function exportToPdf(gridElement, fileName) {
-  const [{ jsPDF }, autoTable, { head, body, foot }] = await Promise.all([
-    import("jspdf"),
-    (await import("jspdf-autotable")).default,
-    await getGridContent(gridElement)
-  ])
-  const doc = new jsPDF({
-    orientation: "l",
-    unit: "px"
-  })
-
+  var doc = new jsPDF("p", "pt", "letter");
+  autoTable(doc, { html: "#my-table" });
   autoTable(doc, {
-    head,
-    body,
-    foot,
-    horizontalPageBreak: true,
-    styles: { cellPadding: 1.5, fontSize: 8, cellWidth: "wrap" },
-    tableWidth: "wrap"
-  })
-  doc.save(fileName)
+    margin: { top: 10 },
+    styles: { cellWidth: "wrap", overflow: "visible", halign: "center" },
+    headStyles: {
+      fillColor: "#16365D",
+      textColor: "white",
+      halign: "center",
+      lineColor: "White",
+      lineWidth: 1,
+    },
+    body: fileData,
+    theme: "striped",
+    columns: field,
+  });
+
+  doc.save(fileName);
 }
 
-async function getGridContent(gridElement) {
-  const { renderToStaticMarkup } = await import("react-dom/server")
-  const grid = document.createElement("div")
-  grid.innerHTML = renderToStaticMarkup(
-    cloneElement(gridElement, {
-      enableVirtualization: false
-    })
-  )
 
-  return {
-    head: getRows(".rdg-header-row"),
-    body: getRows(".rdg-row:not(.rdg-summary-row)"),
-    foot: getRows(".rdg-summary-row")
-  }
+export function exportToXlsx(fileData,columns, fileName) {
+  const fileType =
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
+  const fileExtension = ".xlsx";
 
-  function getRows(selector) {
-    return Array.from(grid.querySelectorAll(selector)).map(gridRow => {
-      return Array.from(gridRow.querySelectorAll(".rdg-cell")).map(
-        gridCell => gridCell.innerText
-      )
-    })
-  }
+  const ws = XLSX.utils.json_to_sheet(fileData);
+  const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
+  const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  const data = new Blob([excelBuffer], { type: fileType });
+  FileSaver.saveAs(data, fileName + fileExtension);
 }
 
 function serialiseCellValue(value) {
   if (typeof value === "string") {
-    const formattedValue = value.replace(/"/g, '""')
-    return formattedValue.includes(",") ? `"${formattedValue}"` : formattedValue
+    const formattedValue = value.replace(/"/g, '""');
+    return formattedValue.includes(",")
+      ? `"${formattedValue}"`
+      : formattedValue;
   }
-  return value
+  return value;
 }
 
 function downloadFile(fileName, data) {
-  const downloadLink = document.createElement("a")
-  downloadLink.download = fileName
-  const url = URL.createObjectURL(data)
-  downloadLink.href = url
-  downloadLink.click()
-  URL.revokeObjectURL(url)
+  const downloadLink = document.createElement("a");
+  downloadLink.download = fileName;
+  const url = URL.createObjectURL(data);
+  downloadLink.href = url;
+  downloadLink.click();
+  URL.revokeObjectURL(url);
 }

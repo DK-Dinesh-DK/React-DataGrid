@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
@@ -8,7 +8,11 @@ import textEditor from "../components/datagrid/editors/textEditor";
 import { SelectCellFormatter } from "../components/datagrid/formatters/SelectCellFormatter";
 import DataGrid from "../components/datagrid/DataGrid";
 
-import { exportToCsv, exportToXlsx, exportToPdf } from "./UtilityExport";
+import {
+  exportToCsv,
+  exportToPdf,
+  exportToXlsx,
+} from "../components/exportUtils";
 import textEditorClassname from "../components/datagrid/editors/textEditor";
 
 const toolbarClassname = css`
@@ -61,7 +65,11 @@ const selectCellClassname = css`
 `;
 function getColumns(countries, direction) {
   return [
-    { ...SelectColumn, headerCellClass: selectCellClassname, cellClass: selectCellClassname },
+    {
+      ...SelectColumn,
+      headerCellClass: selectCellClassname,
+      cellClass: selectCellClassname,
+    },
     {
       field: "id",
       headerName: "ID",
@@ -86,7 +94,7 @@ function getColumns(countries, direction) {
       field: "client",
       headerName: "Client",
       width: "max-content",
-      cellRenderer: textEditor,
+      cellEditor: textEditor,
     },
     {
       field: "area",
@@ -102,7 +110,7 @@ function getColumns(countries, direction) {
         <select
           className={textEditorClassname}
           value={p.row.country}
-          style={{width:"100%"}}
+          style={{ width: "100%" }}
           onChange={(e) =>
             p.onRowChange({ ...p.row, country: e.target.value }, true)
           }
@@ -179,7 +187,7 @@ function getColumns(countries, direction) {
       field: "startTimestamp",
       headerName: "Start date",
       width: 100,
-      formatter(props) {
+      valueFormatter(props) {
         return <TimestampFormatter timestamp={props.row.startTimestamp} />;
       },
     },
@@ -187,7 +195,7 @@ function getColumns(countries, direction) {
       field: "endTimestamp",
       headerName: "Deadline",
       width: 100,
-      formatter(props) {
+      valueFormatter(props) {
         return <TimestampFormatter timestamp={props.row.endTimestamp} />;
       },
     },
@@ -195,7 +203,7 @@ function getColumns(countries, direction) {
       field: "budget",
       headerName: "Budget",
       width: 100,
-      formatter(props) {
+      valueFormatter(props) {
         return <CurrencyFormatter value={props.row.budget} />;
       },
     },
@@ -336,7 +344,7 @@ export default function CommonFeatures({ direction }) {
       return 0;
     });
   }, [rows, sortColumns]);
-
+  const gridRef = useRef(null);
   const gridElement = (
     <DataGrid
       rowKeyGetter={rowKeyGetter}
@@ -358,24 +366,33 @@ export default function CommonFeatures({ direction }) {
       bottomSummaryRows={summaryRows}
       className="fill-grid"
       direction={direction}
+      ref={gridRef}
     />
   );
-
+  var fileData = sortedRows;
+  var fileName = "NEwFILE.xlsx";
   return (
     <>
       <div className={toolbarClassname}>
+        <button
+          onClick={() => {
+            exportToXlsx(fileData, columns, fileName);
+          }}
+        >
+          Export Excel
+        </button>
+
         <ExportButton
-          onExport={() => exportToCsv(gridElement, "CommonFeatures.csv")}
+          onExport={() => {
+            exportToCsv(sortedRows, columns, "CommonFeatures.xlsx");
+          }}
         >
           Export to CSV
         </ExportButton>
         <ExportButton
-          onExport={() => exportToXlsx(gridElement, "CommonFeatures.xlsx")}
-        >
-          Export to XSLX
-        </ExportButton>
-        <ExportButton
-          onExport={() => exportToPdf(gridElement, "CommonFeatures.pdf")}
+          onExport={() =>
+            exportToPdf(sortedRows, columns, "CommonFeatures.pdf")
+          }
         >
           Export to PDF
         </ExportButton>

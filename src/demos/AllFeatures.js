@@ -58,7 +58,7 @@ const columns = [
     width: 200,
     resizable: true,
     frozen: true,
-    cellRenderer: textEditor,
+    cellEditor: textEditor,
   },
   {
     field: "lastName",

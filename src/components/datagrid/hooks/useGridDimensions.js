@@ -19,7 +19,7 @@ export function useGridDimensions() {
       gridRef.current;
     const { width, height } = gridRef.current.getBoundingClientRect();
 
-    console.log("widthhhhh---", width, "height----", height);
+  
     const initialWidth = width - offsetWidth + clientWidth;
     const initialHeight = height - offsetHeight + clientHeight;
 

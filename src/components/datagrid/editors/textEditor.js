@@ -57,7 +57,7 @@ export default function textEditor({
       onChange={(event) =>
         onRowChange({ ...row, [column.key]: event.target.value })
       }
-      onBlur={() => onClose(true)}
+      // onBlur={() => onClose(true)}
     />
   );
 }
