@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { flushSync } from "react-dom";
 import clsx from "clsx";
-import { groupBy as rowGrouper } from "lodash";
+import _, { groupBy as rowGrouper } from "lodash";
 import { createPortal } from "react-dom";
 import {
   ContextMenu,
@@ -1049,36 +1049,99 @@ function DataGrid(props, ref) {
 
   var node;
   var RowNodes = [];
-  function getRowNodes(value) {
-    return RowNodes[value];
-  }
+  var endRowIdxForRender;
 
-  const getColumnDefs = () => {
-    return rawColumns;
-  };
-
-  function setColumnDefs(columns) {
-    return setRawColumns(columns);
-  }
-  const setHeaderHeight = (height) => {
-    return setHeaderHeightFromRef(height);
-  };
   function setRowData(rowData) {
     if (rowData) {
       setRawRows(rowData);
     }
   }
+  function forEachNode(newFunction) {
+    RowNodes.forEach((data) => {
+      newFunction(data);
+    });
+  }
+  function getRowBounds(index) {
+    return {
+      rowTop: RowNodes[index].rowTop,
+      rowHeight: RowNodes[index].rowHeight,
+    };
+  }
+  function isRowPresent(object1) {
+    let result = false;
+    RowNodes.map((obj) => {
+      if (_.isEqual(object1, obj)) {
+        result = true;
+      }
+    });
+    return result;
+  }
+  function getNodesInRangeForSelection(obj1, obj2) {
+    let firstIndex;
+    let secondIndex;
+    let startIndex;
+    let endIndex;
+    RowNodes.map((obj, idx) => {
+      if (_.isEqual(obj1, obj)) {
+        firstIndex = idx;
+      }
+    });
+    RowNodes.map((obj, idx) => {
+      if (_.isEqual(obj2, obj)) {
+        secondIndex = idx;
+      }
+    });
+
+    if (firstIndex && secondIndex) {
+      if (firstIndex < secondIndex) {
+        startIndex = firstIndex;
+        endIndex = secondIndex;
+      } else {
+        endIndex = firstIndex;
+        startIndex = secondIndex;
+      }
+    } else if (firstIndex) {
+      startIndex = 0;
+      endIndex = firstIndex;
+    } else if (secondIndex) {
+      startIndex = 0;
+      endIndex = secondIndex;
+    }
+
+    return RowNodes.slice(startIndex, endIndex + 1);
+  }
+
+  var getModelObject = {
+    getRow: (index) => RowNodes[index],
+    getRowNode: (idValue) => RowNodes.filter((data) => data.id == idValue),
+    getRowCount: () => rows.length,
+    getTopLevelRowCount: () => rows.length,
+    getTopLevelRowDisplayedIndex: (index) => (rows[index] ? index : null),
+    getRowIndexAtPixel: (pixel) => Math.floor(pixel / rowHeight),
+    isRowPresent,
+    getRowBounds,
+    isEmpty: () => raawRows.length == 0,
+    isRowsToRender: () => endRowIdxForRender != 0,
+    getNodesInRangeForSelection,
+    forEachNode,
+    getType: () => "clientSide",
+    isLastRowIndexKnown: () => true,
+    // ensureRowHeightsValid
+    // start
+  };
 
   var apiObject = {
-    getColumnDefs: getColumnDefs(),
-    setColumnDefs: setColumnDefs,
+    getColumnDefs: () => rawColumns,
+    setColumnDefs: (columns) => setRawColumns(columns),
     setRowData: setRowData,
-    setHeaderHeight: setHeaderHeight,
+    setHeaderHeight: (height) => setHeaderHeightFromRef(height),
     getDisplayedRowCount: rawRows.length,
     getDisplayedRowAtIndex: (index) => rawRows[index],
     getFirstDisplayedRow: rawRows[0],
     getLastDisplayedRow: raawRows[raawRows.length - 1],
-    getRowNodes: getRowNodes,
+    getRowNodes: (index) => RowNodes[index],
+    forEachNode,
+    getModel: () => getModelObject,
   };
 
   function getViewportRows() {
@@ -1095,7 +1158,7 @@ function DataGrid(props, ref) {
       selectedCellIsWithinViewportBounds && selectedRowIdx > rowOverscanEndIdx
         ? rowOverscanEndIdx + 1
         : rowOverscanEndIdx;
-
+    endRowIdxForRender = endRowIdx;
     for (
       let viewportRowIdx = startRowIdx;
       viewportRowIdx <= endRowIdx;
@@ -1186,6 +1249,7 @@ function DataGrid(props, ref) {
       }
       node = {
         rowIndex: rowIdx,
+        rowTop: rowIdx * rowHeight,
         childIndex: rowIdx + 1,
         data: row,
         rowHeight: rowHeight,
@@ -1196,7 +1260,8 @@ function DataGrid(props, ref) {
         setDataValue,
         setData,
         parent: { allLeafChildren: RowNodes },
-        // expanded:column.expanded?
+        updateData: setData,
+        isSelected: () => isRowSelected,
       };
       RowNodes.push(node);
 
