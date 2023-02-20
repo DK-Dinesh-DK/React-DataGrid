@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
@@ -8,11 +8,7 @@ import textEditor from "../components/datagrid/editors/textEditor";
 import { SelectCellFormatter } from "../components/datagrid/formatters/SelectCellFormatter";
 import DataGrid from "../components/datagrid/DataGrid";
 
-import {
-  exportToCsv,
-  exportToPdf,
-  exportToXlsx,
-} from "../components/exportUtils";
+import { exportToCsv, exportToXlsx, exportToPdf } from "../components/exportUtils";
 import textEditorClassname from "../components/datagrid/editors/textEditor";
 
 const toolbarClassname = css`
@@ -66,11 +62,6 @@ const selectCellClassname = css`
 function getColumns(countries, direction) {
   return [
     {
-      ...SelectColumn,
-      headerCellClass: selectCellClassname,
-      cellClass: selectCellClassname,
-    },
-    {
       field: "id",
       headerName: "ID",
       width: 60,
@@ -85,7 +76,7 @@ function getColumns(countries, direction) {
       headerName: "Task",
       width: 120,
       frozen: true,
-      cellRenderer: textEditor,
+      cellEditor: textEditor,
       summaryFormatter({ row }) {
         return <>{row.totalCount} records</>;
       },
@@ -94,13 +85,14 @@ function getColumns(countries, direction) {
       field: "client",
       headerName: "Client",
       width: "max-content",
-      cellEditor: textEditor,
+      cellRenderer: textEditor,
     },
     {
       field: "area",
       headerName: "Area",
       width: 120,
-      cellRenderer: textEditor,
+
+      // cellRenderer: textEditor,
     },
     {
       field: "country",
@@ -113,8 +105,7 @@ function getColumns(countries, direction) {
           style={{ width: "100%" }}
           onChange={(e) =>
             p.onRowChange({ ...p.row, country: e.target.value }, true)
-          }
-        >
+          }>
           {countries.map((country) => (
             <option key={country}>{country}</option>
           ))}
@@ -128,19 +119,19 @@ function getColumns(countries, direction) {
       field: "contact",
       headerName: "Contact",
       width: 160,
-      cellRenderer: textEditor,
+      // cellRenderer: textEditor,
     },
     {
       field: "assignee",
       headerName: "Assignee",
       width: 150,
-      cellRenderer: textEditor,
+      // cellRenderer: textEditor,
     },
     {
       field: "progress",
       headerName: "Completion",
       width: 110,
-      valueFormatter(props) {
+      valueFormater(props) {
         const value = props.row.progress;
         return (
           <>
@@ -158,8 +149,7 @@ function getColumns(countries, direction) {
               if (event.key === "Escape") {
                 onClose();
               }
-            }}
-          >
+            }}>
             <dialog open>
               <input
                 type="range"
@@ -219,7 +209,7 @@ function getColumns(countries, direction) {
     {
       field: "version",
       headerName: "Version",
-      cellRenderer: textEditor,
+      // cellRenderer: textEditor,
     },
     {
       field: "available",
@@ -308,8 +298,8 @@ function getComparator(sortColumn) {
 export default function CommonFeatures({ direction }) {
   const [rows, setRows] = useState(createRows);
   const [sortColumns, setSortColumns] = useState([]);
-  const [selectedRows, setSelectedRows] = useState(() => new Set());
-
+  // const [selectedRows, setSelectedRows] = useState(() => new Set());
+  const [selectedRows, setSelectedRows] = useState([]);
   const countries = useMemo(() => {
     return [...new Set(rows.map((r) => r.country))].sort(
       new Intl.Collator().compare
@@ -344,11 +334,35 @@ export default function CommonFeatures({ direction }) {
       return 0;
     });
   }, [rows, sortColumns]);
-  const gridRef = useRef(null);
-  const gridElement = (
-    <DataGrid
+
+ 
+
+  return (
+    <>
+      <div className={toolbarClassname}>
+        <ExportButton
+          onExport={() => exportToCsv(sortedRows, columns, "CommonFeatures.csv")}
+        >
+          Export to CSV
+        </ExportButton>
+        <ExportButton
+          onExport={() => exportToXlsx(sortedRows, columns, "CommonFeatures.xlsx")}
+        >
+          Export to XSLX
+        </ExportButton>
+        <ExportButton
+          onExport={() => exportToPdf(sortedRows, columns, "CommonFeatures.pdf")}
+        >
+          Export to PDF
+        </ExportButton>
+      </div>
+      <DataGrid
       rowKeyGetter={rowKeyGetter}
       columnData={columns}
+      restriction={{
+        copy: true,
+        paste: true,
+      }}
       rowData={sortedRows}
       // defaultColumnOptions={{
       //   sortable: true,
@@ -362,42 +376,15 @@ export default function CommonFeatures({ direction }) {
       onRowsChange={setRows}
       // sortColumns={sortColumns}
       // onSortColumnsChange={setSortColumns}
+      selectedRows={selectedRows}
+      onSelectedRowsChange1={setSelectedRows}
       topSummaryRows={summaryRows}
       bottomSummaryRows={summaryRows}
+      showSelectedRows={true}
       className="fill-grid"
       direction={direction}
-      ref={gridRef}
+      selection={true}
     />
-  );
-  var fileData = sortedRows;
-  var fileName = "NEwFILE.xlsx";
-  return (
-    <>
-      <div className={toolbarClassname}>
-        <button
-          onClick={() => {
-            exportToXlsx(fileData, columns, fileName);
-          }}
-        >
-          Export Excel
-        </button>
-
-        <ExportButton
-          onExport={() => {
-            exportToCsv(sortedRows, columns, "CommonFeatures.xlsx");
-          }}
-        >
-          Export to CSV
-        </ExportButton>
-        <ExportButton
-          onExport={() =>
-            exportToPdf(sortedRows, columns, "CommonFeatures.pdf")
-          }
-        >
-          Export to PDF
-        </ExportButton>
-      </div>
-      {gridElement}
     </>
   );
 }
@@ -411,8 +398,7 @@ function ExportButton({ onExport, children }) {
         setExporting(true);
         await onExport();
         setExporting(false);
-      }}
-    >
+      }}>
       {exporting ? "Exporting" : children}
     </button>
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import DataGrid from "../components/datagrid/DataGrid";
 
@@ -43,7 +43,7 @@ function getRandomDate(start, end) {
 
 function createRows() {
   const rows = [];
-  for (let i = 1; i < 500; i++) {
+  for (let i = 1; i < 50; i++) {
     rows.push({
       id: i,
       task: `Task ${i}`,
@@ -65,7 +65,7 @@ function createRows() {
 export default function CellNavigation({ direction }) {
   const [rows] = useState(createRows);
   const [cellNavigationMode, setCellNavigationMode] = useState("CHANGE_ROW");
-
+  const dataGridRef = useRef(null);
   return (
     <>
       <div style={{ marginBlockEnd: 5 }}>
@@ -89,6 +89,7 @@ export default function CellNavigation({ direction }) {
           Change Row
         </label>
         <label>
+          {" "}
           <input
             type="radio"
             name="mode"
@@ -103,6 +104,7 @@ export default function CellNavigation({ direction }) {
         rowData={rows}
         cellNavigationMode={cellNavigationMode}
         direction={direction}
+        ref={dataGridRef}
       />
     </>
   );

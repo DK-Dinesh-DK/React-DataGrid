@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { css } from "@linaria/core";
 
 import { SelectColumn } from "../components/datagrid/Columns";
@@ -56,14 +56,14 @@ const columns = [
     field: "task",
     headerName: "Title",
     cellEditor: (props) => {
-      console.log(props);
+      //console.log(props);
       return textEditor(props);
     },
     sortable: true,
   },
   {
     field: "priority",
-    headerName: "Priority",
+    // headerName: "Priority",
     sortable: true,
   },
   {
@@ -81,7 +81,7 @@ const columns = [
 export default function CustomizableComponents({ direction }) {
   const [rows, setRows] = useState(createRows);
   const [sortColumns, setSortColumns] = useState([]);
-  const [selectedRows, setSelectedRows] = useState(() => new Set());
+  const [selectedRows, setSelectedRows] = useState([]);
 
   const sortedRows = useMemo(() => {
     if (sortColumns.length === 0) return rows;
@@ -97,6 +97,7 @@ export default function CustomizableComponents({ direction }) {
       return 0;
     });
   }, [rows, sortColumns]);
+  const dataGridRef = useRef(null);
 
   return (
     <DataGrid
@@ -111,13 +112,14 @@ export default function CustomizableComponents({ direction }) {
       onSelectedRowsChange={setSelectedRows}
       renderers={{ sortStatus, checkboxFormatter }}
       direction={direction}
+      showSelectedRows={true}
     />
   );
 }
-
 function checkboxFormatter({ onChange, ...props }, ref) {
   function handleChange(e) {
     onChange(e.target.checked, e.nativeEvent.shiftKey);
+    //console.log(props.selectedRows);
   }
 
   return <input type="checkbox" ref={ref} {...props} onChange={handleChange} />;

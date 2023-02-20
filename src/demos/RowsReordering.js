@@ -1,11 +1,18 @@
 import { useCallback, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-
+import { SelectColumn } from "../components/datagrid/Columns";
 // import { DraggableRowRenderer } from './components/RowRenderers';
 import textEditor from "../components/datagrid/editors/textEditor";
 import DataGrid from "../components/datagrid/DataGrid";
 import { DraggableRowRenderer } from "./DraggableRowRenderer";
+// import { Checkbox } from "lai_webui";
+const frameworkComponents = {
+  abc: () => {
+    return <input type={"checkbox"}></input>;
+  },
+  cdd: (props) => <button></button>,
+};
 
 function createRows() {
   const rows = [];
@@ -29,6 +36,12 @@ function createRows() {
 
 const columns = [
   {
+    key: "trial",
+    field: "",
+    width: 45,
+    cellRenderer: "abc",
+  },
+  {
     field: "id",
     headerName: "ID",
     width: 80,
@@ -36,13 +49,11 @@ const columns = [
   {
     field: "task",
     headerName: "Title",
-    rowDrag: true,
-    valueFormatter: (props) => <input value={props.row[props.column.key]} />,
+    editor: textEditor,
   },
   {
     field: "priority",
     headerName: "Priority",
-    rowDrag: true,
   },
   {
     field: "issueType",
@@ -53,29 +64,25 @@ const columns = [
     headerName: "% Complete",
   },
 ];
+function rowKeyGetter(row) {
+  return row.id;
+}
 
 export default function RowsReordering({ direction }) {
   const [rows, setRows] = useState(createRows);
-
-  // const rowRenderer = useCallback((key, props) => {
-  //   function onRowReorder(fromIndex, toIndex) {
-  //     setRows((rows) => {
-  //       const newRows = [...rows];
-  //       newRows.splice(toIndex, 0, newRows.splice(fromIndex, 1)[0]);
-  //       return newRows;
-  //     });
-  //   }
-
-  //   return <DraggableRowRenderer key={key} {...props} onRowReorder={onRowReorder} />;
-  // }, []);
+  const [selectedRows, setSelectedRows] = useState([]);
 
   return (
     <DataGrid
       columnData={columns}
       rowData={rows}
+      rowKeyGetter={rowKeyGetter}
+      selectedRows={selectedRows}
+      onSelectedRowsChange1={setSelectedRows}
+      serialNumber={true}
       onRowsChange={setRows}
-      // renderers={{ rowRenderer }}
       direction={direction}
+      frameworkComponents={frameworkComponents}
     />
   );
 }

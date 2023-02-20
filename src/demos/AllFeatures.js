@@ -2,12 +2,12 @@ import { useState } from "react";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
 
-import { SelectColumn } from "../components/datagrid/Columns";
+// import { SelectColumn } from "../components/datagrid/Columns";
 import textEditor from "../components/datagrid/editors/textEditor";
 
 import DataGrid from "../components/datagrid/DataGrid";
 
-import dropDownEditor from "../components/datagrid/editors/textEditor";
+import dropDownEditor from "../components/datagrid/editors/dropDownEditors";
 import ImageFormatter from "./ImageFormatter";
 
 const highlightClassname = css`
@@ -26,7 +26,7 @@ function rowKeyGetter(row) {
 }
 
 const columns = [
-  SelectColumn,
+  // SelectColumn,
   {
     field: "id",
     headerName: "ID",
@@ -47,6 +47,13 @@ const columns = [
     headerName: "Title",
     width: 200,
     resizable: true,
+    formatter(props) {
+      return <>{props.row.title}</>;
+    },
+    option: [
+      { label: "task1", value: "task1" },
+      { label: "task2", value: "task2" },
+    ],
     cellRenderer: dropDownEditor,
     editorOptions: {
       editOnClick: true,
@@ -58,7 +65,41 @@ const columns = [
     width: 200,
     resizable: true,
     frozen: true,
+    // cellRenderer: (props) => {
+    //   console.log("props,", props);
+    //   return textEditor(props);
+    // },
+    // cellRenderer: (props) => {
+    //   console.log("propss", props);
+    //   // return <input value={props.row.firstName} onChange={(e)=> { ...props.row, [props.column.key]: e.target.value }} />
+    //   return (
+    //     <input
+    //       value={props.row.firstName}
+    //       onChange={(e) => {
+    //         console.log("e.target.value", e.target.value);
+    //         setRows([
+    //           ...props.allrow,
+    //           (props.allrow[props.rowIndex] = {
+    //             ...props.row,
+    //             [props.column.key]: e.target.value,
+    //           }),
+    //         ]);
+    //       }}
+    //     />
+    //   );
+    // },
+  },
+  {
+    headerName: "Money",
+    field: "money",
     cellEditor: textEditor,
+    frozen: true,
+    alignment:true,
+    width:100,
+    validation: {
+      style: { backgroundColor: "red", color: "blue" },
+      method: (value) => value.slice(1) >= 100,
+    },
   },
   {
     field: "lastName",
@@ -94,7 +135,14 @@ const columns = [
     headerName: "Date",
     width: 200,
     resizable: true,
-    cellRenderer: textEditor,
+    // cellRenderer: textEditor,
+  },
+  {
+    field: "bs",
+    headerName: "bs",
+    width: 200,
+    resizable: true,
+    // cellRenderer: textEditor,
   },
   {
     field: "catchPhrase",
@@ -138,6 +186,7 @@ function createRows() {
       companyName: faker.company.name(),
       words: faker.lorem.words(),
       sentence: faker.lorem.sentence(),
+      money:'₹101'
     });
   }
 
@@ -151,6 +200,9 @@ export default function AllFeatures({ direction }) {
   const selectedCellHeaderStyle = {
     backgroundColor: "red",
     fontSize: "12px",
+  };
+  const selectedCellRowStyle = {
+    backgroundColor: "yellow",
   };
   function handlePaste({
     sourceColumnKey,
@@ -189,7 +241,7 @@ export default function AllFeatures({ direction }) {
       onPaste={handlePaste}
       rowHeight={30}
       selectedCellHeaderStyle={selectedCellHeaderStyle}
-      selectedCellRowStyle={{ backgroundColor: "Blue", color: "white" }}
+      selectedCellRowStyle={selectedCellRowStyle}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
       className="fill-grid"
@@ -197,6 +249,10 @@ export default function AllFeatures({ direction }) {
         row.id.includes("7") ? highlightClassname : undefined
       }
       direction={direction}
+      restriction={{
+        copy: true,
+        paste: true,
+      }}
     />
   );
 }

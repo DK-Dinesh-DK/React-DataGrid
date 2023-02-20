@@ -12,8 +12,7 @@ export const row = css`
     }
 
     &[aria-selected="true"] {
-      background-color: var(--rdg-row-selected-background-color);
-
+      background-color: #ebf1dd;
       &:hover {
         background-color: var(--rdg-row-selected-hover-background-color);
       }

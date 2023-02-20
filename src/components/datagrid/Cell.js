@@ -6,7 +6,11 @@ import { getCellStyle, getCellClassname, isCellEditable } from "./utils";
 import { useRovingCellRef } from "./hooks";
 import { useDrag, useDrop } from "react-dnd";
 import moment from "moment";
-
+import {
+  bottomRowIsSelectedClassName,
+  rowIsSelectedClassName,
+  topRowIsSelectedClassName,
+} from "./style";
 const cellCopied = css`
   @layer rdg.Cell {
     background-color: #ccccff;
@@ -34,6 +38,7 @@ function Cell({
   isCopied,
   api,
   isDraggedOver,
+  isRowSelected,
   row,
   rowIndex,
   allrow,
@@ -44,17 +49,25 @@ function Cell({
   selectCell,
   node,
   handleReorderRow,
+  totalColumns,
   ...props
 }) {
   const { ref, tabIndex, onFocus } = useRovingCellRef(isCellSelected);
 
   const { cellClass } = column;
+  const topRow = rowIndex === 0 && isRowSelected ? true : false;
+  const bottomRow =
+    rowIndex === allrow.length - 1 && isRowSelected ? true : false;
+  const middleRow = !(topRow || bottomRow) && isRowSelected ? true : false;
   const className = getCellClassname(
     column,
     `rdg-cell-column-${column.idx % 2 === 0 ? "even" : "odd"}`,
     {
       [cellCopiedClassname]: isCopied,
       [cellDraggedOverClassname]: isDraggedOver,
+      [rowIsSelectedClassName]: middleRow,
+      [topRowIsSelectedClassName]: topRow,
+      [bottomRowIsSelectedClassName]: bottomRow,
     },
     typeof cellClass === "function" ? cellClass(row) : cellClass
   );
@@ -82,7 +95,16 @@ function Cell({
   }
 
   // -----------
+
   var style = getCellStyle(column, colSpan);
+  style =
+    column.idx === 0 && isRowSelected
+      ? { ...style, ...{ borderInlineStart: "1px solid #9bbb59" } }
+      : { ...style };
+  style =
+    column.idx === totalColumns - 1 && isRowSelected
+      ? { ...style, ...{ borderInlineEnd: "1px solid #9bbb59" } }
+      : { ...style };
   const rowSpan = column.rowSpan?.({ type: "ROW", row }) ?? undefined;
 
   if (column.validation) {
@@ -195,6 +217,7 @@ function Cell({
           ? { textAlign: column.alignment.align }
           : { textAlign: "center" };
         styles = { ...styles, ...alignment };
+
         return styles;
       }
     }
@@ -213,7 +236,7 @@ function Cell({
     }),
   });
   function onRowReorder(fromIndex, toIndex) {
-    console.log("fromIndex", fromIndex, "toIndex", toIndex);
+    //console.log("fromIndex", fromIndex, "toIndex", toIndex);
     const newRows = [...allrow];
     newRows.splice(toIndex, 0, newRows.splice(fromIndex, 1)[0]);
     handleReorderRow(newRows);
@@ -228,6 +251,7 @@ function Cell({
       canDrop: monitor.canDrop(),
     }),
   });
+
   return (
     <div
       role="gridcell"
@@ -245,8 +269,8 @@ function Cell({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       onFocus={onFocus}
-      {...props}
-    >
+      title={row[column.key]}
+      {...props}>
       {!column.rowGroup && (
         <>
           {column.rowDrag && (
@@ -254,12 +278,11 @@ function Cell({
               ref={(ele) => {
                 drag(ele);
                 drop(ele);
-              }}
-            >
+              }}>
               <span style={{ marginRight: "10px", cursor: "grab" }}>
                 &#9674;
               </span>
-              {column.formatter({
+              {column.cellRenderer({
                 column,
                 colDef: column,
                 row,
@@ -275,20 +298,21 @@ function Cell({
               })}
             </div>
           )}
-          {!column.rowDrag && column.formatter({
-            column,
-            colDef: column,
-            row,
-            data: row,
-            onRowChange,
-            allrow,
-            api,
-            node,
-            rowIndex,
-            value: row[column.key],
-            isCellSelected,
-            onRowChange: handleRowChange,
-          })}
+          {!column.rowDrag &&
+            column.cellRenderer({
+              column,
+              colDef: column,
+              row,
+              data: row,
+              onRowChange,
+              allrow,
+              api,
+              node,
+              rowIndex,
+              value: row[column.key],
+              isCellSelected,
+              onRowChange: handleRowChange,
+            })}
           {dragHandle}
         </>
       )}

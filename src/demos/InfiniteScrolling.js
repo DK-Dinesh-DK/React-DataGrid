@@ -25,9 +25,9 @@ const columns = [
     field: "id",
     headerName: "ID",
     width: 80,
-    cellRenderer: (props) => {
-      return textEditor(props);
-    },
+    // cellRenderer: (props) => {
+    //   return textEditor(props);
+    // },
   },
   {
     field: "title",
@@ -38,13 +38,13 @@ const columns = [
     field: "firstName",
     headerName: "First Name",
     cellRenderer: (props) => {
+      console.log(props.api.getModel());
       return textEditor(props);
     },
   },
   {
     field: "lastName",
     headerName: "Last Name",
-    cellEditor: textEditor,
   },
   {
     field: "email",
@@ -60,7 +60,7 @@ function createFakeRowObjectData(index) {
     firstName: faker.name.firstName(),
     lastName: faker.name.firstName(),
     email: faker.internet.email(),
-    phone: faker.phone.phoneNumber(),
+    phone: faker.phone.number(),
   };
 }
 
@@ -94,7 +94,7 @@ function loadMoreRows(newRowsCount, length) {
 }
 
 export default function InfiniteScrolling({ direction }) {
-  const [rows, setRows] = useState(() => createRows(10));
+  const [rows, setRows] = useState(() => createRows(50));
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleScroll(event) {
@@ -108,17 +108,25 @@ export default function InfiniteScrolling({ direction }) {
     setIsLoading(false);
   }
   const dataGridRef = useRef(null);
+  const [selectedRows, setSelectedRows] = useState([]);
   return (
     <>
       <button
-        onClick={() => {
-          console.log(dataGridRef);
-          // var rowNode = dataGridRef.current.api.getRowNodes(2);
+        onClick={(e) => {
+          console.log("params", e);
+          var rowNode = dataGridRef.current.api.getRowNodes(2);
+          var rowNode1 = dataGridRef.current.api.getRowNodes(6);
           // rowNode.setDataValue("email", "dineshkumar@gmail.com");
+          console.log(dataGridRef.current.api.selectAll());
         }}
-        style={{ color: "white", backgroundColor: "red" }}
-      >
+        style={{ color: "white", backgroundColor: "red" }}>
         ADD
+      </button>
+      <button
+        onClick={() => {
+          console.log("deselect", dataGridRef.current.api.deselectAll());
+        }}>
+        deselectAll
       </button>
       <DataGrid
         columnData={columns}
@@ -126,11 +134,14 @@ export default function InfiniteScrolling({ direction }) {
         rowKeyGetter={rowKeyGetter}
         onRowsChange={setRows}
         rowHeight={25}
-        // onScroll={handleScroll}
+        onScroll={handleScroll}
         className="fill-grid"
-       // userRef={dataGridRef}
+        // userRef={dataGridRef}
         ref={dataGridRef}
         direction={direction}
+        selectedRows={selectedRows}
+        onSelectedRowsChange
+        showSelectedRows
       />
       {isLoading && (
         <div className={loadMoreRowsClassname}>Loading more rows...</div>

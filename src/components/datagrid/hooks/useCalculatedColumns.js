@@ -5,7 +5,6 @@ import { valueFormatter, toggleGroupFormatter } from "../formatters";
 import { SELECT_COLUMN_KEY } from "../Columns";
 import { clampColumnWidth, max, min } from "../utils";
 import { textEditorClassname } from "../editors/textEditor";
-
 const DEFAULT_COLUMN_WIDTH = "auto";
 const DEFAULT_COLUMN_MIN_WIDTH = 40;
 
@@ -17,6 +16,7 @@ export function useCalculatedColumns({
   defaultColumnOptions,
   rawGroupBy,
   enableVirtualization,
+  frameworkComponents,
 }) {
   const defaultWidth = defaultColumnOptions?.width ?? DEFAULT_COLUMN_WIDTH;
   const defaultMinWidth =
@@ -37,6 +37,15 @@ export function useCalculatedColumns({
         const rowGroup = rawGroupBy?.includes(rawColumn.field) ?? false;
         const frozen = rowGroup || rawColumn.frozen;
 
+        const cellRendererValue = rawColumn.cellRenderer;
+        const components = frameworkComponents
+          ? Object.keys(frameworkComponents)
+          : null;
+
+        const indexOfComponent = components?.indexOf(cellRendererValue);
+        const customComponentName =
+          indexOfComponent > -1 ? components[indexOfComponent] : null;
+
         const column = {
           ...rawColumn,
           key: rawColumn.field,
@@ -52,7 +61,19 @@ export function useCalculatedColumns({
           formatter: rawColumn.cellRenderer
             ? rawColumn.cellRenderer
             : rawColumn.valueFormatter ?? defaultFormatter,
+
+          cellRenderer:
+            frameworkComponents?.[customComponentName] ??
+            rawColumn.cellRenderer ??
+            rawColumn.valueFormatter ??
+            defaultFormatter,
+
           filter: rawColumn.filter ?? defaultFilter,
+          cellRenderer:
+            frameworkComponents?.[customComponentName] ??
+            rawColumn.cellRenderer ??
+            rawColumn.valueFormatter ??
+            defaultFormatter,
         };
 
         if (rowGroup) {

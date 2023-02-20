@@ -25,6 +25,7 @@ import RowsReordering from "./demos/RowsReordering";
 import ScrollToRow from "./demos/ScrollToRow";
 import TreeView from "./demos/TreeView";
 import VariableRowHeight from "./demos/VariableRowHeight";
+import Animation from "./demos/Animation"
 
 css`
   @at-root {
@@ -68,7 +69,7 @@ function App() {
   return (
     <Router>
       <Nav direction={direction} onDirectionChange={setDirection} />
-      <main className="aaaa" dir={direction}>
+      <main className="view-container" dir={direction}>
         <Routes>
           <Route index element={<Navigate to="common-features" replace />} />
           <Route
@@ -137,7 +138,7 @@ function App() {
             path="variable-row-height"
             element={<VariableRowHeight direction={direction} />}
           />
-          {/* <Route path="animation" element={<Animation direction={direction} />} /> */}
+          <Route path="chnageinheight" element={<Animation direction={direction} />} />
           <Route path="*" element="Nothing to see here" />
         </Routes>
       </main>

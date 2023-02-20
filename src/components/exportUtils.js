@@ -1,5 +1,5 @@
 import { cloneElement } from "react";
-import * as FileSaver from "file-saver";
+// /import * as FileSaver from "file-saver";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -60,8 +60,7 @@ export async function exportToPdf(fileData, columns, fileName) {
   doc.save(fileName);
 }
 
-
-export function exportToXlsx(fileData,columns, fileName) {
+export function exportToXlsx(fileData, columns, fileName) {
   const fileType =
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
   const fileExtension = ".xlsx";

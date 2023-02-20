@@ -1,11 +1,10 @@
 import React from "react";
 import { css } from "@linaria/core";
-// import { Input } from "arms_v2.8_webui";
+// import { Input } from "lai_webui";
 
 const textEditorInternalClassname = css`
   @layer rdg.TextEditor {
     appearance: none;
-
     box-sizing: border-box;
     inline-size: 100%;
     block-size: 100%;

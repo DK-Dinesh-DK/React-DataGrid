@@ -2,11 +2,12 @@ import React from "react";
 import { memo } from "react";
 import clsx from "clsx";
 import { css } from "@linaria/core";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
+
 import HeaderCell from "./HeaderCell";
 import { getColSpan, getRowStyle } from "./utils";
 import { cell, cellFrozen, rowSelectedClassname } from "./style";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 const headerRow = css`
   @layer rdg.HeaderRow {
@@ -49,7 +50,7 @@ function HeaderRow({
   shouldFocusGrid,
   direction,
   setFilters,
-  handleReorderColumn
+  handleReorderColumn,
 }) {
   const cells = [];
   for (let index = 0; index < columns.length; index++) {
@@ -65,8 +66,9 @@ function HeaderRow({
       <HeaderCell
         key={column.key}
         column={column}
-        columns={columns}
         rows={rows}
+        handleReorderColumn={handleReorderColumn}
+        columns={columns}
         colSpan={colSpan}
         selectedPosition={selectedPosition}
         selectedCellHeaderStyle={selectedCellHeaderStyle}
@@ -80,7 +82,6 @@ function HeaderRow({
         shouldFocusGrid={shouldFocusGrid && index === 0}
         direction={direction}
         setFilters={setFilters}
-        handleReorderColumn={handleReorderColumn}
       />
     );
   }
@@ -92,10 +93,9 @@ function HeaderRow({
         // aria-rowindex is 1 based
         aria-rowindex={1}
         className={clsx(headerRowClassname, {
-          [rowSelectedClassname]: selectedCellIdx === -1,
+          // [rowSelectedClassname]: selectedCellIdx === -1,
         })}
-        style={getRowStyle(1)}
-      >
+        style={getRowStyle(1)}>
         {cells}
       </div>
     </DndProvider>
