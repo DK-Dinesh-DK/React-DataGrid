@@ -292,7 +292,7 @@ function Cell({
                 api,
                 node,
                 rowIndex,
-                value: row[column.key],
+                // value: row[column.key],
                 isCellSelected,
                 onRowChange: handleRowChange,
               })}

@@ -115,7 +115,7 @@ function Row(
         <div
           role="row"
           ref={ref}
-          id={row.id ?? rowIdx}
+          id={row?.id ?? rowIdx}
           className={className}
           onMouseEnter={handleDragEnter}
           style={style}

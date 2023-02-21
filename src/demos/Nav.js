@@ -70,16 +70,16 @@ export default function Nav({ direction, onDirectionChange }) {
 
       <h2>Demos</h2>
       <NavLink to="/all-features" end className={getActiveClassname}>
-      1.Cell-wise background, Forecolor
+        1.Cell-wise background, Forecolor
       </NavLink>
       <NavLink to="/common-features" end className={getActiveClassname}>
         2. Common features
       </NavLink>
       <NavLink to="/cell-navigation" end className={getActiveClassname}>
-       3. Cell Navigation
+        3. Cell Navigation
       </NavLink>
       <NavLink to="/column-spanning" end className={getActiveClassname}>
-       4. Column Spanning
+        4. Column Spanning
       </NavLink>
       <NavLink to="/columns-reordering" end className={getActiveClassname}>
         5. Columns Reordering
@@ -103,39 +103,44 @@ export default function Nav({ direction, onDirectionChange }) {
         11. Master Detail
       </NavLink>
       <NavLink to="/million-cells" end className={getActiveClassname}>
-       12. A Million Cells
+        12. A Million Cells
       </NavLink>
       <NavLink to="/no-rows" end className={getActiveClassname}>
         13 Serial Number
       </NavLink>
       <NavLink to="/resizable-grid" end className={getActiveClassname}>
-       14 Resizable Grid
+        14 Resizable Grid
       </NavLink>
       <NavLink to="/rows-reordering" end className={getActiveClassname}>
-       15 Rows Reordering
+        15 Rows Reordering
       </NavLink>
       <NavLink to="/scroll-to-row" end className={getActiveClassname}>
-       16 Scroll To Row
+        16 Scroll To Row
       </NavLink>
       <NavLink to="/tree-view" end className={getActiveClassname}>
         17 Tree View
       </NavLink>
       <NavLink to="/variable-row-height" end className={getActiveClassname}>
-       18. Variable Row Height
+        18. Variable Row Height
       </NavLink>
       <NavLink to="/chnageinheight" end className={getActiveClassname}>
         19. Change In Table
       </NavLink>
+      <NavLink to="/pagination-table" end className={getActiveClassname}>
+        20. Table Pagination
+      </NavLink>
 
-      {/* <h2>Direction</h2>
+      <h2>Direction</h2>
       <label className={rtlCheckboxClassname}>
         <input
           type="checkbox"
-          checked={direction === 'rtl'}
-          onChange={() => onDirectionChange(direction === 'rtl' ? 'ltr' : 'rtl')}
+          checked={direction === "rtl"}
+          onChange={() =>
+            onDirectionChange(direction === "rtl" ? "ltr" : "rtl")
+          }
         />
         Right to left
-      </label> */}
+      </label>
     </nav>
   );
 }

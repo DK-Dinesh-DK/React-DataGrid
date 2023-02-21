@@ -26,6 +26,7 @@ import ScrollToRow from "./demos/ScrollToRow";
 import TreeView from "./demos/TreeView";
 import VariableRowHeight from "./demos/VariableRowHeight";
 import Animation from "./demos/Animation"
+import Pagination from "./demos/Pagination";
 
 css`
   @at-root {
@@ -125,6 +126,10 @@ function App() {
           <Route
             path="rows-reordering"
             element={<RowsReordering direction={direction} />}
+          />
+          <Route
+            path="pagination-table"
+            element={<Pagination direction={direction} />}
           />
           <Route
             path="scroll-to-row"

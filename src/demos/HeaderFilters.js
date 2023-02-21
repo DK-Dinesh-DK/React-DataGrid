@@ -97,40 +97,46 @@ export default function HeaderFilters({ direction }) {
           console.log(dataGridRef);
           console.log(dataGridRef.current.api.getSelectedRows());
         }}
-        style={{ color: "black", backgroundColor: "lightskyblue" }}>
+        style={{ color: "black", backgroundColor: "lightskyblue" }}
+      >
         Get Selected Rows
       </button>
       <button
         onClick={() => {
           console.log(dataGridRef.current.api.selectAllFiltered());
         }}
-        style={{ color: "black", backgroundColor: "lightsalmon" }}>
+        style={{ color: "black", backgroundColor: "lightsalmon" }}
+      >
         Select All Filtered Rows
       </button>
       <button
         onClick={() => {
           console.log(dataGridRef.current.api.deselectAllFiltered());
         }}
-        style={{ color: "black", backgroundColor: "lightslategrey" }}>
+        style={{ color: "black", backgroundColor: "lightslategrey" }}
+      >
         Deselect All Filtered Rows
       </button>
       <button
         onClick={() => {
           console.log(dataGridRef.current.api.selectAll());
         }}
-        style={{ color: "black", backgroundColor: "lightblue" }}>
+        style={{ color: "black", backgroundColor: "lightblue" }}
+      >
         Select All Rows
       </button>
       <button
         onClick={() => {
           console.log(dataGridRef.current.api.deselectAll());
         }}
-        style={{ color: "white", backgroundColor: "lightseagreen" }}>
+        style={{ color: "white", backgroundColor: "lightseagreen" }}
+      >
         Deselect All Rows
       </button>
       <button
         onClick={updateData}
-        style={{ color: "black", backgroundColor: "lightskyblue" }}>
+        style={{ color: "black", backgroundColor: "lightskyblue" }}
+      >
         Update Data
       </button>
       <button
@@ -142,19 +148,25 @@ export default function HeaderFilters({ direction }) {
           // var rowNode = dataGridRef.current.api.getRowNodes(2);
           // rowNode.setDataValue("task", "dineshkumar@gmail.com");
         }}
-        style={{ color: "white", backgroundColor: "red" }}>
+        style={{ color: "white", backgroundColor: "red" }}
+      >
         ADD
       </button>
       <button
         onClick={() => {
-          console.log(dataGridRef);
           console.log(
-            dataGridRef.current.api.forEachLeafNodeAfterFilter((node) => {
-              node.data.priority = "Imaginary";
+            dataGridRef.current.api.forEachLeafNode((node) => {
+              console.log("Node", node);
             })
           );
+          // console.log(
+          //   dataGridRef.current.api.forEachLeafNodeAfterFilter((node) => {
+          //     node.data.priority = "Imaginary";
+          //   })
+          // );
         }}
-        style={{ color: "black", backgroundColor: "lightsteelblue" }}>
+        style={{ color: "black", backgroundColor: "lightsteelblue" }}
+      >
         For Each Leaf Node After Filter
       </button>
       <button
@@ -166,7 +178,8 @@ export default function HeaderFilters({ direction }) {
             })
           );
         }}
-        style={{ color: "black", backgroundColor: "lightyellow" }}>
+        style={{ color: "black", backgroundColor: "lightyellow" }}
+      >
         For Each Leaf Node After Filter and Sort
       </button>
       <DataGrid

@@ -38,7 +38,6 @@ const columns = [
     field: "firstName",
     headerName: "First Name",
     cellRenderer: (props) => {
-      console.log(props.api.getModel());
       return textEditor(props);
     },
   },
@@ -94,7 +93,7 @@ function loadMoreRows(newRowsCount, length) {
 }
 
 export default function InfiniteScrolling({ direction }) {
-  const [rows, setRows] = useState(() => createRows(50));
+  const [rows, setRows] = useState(() => createRows(100));
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleScroll(event) {
@@ -112,21 +111,17 @@ export default function InfiniteScrolling({ direction }) {
   return (
     <>
       <button
-        onClick={(e) => {
-          console.log("params", e);
-          var rowNode = dataGridRef.current.api.getRowNodes(2);
-          var rowNode1 = dataGridRef.current.api.getRowNodes(6);
-          // rowNode.setDataValue("email", "dineshkumar@gmail.com");
-          console.log(dataGridRef.current.api.selectAll());
-        }}
-        style={{ color: "white", backgroundColor: "red" }}>
-        ADD
-      </button>
-      <button
         onClick={() => {
-          console.log("deselect", dataGridRef.current.api.deselectAll());
-        }}>
-        deselectAll
+          console.log(
+            "dataGridRef",
+            dataGridRef.current.api.forEachNode((node) => {
+              console.log("Node,", node);
+            })
+          );
+        }}
+        style={{ color: "white", backgroundColor: "red" }}
+      >
+        ADD
       </button>
       <DataGrid
         columnData={columns}
@@ -139,9 +134,9 @@ export default function InfiniteScrolling({ direction }) {
         // userRef={dataGridRef}
         ref={dataGridRef}
         direction={direction}
-        selectedRows={selectedRows}
-        onSelectedRowsChange
-        showSelectedRows
+        pagination={true}
+        // paginationAutoPageSize={true}
+        // paginationPageSize={17}
       />
       {isLoading && (
         <div className={loadMoreRowsClassname}>Loading more rows...</div>

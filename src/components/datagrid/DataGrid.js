@@ -65,6 +65,8 @@ import FilterContext from "./filterContext";
 import { SelectColumn, SerialNumberColumn } from "./Columns";
 import { exportToCsv, exportToPdf, exportToXlsx } from "./exportUtils";
 import { ExportButton } from "./ExportData";
+import Pagination from "rc-pagination";
+import "./pagination.css";
 
 const initialPosition = {
   idx: -1,
@@ -127,6 +129,13 @@ function DataGrid(props, ref) {
     "aria-describedby": ariaDescribedBy,
     "data-testid": testId,
     columnReordering,
+    pagination,
+    paginationPageSize,
+    suppressPaginationPanel,
+    paginationAutoPageSize,
+    defaultPage,
+    // paginationNumberFormatter,
+    // paginateChildRows,
     frameworkComponents,
     ...rest
   } = props;
@@ -153,7 +162,8 @@ function DataGrid(props, ref) {
       <ContextMenuTrigger
         key={key}
         id="grid-context-menu"
-        collect={() => ({ rowIdx: props.rowIdx })}>
+        collect={() => ({ rowIdx: props.rowIdx })}
+      >
         <RowComponent {...props} />
       </ContextMenuTrigger>
     );
@@ -203,6 +213,41 @@ function DataGrid(props, ref) {
     serialNumber ? [SerialNumberColumn, ...raawColumns] : raawColumns
   );
   const [headerHeightFromRef, setHeaderHeightFromRef] = useState();
+
+  const [suppressPagination, setSuppressPagination] = useState(
+    suppressPaginationPanel ?? false
+  );
+  const [size, setSize] = useState(paginationPageSize ?? 20);
+  const [current, setCurrent] = useState(defaultPage ?? 1);
+
+  const PaginationChange = (page, pageSize) => {
+    setCurrent(page);
+    setSize(pageSize);
+  };
+  const PrevNextArrow = (current, type, originalElement) => {
+    if (type === "prev") {
+      return (
+        <button title="Previous">
+          <i className="fa fa-angle-double-left"></i>
+        </button>
+      );
+    }
+    if (type === "next") {
+      return (
+        <button title="Next">
+          <i className="fa fa-angle-double-right"></i>
+        </button>
+      );
+    }
+    return originalElement;
+  };
+  const PerPageChange = (value) => {
+    setSize(value);
+    const newPerPage = Math.ceil(rawRows.length / value);
+    if (current > newPerPage) {
+      setCurrent(newPerPage);
+    }
+  };
   const onSortColumnsChange = (sortColumns) => {
     setSortColumns(sortColumns.slice(-1));
   };
@@ -335,6 +380,9 @@ function DataGrid(props, ref) {
     scrollTop,
     expandedGroupIds,
     enableVirtualization,
+    paginationPageSize: size,
+    current,
+    pagination,
   });
 
   const { viewportColumns, flexWidthViewportColumns } = useViewportColumns({
@@ -447,7 +495,6 @@ function DataGrid(props, ref) {
     },
     selectCell,
     api: apiObject,
-    node,
   }));
 
   /**
@@ -1043,7 +1090,7 @@ function DataGrid(props, ref) {
         colSpan={colSpan}
         row={row}
         handleReorderRow={handleReorderRow}
-        allrow={rows}
+        allrow={raawRows}
         rowIndex={rowIdx}
         api={apiObject}
         node={node}
@@ -1074,7 +1121,6 @@ function DataGrid(props, ref) {
     return viewportColumns;
   }
 
-  var node;
   var RowNodes = [];
   var endRowIdxForRender;
 
@@ -1336,10 +1382,10 @@ function DataGrid(props, ref) {
     setRowData: setRowData,
     getRowNodes: (value) => RowNodes[value],
     setHeaderHeight: (height) => setHeaderHeightFromRef(height),
-    getDisplayedRowCount: rawRows.length,
+    getDisplayedRowCount: () => rawRows.length,
     getDisplayedRowAtIndex: (index) => rawRows[index],
-    getFirstDisplayedRow: rawRows[0],
-    getLastDisplayedRow: raawRows[raawRows.length - 1],
+    getFirstDisplayedRow: () => rawRows[0],
+    getLastDisplayedRow: () => raawRows[raawRows.length - 1],
     getModel: () => getModelObject,
     forEachNode,
     forEachLeafNode,
@@ -1356,8 +1402,166 @@ function DataGrid(props, ref) {
     selectAllFiltered,
     deselectAllFiltered,
   };
+  ///////////                              start
+  var allRowElements = getViewportRowsSample(raawRows);
+  function getViewportRowsSample(rowArray) {
+    let rowElementsSample = [];
+    let listOfRows = rowArray;
+    let node;
+    let startRowIndex = 0;
+
+    const { idx: selectedIdx, rowIdx: selectedRowIdx } = selectedPosition;
+
+    const startRowIdx = 0;
+    const endRowIdx = listOfRows.length - 1;
+    for (
+      let viewportRowIdx = startRowIdx;
+      viewportRowIdx <= endRowIdx;
+      viewportRowIdx++
+    ) {
+      const isRowOutsideViewport =
+        viewportRowIdx === rowOverscanStartIdx - 1 ||
+        viewportRowIdx === rowOverscanEndIdx + 1;
+      const rowIdx = isRowOutsideViewport ? selectedRowIdx : viewportRowIdx;
+
+      let rowColumns = viewportColumns;
+      const selectedColumn = columns[selectedIdx];
+      // selectedIdx can be -1 if grouping is enabled
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (selectedColumn !== undefined) {
+        if (isRowOutsideViewport) {
+          // if the row is outside the viewport then only render the selected cell
+          rowColumns = [selectedColumn];
+        } else {
+          // if the row is within the viewport and cell is not, add the selected column to viewport columns
+          rowColumns = getRowViewportColumns(rowIdx);
+        }
+      }
+
+      const row = listOfRows[rowIdx];
+      const gridRowStart = headerRowsCount + topSummaryRowsCount + rowIdx + 1;
+      if (isGroupRow(row)) {
+        ({ startRowIndex } = row);
+        const isGroupRowSelected =
+          isSelectable &&
+          row.childRows.every((cr) => selectedRows.has(rowKeyGetter(cr)));
+        rowElementsSample.push(
+          <GroupRowRenderer
+            // aria-level is 1-based
+            aria-level={row.level + 1}
+            aria-setsize={row.setSize}
+            // aria-posinset is 1-based
+            aria-posinset={row.posInSet + 1}
+            // aria-rowindex is 1 based
+            aria-rowindex={
+              headerRowsCount + topSummaryRowsCount + startRowIndex + 1
+            }
+            aria-selected={isSelectable ? isGroupRowSelected : undefined}
+            key={row.id}
+            id={row.id}
+            groupKey={row.groupKey}
+            viewportColumns={rowColumns}
+            childRows={row.childRows}
+            rowIdx={rowIdx}
+            row={row}
+            gridRowStart={gridRowStart}
+            height={getRowHeight(rowIdx)}
+            level={row.level}
+            isExpanded={row.isExpanded}
+            selectedCellIdx={
+              selectedRowIdx === rowIdx ? selectedIdx : undefined
+            }
+            isRowSelected={isGroupRowSelected}
+            selectGroup={selectGroupLatest}
+            toggleGroup={toggleGroupLatest}
+          />
+        );
+        continue;
+      }
+
+      startRowIndex++;
+      let key;
+      let isRowSelected = false;
+
+      key = hasGroups ? startRowIndex : rowIdx;
+
+      function setDataValue(key, newValue) {
+        let data = row;
+        data[key] = newValue;
+        let list = [...rawRows];
+        list[rowIdx] = data;
+        setRawRows(list);
+      }
+      function setData(newValue) {
+        let list = [...rawRows];
+        list[rowIdx] = newValue;
+        setRawRows(list);
+      }
+      node = {
+        rowIndex: rowIdx,
+        rowTop: rowIdx * rowHeight,
+        childIndex: rowIdx + 1,
+        data: row,
+        rowHeight: rowHeight,
+        lastChild: raawRows.length == rowIdx + 1,
+        firstChild: rowIdx == 0,
+        id: row?.id ?? String(rowIdx),
+        selected: selectedRowIdx === rowIdx,
+        setDataValue,
+        setData,
+        parent: { allLeafChildren: RowNodes },
+        updateData: setData,
+        isSelected: () => isRowSelected,
+      };
+      RowNodes.push(node);
+
+      rowElementsSample.push(
+        rowRenderer(key, {
+          // aria-rowindex is 1 based
+          "aria-rowindex":
+            headerRowsCount +
+            topSummaryRowsCount +
+            (hasGroups ? startRowIndex : rowIdx) +
+            1,
+          "aria-selected": isSelectable ? isRowSelected : undefined,
+          rowIdx,
+          rows,
+          row,
+          api: apiObject,
+          node,
+          viewportColumns: rowColumns,
+          isRowSelected,
+          onRowClick: onRowClickLatest,
+          onRowDoubleClick: onRowDoubleClickLatest,
+          rowClass,
+          gridRowStart,
+          height: getRowHeight(rowIdx),
+          copiedCellIdx:
+            copiedCell !== null && copiedCell.row === row
+              ? columns.findIndex((c) => c.key === copiedCell.columnKey)
+              : undefined,
+
+          selectedCellIdx: selectedRowIdx === rowIdx ? selectedIdx : undefined,
+          draggedOverCellIdx: getDraggedOverCellIdx(rowIdx),
+          setDraggedOverRowIdx: isDragging ? setDraggedOverRowIdx : undefined,
+          lastFrozenColumnIndex,
+          onRowChange: handleFormatterRowChangeLatest,
+          selectCell: selectViewportCellLatest,
+          selectedCellDragHandle: getDragHandle(rowIdx),
+          selectedCellEditor: getCellEditor(rowIdx),
+          handleReorderRow: handleReorderRow,
+          selectedCellRowStyle,
+        })
+      );
+    }
+
+    return rowElementsSample;
+  }
+
+  /////
 
   function getViewportRows() {
+    let node;
     const rowElements = [];
     let startRowIndex = 0;
 
@@ -1397,6 +1601,7 @@ function DataGrid(props, ref) {
       }
 
       const row = rows[rowIdx];
+
       const gridRowStart = headerRowsCount + topSummaryRowsCount + rowIdx + 1;
       if (isGroupRow(row)) {
         ({ startRowIndex } = row);
@@ -1470,7 +1675,7 @@ function DataGrid(props, ref) {
         rowHeight: rowHeight,
         lastChild: raawRows.length === rowIdx + 1,
         firstChild: rowIdx === 0,
-        id: row.id ?? String(rowIdx),
+        id: row?.id ?? String(rowIdx),
         selected: selectedRowIdx === rowIdx,
         setDataValue,
         setData,
@@ -1478,7 +1683,6 @@ function DataGrid(props, ref) {
         updateData: setData,
         isSelected: () => isRowSelected,
       };
-      RowNodes.push(node);
 
       rowElements.push(
         rowRenderer(key, {
@@ -1544,6 +1748,15 @@ function DataGrid(props, ref) {
     selectedPosition.idx === -1 && selectedPosition.rowIdx !== -2;
 
   useEffect(() => {
+    if (paginationAutoPageSize) {
+      if (raawRows.length <= 500) {
+        setSize(20);
+      } else if (1000 >= raawRows.length > 500) {
+        setSize(30);
+      } else {
+        setSize(40);
+      }
+    }
     const target = document.getElementById("DataGrid");
     if (props.restriction?.copy) {
       target.addEventListener("copy", (event) => {
@@ -1574,19 +1787,22 @@ function DataGrid(props, ref) {
           <ExportButton
             onExport={() =>
               exportToCsv(<DataGrid {...props} />, "DataGrid.csv")
-            }>
+            }
+          >
             Export to CSV
           </ExportButton>
           <ExportButton
             onExport={() =>
               exportToXlsx(<DataGrid {...props} />, "DataGrid.xlsx")
-            }>
+            }
+          >
             Export to XSLX
           </ExportButton>
           <ExportButton
             onExport={() =>
               exportToPdf(<DataGrid {...props} />, "DataGrid.pdf")
-            }>
+            }
+          >
             Export to PDF
           </ExportButton>
         </div>
@@ -1635,7 +1851,8 @@ function DataGrid(props, ref) {
         ref={gridRef}
         onScroll={handleScroll}
         onKeyDown={handleKeyDown}
-        data-testid={testId}>
+        data-testid={testId}
+      >
         {/* extra div is needed for row navigation in a treegrid */}
         {hasGroups && (
           <div
@@ -1652,14 +1869,13 @@ function DataGrid(props, ref) {
             onKeyDown={handleKeyDown}
           />
         )}
-
         <FilterContext.Provider value={filters}>
           <DataGridDefaultComponentsProvider value={defaultGridComponents}>
             <HeaderRow
               rows={rawRows}
               columns={getRowViewportColumns(-1)}
-              selectedPosition={selectedPosition}
               handleReorderColumn={handleReorderColumn}
+              selectedPosition={selectedPosition}
               selectedCellHeaderStyle={selectedCellHeaderStyle}
               onColumnResize={handleColumnResizeLatest}
               allRowsSelected={allRowsSelected}
@@ -1708,7 +1924,6 @@ function DataGrid(props, ref) {
                     />
                   );
                 })}
-
                 <RowSelectionChangeProvider value={selectRowLatest}>
                   {getViewportRows()}
                 </RowSelectionChangeProvider>
@@ -1806,10 +2021,28 @@ function DataGrid(props, ref) {
             display: "flex",
             justifyContent: "flex-start",
             alignItems: "center",
-          }}>
+          }}
+        >
           {`Selected : ${selectedRows.length}`}
         </div>
       ) : undefined}
+      {pagination && !suppressPagination && (
+        <>
+          <Pagination
+            className="pagination-data"
+            showTotal={(total, range) =>
+              `Showing ${range[0]}-${range[1]} of ${total}`
+            }
+            onChange={PaginationChange}
+            total={rawRows.length}
+            current={current}
+            pageSize={size}
+            showSizeChanger={false}
+            itemRender={PrevNextArrow}
+            onShowSizeChange={PerPageChange}
+          />
+        </>
+      )}
     </>
   );
 }
