@@ -281,7 +281,7 @@ function DataGrid(props, ref) {
 
   useEffect(() => {
     return setRawRows(sortedRows);
-  });
+  }, [sortedRows]);
 
   const handleReorderColumn = (value) => {
     if (columnReordering) {

@@ -236,7 +236,6 @@ function Cell({
     }),
   });
   function onRowReorder(fromIndex, toIndex) {
-    //console.log("fromIndex", fromIndex, "toIndex", toIndex);
     const newRows = [...allrow];
     newRows.splice(toIndex, 0, newRows.splice(fromIndex, 1)[0]);
     handleReorderRow(newRows);
