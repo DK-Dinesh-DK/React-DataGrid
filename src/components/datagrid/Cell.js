@@ -76,18 +76,32 @@ function Cell({
     selectCell(row, column, openEditor);
   }
 
-  function handleClick() {
+  function handleClick(e) {
     selectCellWrapper(column.editorOptions?.editOnClick);
-    onRowClick?.(row, column);
+    onRowClick?.({
+      api: api,
+      data: row,
+      node: node,
+      rowIndex: rowIndex,
+      type: "rowClicked",
+      event: e,
+    });
   }
 
   function handleContextMenu() {
     selectCellWrapper();
   }
 
-  function handleDoubleClick() {
+  function handleDoubleClick(e) {
     selectCellWrapper(true);
-    onRowDoubleClick?.(row, column);
+    onRowDoubleClick?.({
+      api: api,
+      data: row,
+      node: node,
+      rowIndex: rowIndex,
+      type: "rowDoubleClicked",
+      event: e,
+    });
   }
 
   function handleRowChange(newRow) {
@@ -228,7 +242,7 @@ function Cell({
   }
   /// -----------------------
 
-  const [{ isDragging }, drag] = useDrag({
+  const [ drag] = useDrag({
     type: "ROW_DRAG",
     item: { index: rowIndex },
     collect: (monitor) => ({
@@ -240,7 +254,7 @@ function Cell({
     newRows.splice(toIndex, 0, newRows.splice(fromIndex, 1)[0]);
     handleReorderRow(newRows);
   }
-  const [{ isOver }, drop] = useDrop({
+  const [ drop] = useDrop({
     accept: "ROW_DRAG",
     drop({ index }) {
       onRowReorder(index, rowIndex);
@@ -250,7 +264,20 @@ function Cell({
       canDrop: monitor.canDrop(),
     }),
   });
-
+  var renderObject = {
+    column,
+    colDef: column,
+    row,
+    data: row,
+    onRowChange,
+    allrow,
+    api,
+    node,
+    rowIndex,
+    value: row[column.key],
+    isCellSelected,
+    onRowChange: handleRowChange,
+  };
   return (
     <div
       role="gridcell"
@@ -269,7 +296,8 @@ function Cell({
       onContextMenu={handleContextMenu}
       onFocus={onFocus}
       title={row[column.key]}
-      {...props}>
+      {...props}
+    >
       {!column.rowGroup && (
         <>
           {column.rowDrag && (
@@ -277,41 +305,15 @@ function Cell({
               ref={(ele) => {
                 drag(ele);
                 drop(ele);
-              }}>
+              }}
+            >
               <span style={{ marginRight: "10px", cursor: "grab" }}>
                 &#9674;
               </span>
-              {column.cellRenderer({
-                column,
-                colDef: column,
-                row,
-                data: row,
-                onRowChange,
-                allrow,
-                api,
-                node,
-                rowIndex,
-                // value: row[column.key],
-                isCellSelected,
-                onRowChange: handleRowChange,
-              })}
+              {column.cellRenderer(renderObject)}
             </div>
           )}
-          {!column.rowDrag &&
-            column.cellRenderer({
-              column,
-              colDef: column,
-              row,
-              data: row,
-              onRowChange,
-              allrow,
-              api,
-              node,
-              rowIndex,
-              value: row[column.key],
-              isCellSelected,
-              onRowChange: handleRowChange,
-            })}
+          {!column.rowDrag && column.cellRenderer(renderObject)}
           {dragHandle}
         </>
       )}

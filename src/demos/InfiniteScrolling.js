@@ -114,14 +114,89 @@ export default function InfiniteScrolling({ direction }) {
         onClick={() => {
           console.log(
             "dataGridRef",
-            dataGridRef.current.api.forEachNode((node) => {
-              console.log("Node,", node);
-            })
+            dataGridRef.current.api.getRenderedNodes()
           );
         }}
         style={{ color: "white", backgroundColor: "red" }}
       >
-        ADD
+        renderedRowNodes
+      </button>
+      <button
+        onClick={() => {
+          dataGridRef.current.api.setPagination(true);
+        }}
+      >
+        setPagination
+      </button>
+      <button
+        onClick={() => {
+          console.log(dataGridRef.current.api.paginationIsLastPageFound());
+        }}
+      >
+        paginationIsLastPageFound
+      </button>
+      <button
+        onClick={() => {
+          console.log(dataGridRef.current.api.paginationGetPageSize());
+        }}
+      >
+        paginationGetPageSize
+      </button>
+      <button
+        onClick={() => {
+          dataGridRef.current.api.paginationSetPageSize(5);
+        }}
+      >
+        paginationSetPageSize
+      </button>
+      <button
+        onClick={() => {
+          console.log(dataGridRef.current.api.paginationGetCurrentPage());
+        }}
+      >
+        paginationGetCurrentPage
+      </button>
+      <button
+        onClick={() => {
+          console.log(dataGridRef.current.api.paginationGetRowCount());
+        }}
+      >
+        paginationGetRowCount
+      </button>
+      <button
+        onClick={() => {
+          dataGridRef.current.api.paginationGoToPage(3);
+        }}
+      >
+        paginationGoToPage
+      </button>
+      <button
+        onClick={() => {
+          dataGridRef.current.api.paginationGoToNextPage();
+        }}
+      >
+        paginationGoToNextPage
+      </button>
+      <button
+        onClick={() => {
+          dataGridRef.current.api.paginationGoToPreviousPage();
+        }}
+      >
+        paginationGoToPreviousPage
+      </button>
+      <button
+        onClick={() => {
+          dataGridRef.current.api.paginationGoToFirstPage();
+        }}
+      >
+        paginationGoToFirstPage
+      </button>
+      <button
+        onClick={() => {
+          dataGridRef.current.api.paginationGoToLastPage();
+        }}
+      >
+        paginationGoToLastPage
       </button>
       <DataGrid
         columnData={columns}
@@ -134,9 +209,6 @@ export default function InfiniteScrolling({ direction }) {
         // userRef={dataGridRef}
         ref={dataGridRef}
         direction={direction}
-        pagination={true}
-        // paginationAutoPageSize={true}
-        // paginationPageSize={17}
       />
       {isLoading && (
         <div className={loadMoreRowsClassname}>Loading more rows...</div>

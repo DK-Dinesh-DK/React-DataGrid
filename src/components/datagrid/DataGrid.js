@@ -129,7 +129,7 @@ function DataGrid(props, ref) {
     "aria-describedby": ariaDescribedBy,
     "data-testid": testId,
     columnReordering,
-    pagination,
+    pagination: tablePagination,
     paginationPageSize,
     suppressPaginationPanel,
     paginationAutoPageSize,
@@ -214,6 +214,7 @@ function DataGrid(props, ref) {
   );
   const [headerHeightFromRef, setHeaderHeightFromRef] = useState();
 
+  const [pagination, setPagination] = useState(tablePagination);
   const [suppressPagination, setSuppressPagination] = useState(
     suppressPaginationPanel ?? false
   );
@@ -1376,6 +1377,30 @@ function DataGrid(props, ref) {
   function deselectAllFiltered() {
     deselectAll(RowNodes);
   }
+  var totalPages =
+    Math.floor(raawRows.length / size) + (raawRows.length % size < 0 ? 1 : 0);
+  function paginationGoToPage(pageNumberNew) {
+    if (pagination) {
+      if (0 < pageNumberNew && pageNumberNew <= totalPages) {
+        setCurrent(pageNumberNew);
+      } else if (pageNumberNew < 0) {
+        setCurrent(1);
+      } else if (pageNumberNew > totalPages) {
+        setCurrent(totalPages);
+      }
+    }
+  }
+  function paginationGoToNextPage() {
+    if (pagination) {
+      current + 1 <= totalPages ? setCurrent(current + 1) : null;
+    }
+  }
+  function paginationGoToPreviousPage() {
+    if (pagination) {
+      current - 1 > 0 ? setCurrent(current - 1) : null;
+    }
+  }
+
   var apiObject = {
     getColumnDefs: () => rawColumns,
     setColumnDefs: (columns) => setRawColumns(columns),
@@ -1401,7 +1426,23 @@ function DataGrid(props, ref) {
     deselectAll: deselectAll,
     selectAllFiltered,
     deselectAllFiltered,
+    getRenderedNodes: () => renderedRowNodes,
+    setPagination: (value) => setPagination(value),
+    paginationIsLastPageFound: () => true,
+    paginationGetPageSize: () => (pagination ? size : raawRows.length),
+    paginationSetPageSize: (newPageSize) =>
+      pagination ? setSize(newPageSize) : null,
+    paginationGetCurrentPage: () => current - 1,
+    paginationGetTotalPages: () =>
+      Math.floor(raawRows.length / size) + (raawRows.length % size < 0 ? 1 : 0),
+    paginationGetRowCount: () => (pagination ? raawRows.length : 0),
+    paginationGoToPage: paginationGoToPage,
+    paginationGoToNextPage: paginationGoToNextPage,
+    paginationGoToPreviousPage: paginationGoToPreviousPage,
+    paginationGoToFirstPage: () => (pagination ? setCurrent(1) : null),
+    paginationGoToLastPage: () => (pagination ? setCurrent(totalPages) : null),
   };
+
   ///////////                              start
   var allRowElements = getViewportRowsSample(raawRows);
   function getViewportRowsSample(rowArray) {
@@ -1531,8 +1572,8 @@ function DataGrid(props, ref) {
           node,
           viewportColumns: rowColumns,
           isRowSelected,
-          onRowClick: onRowClickLatest,
-          onRowDoubleClick: onRowDoubleClickLatest,
+          onRowClick: onRowClick,
+          onRowDoubleClick: onRowDoubleClick,
           rowClass,
           gridRowStart,
           height: getRowHeight(rowIdx),
@@ -1559,7 +1600,7 @@ function DataGrid(props, ref) {
   }
 
   /////
-
+  var renderedRowNodes = [];
   function getViewportRows() {
     let node;
     const rowElements = [];
@@ -1683,7 +1724,7 @@ function DataGrid(props, ref) {
         updateData: setData,
         isSelected: () => isRowSelected,
       };
-
+      renderedRowNodes.push(node);
       rowElements.push(
         rowRenderer(key, {
           // aria-rowindex is 1 based
@@ -1702,8 +1743,8 @@ function DataGrid(props, ref) {
           node,
           viewportColumns: rowColumns,
           isRowSelected,
-          onRowClick: onRowClickLatest,
-          onRowDoubleClick: onRowDoubleClickLatest,
+          onRowClick: onRowClick,
+          onRowDoubleClick: onRowDoubleClick,
           rowClass,
           gridRowStart,
           height: getRowHeight(rowIdx),
