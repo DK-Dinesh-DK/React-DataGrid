@@ -1,11 +1,23 @@
-import { useCallback, useState } from "react";
+import {  useState } from "react";
+// import { DndProvider } from "react-dnd";
+// import { HTML5Backend } from "react-dnd-html5-backend";
+// import { SelectColumn } from "../components/datagrid/Columns";
+// import { DraggableRowRenderer } from './components/RowRenderers';
 import textEditor from "../components/datagrid/editors/textEditor";
 import DataGrid from "../components/datagrid/DataGrid";
+// import { DraggableRowRenderer } from "./DraggableRowRenderer";
+// import { Checkbox } from "lai_webui";
+const frameworkComponents = {
+  abc: () => {
+    return <input type={"checkbox"} />;
+  },
+  cdd: (props) => <button />,
+};
 
 function createRows() {
   const rows = [];
 
-  for (let i = 1; i < 10; i++) {
+  for (let i = 1; i < 500; i++) {
     rows.push({
       id: i,
       task: `Task ${i}`,
@@ -24,10 +36,16 @@ function createRows() {
 
 const columns = [
   {
+    key: "trial",
+    field: "",
+    width: 45,
+    cellRenderer: "abc",
+  },
+  {
     field: "id",
     headerName: "ID",
     width: 80,
-    rowDrag: true,
+    rowDrag:true,
   },
   {
     field: "task",
@@ -61,10 +79,11 @@ export default function RowsReordering({ direction }) {
       rowData={rows}
       rowKeyGetter={rowKeyGetter}
       selectedRows={selectedRows}
-      onSelectedRowsChange1={setSelectedRows}
+      onSelectedRowsChange={setSelectedRows}
       serialNumber={true}
       onRowsChange={setRows}
       direction={direction}
+      frameworkComponents={frameworkComponents}
     />
   );
 }

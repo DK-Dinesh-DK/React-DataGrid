@@ -48,7 +48,9 @@ export function useCalculatedColumns({
 
         const column = {
           ...rawColumn,
+          colId: rawColumn.field,
           key: rawColumn.field,
+          userProvidedColDef:rawColumn,
           idx: 0,
           frozen,
           isLastFrozenColumn: false,
@@ -69,11 +71,7 @@ export function useCalculatedColumns({
             defaultFormatter,
 
           filter: rawColumn.filter ?? defaultFilter,
-          cellRenderer:
-            frameworkComponents?.[customComponentName] ??
-            rawColumn.cellRenderer ??
-            rawColumn.valueFormatter ??
-            defaultFormatter,
+  
         };
 
         if (rowGroup) {

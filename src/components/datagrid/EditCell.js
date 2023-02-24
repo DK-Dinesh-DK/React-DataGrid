@@ -114,7 +114,7 @@ export default function EditCell({
     }),
   });
   function onRowReorder(fromIndex, toIndex) {
-    // console.log("fromIndex", fromIndex, "toIndex", toIndex);
+    console.log("fromIndex", fromIndex, "toIndex", toIndex);
     const newRows = [...allrow];
     newRows.splice(toIndex, 0, newRows.splice(fromIndex, 1)[0]);
     handleReorderRow(newRows);
@@ -139,15 +139,15 @@ export default function EditCell({
       className={className}
       style={getCellStyle(column, colSpan)}
       onKeyDown={onKeyDown}
-      onMouseDownCapture={
-        commitOnOutsideClick ? cancelFrameRequest : undefined
-      }>
+      onMouseDownCapture={commitOnOutsideClick ? cancelFrameRequest : undefined}
+    >
       {column.rowDrag && (
         <div
           ref={(ele) => {
             drag(ele);
             drop(ele);
-          }}>
+          }}
+        >
           <span style={{ marginRight: "10px", cursor: "grab" }}>&#9674;</span>
           {(column.cellEditor != null || column.editable == true) && (
             <>
@@ -178,7 +178,7 @@ export default function EditCell({
                   valueFormatted: column.valueFormatter,
                   onRowChange,
                   isCellSelected: true,
-                  onRowChange,
+                 
                 })}
               {column.editable &&
                 column.formatter({
@@ -192,13 +192,12 @@ export default function EditCell({
                   valueFormatted: column.valueFormatter,
                   onRowChange,
                   isCellSelected: true,
-                  onRowChange,
                 })}
             </>
           )}
         </div>
       )}
-      {(column.cellEditor != null || column.editable == true) &&
+      {(column.cellEditor != null || column.editable === true) &&
         !column.rowDrag && (
           <>
             {column.cellEditor({
@@ -216,7 +215,7 @@ export default function EditCell({
               onClose,
             })}
             {column.editorOptions?.renderFormatter &&
-              column.editable != true &&
+              column.editable !== true &&
               column.formatter({
                 colDef: column,
                 column,
@@ -228,7 +227,7 @@ export default function EditCell({
                 valueFormatted: column.valueFormatter,
                 onRowChange,
                 isCellSelected: true,
-                onRowChange,
+               
               })}
             {column.editable &&
               column.formatter({
@@ -242,7 +241,6 @@ export default function EditCell({
                 valueFormatted: column.valueFormatter,
                 onRowChange,
                 isCellSelected: true,
-                onRowChange,
               })}
           </>
         )}

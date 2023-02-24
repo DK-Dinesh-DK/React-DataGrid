@@ -28,7 +28,6 @@ export const cell = css`
       outline: 1px solid var(--rdg-selection-color);
       outline-offset: -1px;
     }
-
     & > div {
       display: flex;
       align-items: center;

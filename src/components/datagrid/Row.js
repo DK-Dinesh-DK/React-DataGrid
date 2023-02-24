@@ -10,7 +10,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 
 function Row(
   {
-    //className,
+    className,
     rowIdx,
     gridRowStart,
     height,
@@ -43,13 +43,13 @@ function Row(
   const handleRowChange = useLatestFunc((column, newRow) => {
     onRowChange(column, rowIdx, newRow);
   });
-  // console.log(isRowSelected, rowIdx, row);
+
   function handleDragEnter(event) {
     setDraggedOverRowIdx?.(rowIdx);
     onMouseEnter?.(event);
   }
 
-  const className = clsx(
+  className = clsx(
     rowClassname,
     `rdg-row-${rowIdx % 2 === 0 ? "even" : "odd"}`,
     {
@@ -58,6 +58,7 @@ function Row(
     rowClass?.(row),
     className
   );
+
   const cells = [];
 
   var selectedCellRowIndex;
@@ -119,7 +120,8 @@ function Row(
           className={className}
           onMouseEnter={handleDragEnter}
           style={style}
-          {...props}>
+          {...props}
+        >
           {cells}
         </div>
       </RowSelectionProvider>

@@ -48,4 +48,4 @@ export function ExportButton({ onExport, children }) {
     )
   }
   
-export default ExportData
+export default ExportData;

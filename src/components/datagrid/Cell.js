@@ -242,7 +242,7 @@ function Cell({
   }
   /// -----------------------
 
-  const [ drag] = useDrag({
+  const [{ isDragging }, drag] = useDrag({
     type: "ROW_DRAG",
     item: { index: rowIndex },
     collect: (monitor) => ({
@@ -254,7 +254,7 @@ function Cell({
     newRows.splice(toIndex, 0, newRows.splice(fromIndex, 1)[0]);
     handleReorderRow(newRows);
   }
-  const [ drop] = useDrop({
+  const [{ isOver }, drop] = useDrop({
     accept: "ROW_DRAG",
     drop({ index }) {
       onRowReorder(index, rowIndex);

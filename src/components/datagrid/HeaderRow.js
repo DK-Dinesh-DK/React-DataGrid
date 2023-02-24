@@ -5,7 +5,7 @@ import { css } from "@linaria/core";
 
 import HeaderCell from "./HeaderCell";
 import { getColSpan, getRowStyle } from "./utils";
-import { cell, cellFrozen, rowSelectedClassname } from "./style";
+import { cell, cellFrozen } from "./style";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 

@@ -144,10 +144,7 @@ export default function Grouping({ direction }) {
     options[0],
     options[1],
   ]);
-  const [expandedGroupIds, setExpandedGroupIds] = useState(
-    () =>
-      new Set(["United States of America", "United States of America__2015"])
-  );
+  const [expandedGroupIds, setExpandedGroupIds] = useState(() => new Set([]));
 
   function toggleOption(option, enabled) {
     const index = selectedOptions.indexOf(option);
@@ -183,23 +180,27 @@ export default function Grouping({ direction }) {
       </div>
       <button
         onClick={() => {
-          console.log(dataGridRef);
-          // dataGridRef.current.api.forEachLeafNode((node) => {
-          //   node.data.athlete = "Someone";
-          // });
-          console.log(dataGridRef.current.api.getAllLeafNodes());
-
-          //console.log(dataGridRef.current.api.getSelectedNodes());
-          // var rowNode = dataGridRef.current.api.getRowNodes(2);
-          // rowNode.setDataValue("email", "dineshkumar@gmail.com");
-
-          // dataGridRef.current.api.forEachLeafNode(function (node) {
-          //   //if (node.data.id === "id_7")
-          //   node.data.athlete = "Shweta";
-          // });
+          dataGridRef.current.api.collapseAll();
         }}
-        style={{ color: "white", backgroundColor: "red" }}>
-        ADD
+        style={{ color: "white", backgroundColor: "red" }}
+      >
+        collapseAll
+      </button>
+      <button
+        onClick={() => {
+          dataGridRef.current.api.expandAll();
+        }}
+        style={{ color: "white", backgroundColor: "red" }}
+      >
+        expandAll
+      </button>
+      <button
+        onClick={() => {
+          var node = dataGridRef.current.api.getRowNodes(2);
+          console.log(node.isExpandable());
+        }}
+      >
+        isExpandable
       </button>
       <DataGrid
         columnData={columns}

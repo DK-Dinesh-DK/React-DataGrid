@@ -25,16 +25,14 @@ const columns = [
     field: "id",
     headerName: "ID",
     width: 80,
-    cellRenderer: (props) => {
-      console.log("props", props);
-      return textEditor(props);
-    },
+    // cellRenderer: (props) => {
+    //   return textEditor(props);
+    // },
   },
   {
     field: "title",
     headerName: "Title",
     editable: true,
-    filter:true
   },
   {
     field: "firstName",
@@ -94,7 +92,7 @@ function loadMoreRows(newRowsCount, length) {
   });
 }
 
-export default function InfiniteScrolling({ direction }) {
+export default function ExportFile({ direction }) {
   const [rows, setRows] = useState(() => createRows(100));
   const [isLoading, setIsLoading] = useState(false);
 
@@ -112,73 +110,6 @@ export default function InfiniteScrolling({ direction }) {
   const [selectedRows, setSelectedRows] = useState([]);
   return (
     <>
-      <button
-        onClick={() => {
-          console.log("dataGridRef", dataGridRef.current.api.getFocusedCell());
-        }}
-        style={{ color: "white", backgroundColor: "red" }}
-      >
-        getFocusedCell
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.setFocusedCell(1, "lastName");
-        }}
-      >
-        setFocusedCell
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.clearFocusedCell();
-        }}
-      >
-        clearFocusedCell
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.tabToNextCell();
-        }}
-      >
-        tabToNextCell
-      </button>
-      <button
-        onClick={() => {
-          console.log(dataGridRef.current.api);
-          dataGridRef.current.api.tabToPreviousCell();
-        }}
-      >
-        tabToPreviousCell
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.exportDataAsCsv();
-        }}
-      >
-        exportDataAsCsv
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.exportDataAsExcel();
-        }}
-      >
-        exportDataAsExcel
-      </button>
-      <button
-        onClick={() => {
-          console.log(dataGridRef.current.api.isAnyFilterPresent());
-        }}
-      >
-        isAnyFilterPresent
-      </button>
-      <button
-        onClick={() => {
-          console.log(dataGridRef.current.api);
-          dataGridRef.current.api.tabToPreviousCell();
-        }}
-      >
-        tabToPreviousCell
-      </button>
-
       <DataGrid
         columnData={columns}
         rowData={rows}
@@ -189,6 +120,11 @@ export default function InfiniteScrolling({ direction }) {
         // userRef={dataGridRef}
         ref={dataGridRef}
         direction={direction}
+        export={{
+          pdfFileName: "TableData",
+          csvFileName: "TableData",
+          excelFileName: "TableData",
+        }}
       />
       {isLoading && (
         <div className={loadMoreRowsClassname}>Loading more rows...</div>

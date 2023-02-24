@@ -2,6 +2,7 @@ import { useMemo, useState, useRef, useCallback } from "react";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
 import DataGrid from "../components/datagrid/DataGrid";
+import textEditor from "../components/datagrid/editors/textEditor";
 // import { Parser, SUPPORTED_FORMULAS } from 'hot-formula-parser';
 
 const rootClassname = css`
@@ -31,6 +32,10 @@ export default function HeaderFilters({ direction }) {
       {
         field: "task",
         headerName: "Title",
+        cellRenderer: (props) => {
+          console.log("props", props);
+          return textEditor(props);
+        },
         sortable: true,
         filter: true,
       },
@@ -94,20 +99,19 @@ export default function HeaderFilters({ direction }) {
     <div className={rootClassname}>
       <button
         onClick={() => {
-          console.log(dataGridRef);
-          console.log(dataGridRef.current.api.getSelectedRows());
+          console.log(dataGridRef.current.api.getFilterModel());
         }}
         style={{ color: "black", backgroundColor: "lightskyblue" }}
       >
-        Get Selected Rows
+        getFilterModel
       </button>
       <button
         onClick={() => {
-          console.log(dataGridRef.current.api.selectAllFiltered());
+          dataGridRef.current.api.setFilterModel({ task: "1" });
         }}
         style={{ color: "black", backgroundColor: "lightsalmon" }}
       >
-        Select All Filtered Rows
+        setFilterModel
       </button>
       <button
         onClick={() => {

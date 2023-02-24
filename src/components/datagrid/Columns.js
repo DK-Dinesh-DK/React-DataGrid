@@ -13,6 +13,7 @@ const headerCellClassName = css`
   color: white;
   font-weight: bold;
 `;
+
 function SelectFormatter(props) {
   const [isRowSelected, onRowSelectionChange] = useRowSelection();
 

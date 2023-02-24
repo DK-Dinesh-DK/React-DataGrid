@@ -19,6 +19,7 @@ export function useViewportRows({
   paginationPageSize,
   current,
   pagination,
+  expandAll,
 }) {
   const [groupedRows, rowsCount] = useMemo(() => {
     if (groupBy.length === 0 || rowGrouper == null)
@@ -71,7 +72,7 @@ export function useViewportRows({
         // TODO: should users have control over the generated key?
         const id =
           parentId !== undefined ? `${parentId}__${groupKey}` : groupKey;
-        const isExpanded = expandedGroupIds?.has(id) ?? false;
+        const isExpanded = expandAll!= null ? expandAll : expandedGroupIds?.has(id) ?? false;
         const { childRows, childGroups, startRowIndex } = rows[groupKey];
 
         const groupRow = {
@@ -87,7 +88,6 @@ export function useViewportRows({
         };
         flattenedRows.push(groupRow);
         allGroupRows.add(groupRow);
-
         if (isExpanded) {
           expandGroup(childGroups, id, level + 1);
         }
@@ -100,7 +100,7 @@ export function useViewportRows({
     function isGroupRow(row) {
       return allGroupRows.has(row);
     }
-  }, [expandedGroupIds, groupedRows, rawRows]);
+  }, [expandedGroupIds, groupedRows, rawRows, expandAll]);
 
   const {
     totalRowHeight,

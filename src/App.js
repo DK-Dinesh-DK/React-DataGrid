@@ -1,7 +1,7 @@
 import AllFeatures from "./demos/AllFeatures";
 import CommonFeatures from "./demos/CommonFeatures";
 import { css } from "@linaria/core";
-import React, { StrictMode, useState } from "react";
+import React, {  useState } from "react";
 import {
   HashRouter as Router,
   Routes,
@@ -27,6 +27,7 @@ import TreeView from "./demos/TreeView";
 import VariableRowHeight from "./demos/VariableRowHeight";
 import Animation from "./demos/Animation"
 import Pagination from "./demos/Pagination";
+import ExportFile from "./demos/ExportFile"
 
 css`
   @at-root {
@@ -138,6 +139,10 @@ function App() {
           <Route
             path="tree-view"
             element={<TreeView direction={direction} />}
+          />
+            <Route
+            path="export"
+            element={<ExportFile direction={direction} />}
           />
           <Route
             path="variable-row-height"

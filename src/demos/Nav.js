@@ -129,6 +129,9 @@ export default function Nav({ direction, onDirectionChange }) {
       <NavLink to="/pagination-table" end className={getActiveClassname}>
         20. Table Pagination
       </NavLink>
+      <NavLink to="/export" end className={getActiveClassname}>
+        21. Export
+      </NavLink>
 
       <h2>Direction</h2>
       <label className={rtlCheckboxClassname}>

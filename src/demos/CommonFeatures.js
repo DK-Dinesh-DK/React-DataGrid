@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
 
-import { SelectColumn } from "../components/datagrid/Columns";
+// import { SelectColumn } from "../components/datagrid/Columns";
 import textEditor from "../components/datagrid/editors/textEditor";
 import { SelectCellFormatter } from "../components/datagrid/formatters/SelectCellFormatter";
 import DataGrid from "../components/datagrid/DataGrid";
@@ -50,15 +50,15 @@ function TimestampFormatter({ timestamp }) {
 function CurrencyFormatter({ value }) {
   return <>{currencyFormatter.format(value)}</>;
 }
-const selectCellClassname = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+// const selectCellClassname = css`
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
 
-  > input {
-    margin: 0;
-  }
-`;
+//   > input {
+//     margin: 0;
+//   }
+// `;
 function getColumns(countries, direction) {
   return [
     {
@@ -377,7 +377,7 @@ export default function CommonFeatures({ direction }) {
       // sortColumns={sortColumns}
       // onSortColumnsChange={setSortColumns}
       selectedRows={selectedRows}
-      onSelectedRowsChange1={setSelectedRows}
+      onSelectedRowsChange={setSelectedRows}
       topSummaryRows={summaryRows}
       bottomSummaryRows={summaryRows}
       showSelectedRows={true}
