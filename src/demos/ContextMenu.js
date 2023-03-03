@@ -110,9 +110,9 @@ function createRows() {
 }
 
 const columns = [
-  { field: "id", headerName: "ID", haveChildren: false },
-  { field: "product", headerName: "Product", haveChildren: false },
-  { field: "price", headerName: "Price", haveChildren: false },
+  { field: "id", headerName: "ID" },
+  { field: "product", headerName: "Product" },
+  { field: "price", headerName: "Price" },
 ];
 
 function rowKeyGetter(row) {

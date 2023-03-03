@@ -81,7 +81,7 @@ function getColumns(countries, direction) {
     {
       field: "title",
       topHeader: "title",
-      haveChildren: false,
+      // haveChildren: false,
       headerName: "Task",
       width: 120,
       frozen: true,
@@ -93,7 +93,7 @@ function getColumns(countries, direction) {
     {
       field: "client",
       topHeader: "client",
-      haveChildren: false,
+      // haveChildren: false,
       headerName: "Client",
       width: 200,
       cellRenderer: textEditor,
@@ -101,7 +101,7 @@ function getColumns(countries, direction) {
     {
       field: "area",
       topHeader: "area",
-      haveChildren: false,
+      // haveChildren: false,
       headerName: "Area",
       width: 120,
       // cellRenderer: textEditor,
@@ -109,7 +109,7 @@ function getColumns(countries, direction) {
     {
       field: "country",
       topHeader: "country",
-      haveChildren: false,
+      // haveChildren: false,
       headerName: "Country",
       width: 180,
       cellRenderer: (p) => (
@@ -133,7 +133,7 @@ function getColumns(countries, direction) {
     {
       field: "contact",
       topHeader: "contact",
-      haveChildren: false,
+      // haveChildren: false,
       headerName: "Contact",
       width: 160,
       // cellRenderer: textEditor,
@@ -141,7 +141,7 @@ function getColumns(countries, direction) {
     {
       field: "assignee",
       topHeader: "assignee",
-      haveChildren: false,
+      // haveChildren: false,
       headerName: "Assignee",
       width: 150,
       // cellRenderer: textEditor,
@@ -149,7 +149,7 @@ function getColumns(countries, direction) {
     {
       field: "progress",
       topHeader: "progress",
-      haveChildren: false,
+      // haveChildren: false,
       headerName: "Completion",
       width: 110,
       valueFormater(props) {
@@ -198,7 +198,7 @@ function getColumns(countries, direction) {
     {
       field: "startTimestamp",
       topHeader: "startTimestamp",
-      haveChildren: false,
+      // haveChildren: false,
       headerName: "Start date",
       width: 100,
       valueFormatter(props) {
@@ -208,7 +208,7 @@ function getColumns(countries, direction) {
     {
       field: "endTimestamp",
       topHeader: "endTimestamp",
-      haveChildren: false,
+      // haveChildren: false,
       headerName: "Deadline",
       width: 100,
       valueFormatter(props) {
@@ -218,7 +218,7 @@ function getColumns(countries, direction) {
     {
       field: "budget",
       topHeader: "budget",
-      haveChildren: false,
+      // haveChildren: false,
       headerName: "Budget",
       width: 100,
       valueFormatter(props) {
@@ -228,20 +228,20 @@ function getColumns(countries, direction) {
     {
       field: "transaction",
       topHeader: "transaction",
-      haveChildren: false,
+      // haveChildren: false,
       width: 100,
       headerName: "Transaction type",
     },
     {
       field: "account",
-      haveChildren: false,
+      // haveChildren: false,
       headerName: "Account",
       width: 150,
     },
     {
       field: "version",
       topHeader: "version",
-      haveChildren: false,
+      // haveChildren: false,
       headerName: "Version",
       width: 150,
       // cellRenderer: textEditor,
@@ -249,7 +249,7 @@ function getColumns(countries, direction) {
     {
       field: "available",
       topHeader: "available",
-      haveChildren: false,
+      // haveChildren: false,
       headerName: "Available",
       width: 80,
       valueFormatter({ row, onRowChange, isCellSelected }) {

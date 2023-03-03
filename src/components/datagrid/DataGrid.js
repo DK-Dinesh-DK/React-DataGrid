@@ -140,7 +140,13 @@ function DataGrid(props, ref) {
   selectedRows = selectedRows ? selectedRows : [];
   const selection = rest.selection && SelectColumn;
   raawColumns = rest.selection ? [selection, ...raawColumns] : raawColumns;
-
+  raawColumns = raawColumns.map((column) => {
+    if (column.haveChildren) {
+      return column;
+    } else {
+      return { ...column, haveChildren: false };
+    }
+  });
   const enableColumnSort = raawColumns
     ?.map((i) => i.sortable === true)
     .includes(true);

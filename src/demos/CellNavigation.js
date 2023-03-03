@@ -6,38 +6,38 @@ const columns = [
   {
     field: "id",
     headerName: "ID",
-    haveChildren: false,
+    // haveChildren: false,
     width: 80,
   },
   {
     field: "task",
     headerName: "Title",
-    haveChildren: false,
+    // haveChildren: false,
   },
   {
     field: "priority",
     headerName: "Priority",
-    haveChildren: false,
+    // haveChildren: false,
   },
   {
     field: "issueType",
     headerName: "Issue Type",
-    haveChildren: false,
+    // haveChildren: false,
   },
   {
     field: "complete",
     headerName: "% Complete",
-    haveChildren: false,
+    // haveChildren: false,
   },
   {
     field: "startDate",
     headerName: "Start Date",
-    haveChildren: false,
+    // haveChildren: false,
   },
   {
     field: "completeDate",
     headerName: "Expected Complete",
-    haveChildren: false,
+    // haveChildren: false,
   },
 ];
 

@@ -55,7 +55,7 @@ export const SelectColumn = {
   sortable: false,
   frozen: true,
   filter: false,
-  haveChildren:false,
+  // haveChildren:false,
   headerRenderer(props) {
     return (
       <SelectCellFormatter
@@ -80,7 +80,7 @@ export const SerialNumberColumn = {
   resizable: false,
   sortable: false,
   frozen: true,
-  filter: false,haveChildren:false,
+  filter: false,// haveChildren:false,
   headerRenderer: () => {
     return <div>{SerialNumberColumn.name}</div>;
   },

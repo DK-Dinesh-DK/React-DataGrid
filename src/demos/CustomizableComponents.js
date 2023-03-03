@@ -51,7 +51,7 @@ const columns = [
     field: "id",
     headerName: "ID",
     width: 80,
-    haveChildren:false,
+    // haveChildren:false,
   },
   {
     field: "task",
@@ -61,25 +61,25 @@ const columns = [
       return textEditor(props);
     },
     sortable: true,
-    haveChildren:false,
+    // haveChildren:false,
   },
   {
     field: "priority",
     headerName: "Priority",
     sortable: true,
-    haveChildren:false,
+    // haveChildren:false,
   },
   {
     field: "issueType",
     headerName: "Issue Type",
     sortable: true,
-    haveChildren:false,
+    // haveChildren:false,
   },
   {
     field: "complete",
     headerName: "% Complete",
     sortable: true,
-    haveChildren:false,
+    // haveChildren:false,
   },
 ];
 

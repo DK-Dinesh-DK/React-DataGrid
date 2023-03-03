@@ -43,31 +43,31 @@ const columns = [
     field: "id",
     headerName: "ID",
     width: 80,
-    haveChildren: false,
+    // haveChildren: false,
   },
   {
     field: "task",
     headerName: "Title",
     resizable: true,
-    haveChildren: false,
+    // haveChildren: false,
   },
   {
     field: "priority",
     headerName: "Priority",
     resizable: true,
-    haveChildren: false,
+    // haveChildren: false,
   },
   {
     field: "issueType",
     headerName: "Issue Type",
     resizable: true,
-    haveChildren: false,
+    // haveChildren: false,
   },
   {
     field: "complete",
     headerName: "% Complete",
     resizable: true,
-    haveChildren: false,
+    // haveChildren: false,
   },
 ];
 

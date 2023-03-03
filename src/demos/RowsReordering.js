@@ -30,28 +30,28 @@ const columns = [
     headerName: "ID",
     width: 100,
     rowDrag: true,
-    haveChildren: false,
+    // haveChildren: false,
   },
   {
     field: "task",
     headerName: "Title",
     cellEditor: textEditor,
-    haveChildren:false
+    // haveChildren: false,
   },
   {
     field: "priority",
     headerName: "Priority",
-    haveChildren:false
+    // haveChildren: false,
   },
   {
     field: "issueType",
     headerName: "Issue Type",
-    haveChildren:false
+    // haveChildren: false,
   },
   {
     field: "complete",
     headerName: "% Complete",
-    haveChildren:false
+    // haveChildren: false,
   },
 ];
 

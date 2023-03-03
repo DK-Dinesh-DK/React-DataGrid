@@ -236,86 +236,8 @@ function Cell({
     }),
   });
   var rowData = [];
-  if (column.haveChildren === false) {
-    return (
-      <div
-        role="gridcell"
-        // aria-colindex is 1-based
-        aria-colindex={column.idx + 1}
-        aria-selected={isCellSelected}
-        aria-colspan={colSpan}
-        aria-rowspan={rowSpan}
-        aria-readonly={!isCellEditable(column, row) || undefined}
-        ref={ref}
-        tabIndex={tabIndex}
-        className={className}
-        style={style}
-        onClick={handleClick}
-        // onDoubleClick={handleDoubleClick}
-        // onContextMenu={handleContextMenu}
-        // onFocus={onFocus}
-        title={row[column.key]}
-        {...props}
-      >
-        {!column.rowGroup && (
-          <>
-            {column.rowDrag && (
-              <div
-                ref={(ele) => {
-                  drag(ele);
-                  drop(ele);
-                }}
-              >
-                <span style={{ marginRight: "10px", cursor: "grab" }}>
-                  &#9674;
-                </span>
-                {column.cellRenderer({
-                  column,
-                  colDef: column,
-                  row,
-                  rowArray,
-                  data: row,
-                  onRowChange,
-                  allrow,
-                  api,
-                  node,
-                  rowIndex,
-                  value: row[column.key],
-                  isCellSelected,
-                  onRowChange: handleRowChange,
-                  onRowClick,
-                  selectCell,
-                  onRowDoubleClick,
-                  subColumn,
-                  isCellSelected,
-                })}
-              </div>
-            )}
-            {!column.rowDrag &&
-              column.cellRenderer({
-                column,
-                colDef: column,
-                row,
-                data: row,
-                onRowChange,
-                rowArray,
-                allrow,
-                api,
-                node,
-                rowIndex,
-                value: row[column.key],
-                isCellSelected,
-                selectCell,
-                onRowChange: handleRowChange,
-                onRowClick,
-                onRowDoubleClick,
-              })}
-            {dragHandle}
-          </>
-        )}
-      </div>
-    );
-  } else if (column.haveChildren === true) {
+  console.log("column.haveChildren", column.haveChildren);
+  if (column.haveChildren === true) {
     return (
       <div
         role="gridcell"
@@ -396,6 +318,85 @@ function Cell({
                 subColumn,
                 style,
                 ...props,
+              })}
+            {dragHandle}
+          </>
+        )}
+      </div>
+    );
+  } else if (column.haveChildren === false) {
+    return (
+      <div
+        role="gridcell"
+        // aria-colindex is 1-based
+        aria-colindex={column.idx + 1}
+        aria-selected={isCellSelected}
+        aria-colspan={colSpan}
+        aria-rowspan={rowSpan}
+        aria-readonly={!isCellEditable(column, row) || undefined}
+        ref={ref}
+        tabIndex={tabIndex}
+        className={className}
+        style={style}
+        onClick={handleClick}
+        // onDoubleClick={handleDoubleClick}
+        // onContextMenu={handleContextMenu}
+        // onFocus={onFocus}
+        title={row[column.key]}
+        {...props}
+      >
+        {!column.rowGroup && (
+          <>
+            {column.rowDrag && (
+              <div
+                ref={(ele) => {
+                  drag(ele);
+                  drop(ele);
+                }}
+              >
+                <span style={{ marginRight: "10px", cursor: "grab" }}>
+                  &#9674;
+                </span>
+                {column.cellRenderer({
+                  column,
+                  colDef: column,
+                  row,
+                  rowArray,
+                  data: row,
+                  onRowChange,
+                  allrow,
+                  api,
+                  node,
+                  rowIndex,
+                  value: row[column.key],
+                  isCellSelected,
+                  onRowChange: handleRowChange,
+                  onRowClick,
+                  selectCell,
+                  onRowDoubleClick,
+                  subColumn,
+                  isCellSelected,
+                })}
+              </div>
+            )}
+            {!column.rowDrag &&
+              column.cellRenderer({
+                column,
+                colDef: column,
+                row,
+                data: row,
+                onRowChange,
+                rowArray,
+                allrow,
+                api,
+                node,
+                rowIndex,
+                value: row[column.key],
+                isCellSelected,
+                selectCell,
+                onRowChange: handleRowChange,
+                onRowClick,
+                onRowDoubleClick,
               })}
             {dragHandle}
           </>

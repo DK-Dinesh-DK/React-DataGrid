@@ -19,7 +19,7 @@ for (let i = 0; i < 50; i++) {
   columns.push({
     field:key,
     headerName: key,
-    haveChildren:false,
+    // haveChildren:false,
     valueFormatter: cellFormatter
   });
 }

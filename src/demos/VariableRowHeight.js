@@ -22,7 +22,7 @@ export default function VariableRowHeight({ direction }) {
         field: key,
         headerName: key,
         frozen: i < 5,
-        haveChildren:false,
+        // haveChildren:false,
         resizable: true,
         valueFormatter: cellFormatter,
       });

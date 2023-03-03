@@ -29,7 +29,7 @@ const columns = [
   // SelectColumn,
   {
     field: "id",
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "ID",
     width: 80,
     resizable: true,
@@ -38,7 +38,7 @@ const columns = [
   },
   {
     field: "avatar",
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "Avatar",
     width: 40,
     resizable: true,
@@ -48,7 +48,7 @@ const columns = [
   },
   {
     field: "title",
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "Title",
     width: 200,
     resizable: true,
@@ -67,12 +67,12 @@ const columns = [
   },
   {
     field: "firstName",
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "First Name",
     width: 200,
   },
   {
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "Money",
     field: "money",
     width: 200,
@@ -84,7 +84,7 @@ const columns = [
   },
   {
     field: "lastName",
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "Last Name",
     width: 200,
     cellEditor: textEditor,
@@ -94,7 +94,7 @@ const columns = [
   },
   {
     field: "email",
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "Email",
     width: "max-content",
     resizable: true,
@@ -102,7 +102,7 @@ const columns = [
   },
   {
     field: "street",
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "Street",
     width: 200,
     resizable: true,
@@ -110,7 +110,7 @@ const columns = [
   },
   {
     field: "zipCode",
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "ZipCode",
     width: 200,
     resizable: true,
@@ -118,7 +118,7 @@ const columns = [
   },
   {
     field: "date",
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "Date",
     width: 200,
     resizable: true,
@@ -126,7 +126,7 @@ const columns = [
   },
   {
     field: "bs",
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "bs",
     width: 200,
     resizable: true,
@@ -134,7 +134,7 @@ const columns = [
   },
   {
     field: "catchPhrase",
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "Catch Phrase",
     width: "max-content",
     resizable: true,
@@ -142,7 +142,7 @@ const columns = [
   },
   {
     field: "companyName",
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "Company Name",
     width: 200,
     // resizable: true,
@@ -150,7 +150,7 @@ const columns = [
   },
   {
     field: "sentence",
-    haveChildren: false,
+    // haveChildren: false,
     headerName: "Sentence",
     width: "max-content",
     resizable: true,
