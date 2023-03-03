@@ -4,18 +4,16 @@ import clsx from "clsx";
 import Cell from "./Cell";
 import { RowSelectionProvider, useLatestFunc } from "./hooks";
 import { getColSpan, getRowStyle } from "./utils";
-import { rowClassname, rowSelectedClassname, wholeRowFridge } from "./style";
+import { rowClassname, rowSelectedClassname } from "./style";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+
 function Row(
   {
     className,
-    headerHeight,
-    singleRowFridgeIndex,
-    summaryRowHeight,
-    rows,
-    rowFridgeIndexEnd, //need to be changed
     rowIdx,
+    gridTemplateColumns,
+    rowArray,
     gridRowStart,
     height,
     selectedCellIdx,
@@ -23,8 +21,11 @@ function Row(
     copiedCellIdx,
     draggedOverCellIdx,
     lastFrozenColumnIndex,
+    api,
     row,
-
+    selectedCellRowStyle,
+    rows,
+    node,
     viewportColumns,
     selectedCellEditor,
     selectedCellDragHandle,
@@ -36,7 +37,7 @@ function Row(
     onRowChange,
     selectCell,
     handleReorderRow,
-    selectedCellRowStyle,
+    subColumn,
     ...props
   },
   ref
@@ -61,20 +62,21 @@ function Row(
   );
 
   const cells = [];
-  var selectedCellRowIndex;
-  for (let index = 0; index < viewportColumns.length; index++) {
-    const column = viewportColumns[index];
+
+  for (let i = 0; i < rowArray.length; i++) {
+    const column = { ...viewportColumns[i], rowIndex: rowIdx };
+
     const { idx } = column;
     const colSpan = getColSpan(column, lastFrozenColumnIndex, {
       type: "ROW",
       row,
     });
+
     if (colSpan !== undefined) {
-      index += colSpan - 1;
+      i += colSpan - 1;
     }
-
     const isCellSelected = selectedCellIdx === idx;
-
+   
     if (isCellSelected && selectedCellEditor) {
       cells.push(selectedCellEditor);
     } else {
@@ -83,13 +85,13 @@ function Row(
           key={column.key}
           column={column}
           colSpan={colSpan}
+          api={api}
+          rowArray={rowArray}
           row={row}
-          rowFridgeIndexEnd={rowFridgeIndexEnd} //need to be changed
-          singleRowFridgeIndex={singleRowFridgeIndex} //need to be changed
-          summaryRowHeight={summaryRowHeight} //need to be changed
-          headerHeight={headerHeight} //need to be changed
-          allrow={rows} //need to be changed
-          rowIndex={rowIdx} //need to be changed
+          handleReorderRow={handleReorderRow}
+          allrow={rows}
+          rowIndex={rowIdx}
+          node={node}
           isCopied={copiedCellIdx === idx}
           isDraggedOver={draggedOverCellIdx === idx}
           isCellSelected={isCellSelected}
@@ -98,10 +100,17 @@ function Row(
           onRowDoubleClick={onRowDoubleClick}
           onRowChange={handleRowChange}
           selectCell={selectCell}
-          handleReorderRow={handleReorderRow}
+          subColumn={subColumn}
+          selectedCellIdx={selectedCellIdx}
         />
       );
     }
+  }
+
+  var style = getRowStyle(gridRowStart, height);
+  
+  if (rowIdx === props.selectedRowIdx) {
+    style = { ...style, ...selectedCellRowStyle };
   }
 
   return (
@@ -110,9 +119,10 @@ function Row(
         <div
           role="row"
           ref={ref}
+          id={row.id ?? rowIdx}
           className={className}
           onMouseEnter={handleDragEnter}
-          style={{ ...getRowStyle(gridRowStart, height) }}
+          style={style}
           {...props}
         >
           {cells}

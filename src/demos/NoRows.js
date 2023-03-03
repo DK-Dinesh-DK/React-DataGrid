@@ -1,53 +1,77 @@
-import { useMemo, useState } from "react";
-import { SelectColumn } from "../components/datagrid/Columns";
+import { createContext, useContext, useMemo, useState } from "react";
+
+// import { SelectColumn } from "../components/datagrid/Columns";
+
+import textEditor from "../components/datagrid/editors/textEditor";
+
 import DataGrid from "../components/datagrid/DataGrid";
+
+import dropDownEditor from "../components/datagrid/editors/dropDownEditors";
+import ImageFormatter from "./ImageFormatter";
+import { useFocusRef } from "../components/datagrid/hooks";
 import { css } from "@linaria/core";
+import { SerialNumberColumn } from "../components/datagrid/Columns";
 
+function EmptyRowsRenderer() {
+  return (
+    <div style={{ textAlign: "center", gridColumn: "1/-1" }}>
+      Nothing to show{" "}
+      <span lang="ja" title="ショボーン">
+        (´・ω・`)
+      </span>
+    </div>
+  );
+}
 
-const highlightClassName = css`
-  .rdg-cell {
-    background-color: #9370db;
-    color: white;
-    position: sticky;
-    top: 30px;
-    z-index: 2;
-  }
+const frameworkComponents = {
+  CheckBox: (props) => <button style={{ width: "100%" }}>Save</button>,
+};
 
-  &:hover .rdg-cell {
-    background-color: #800080;
-  }
-`;
+const FilterContext = createContext(undefined);
+
+function rowKeyGetter(row) {
+  return row.id;
+}
+
 export default function NoRows({ direction }) {
   const [selectedRows, onSelectedRowsChange] = useState(() => new Set());
-  
+  const [filters, setFilters] = useState({
+    title: "",
+    count: "",
+    enabled: true,
+  });
+
   const columns = useMemo(() => {
     return [
-      SelectColumn,
+      SerialNumberColumn,
       {
         field: "id",
         headerName: "ID",
-        sortable: true,
-        filter: true,
+        width: 50,
         haveChildren: false,
-        width: 200,
-        // frozen: true,
+        topHeader: "id",
+        width: 60,
+        frozen: true,
+        cellEditor: textEditor,
       },
       {
-        field: "rdsrd",
+        field: "rdrd",
         headerName: "AASS",
-        sortable: true,
         haveChildren: false,
-        width: 200,
-        // frozen: true,
-        filter: true,
+        topHeader: "rdrd",
+        width: 60,
+        sortable: true,
       },
 
       {
         field: "title",
         headerName: "Title",
         haveChildren: true,
+        cellEditor: textEditor,
         // frozen: true,
+
         children: [
+          // SelectColumn,
           {
             field: "aaaa",
             headerName: "AAAA",
@@ -55,87 +79,84 @@ export default function NoRows({ direction }) {
             haveChildren: true,
             children: [
               {
-                field: "vvvv",
-                headerName: "VVVV",
+                field: "cccc",
+                headerName: "CCCC",
                 haveChildren: false,
-                width: 260,
-                sortable: true,
-                filter: true,
+                width: 100,
+                topHeader: "title",
               },
 
               {
-                field: "rrrr",
-                headerName: "RRRR",
+                field: "dddd",
+                headerName: "DDDD",
                 haveChildren: false,
                 width: 100,
-                sortable: true,
-                // frozen: true,
+                topHeader: "title",
               },
               {
-                field: "uuuu",
-                headerName: "UUUU",
+                field: "eeee",
+                headerName: "EEEE",
                 haveChildren: false,
                 width: 100,
-                // frozen: true,
+                topHeader: "title",
               },
             ],
           },
           {
-            // frozen: true,
             field: "bbbb",
             headerName: "BBBB",
             haveChildren: true,
             children: [
               {
-                field: "wsdc",
-                headerName: "HGTF",
+                field: "gggg",
+                headerName: "GGGG",
                 haveChildren: false,
                 width: 100,
-                // frozen: true,
+                topHeader: "title",
               },
               {
-                field: "yugd",
-                headerName: "HGFBGV",
+                field: "hhhh",
+                headerName: "HHHH",
                 haveChildren: false,
                 width: 100,
-                // frozen: true,
+                topHeader: "title",
               },
             ],
           },
           {
-            field: "cccc",
-            headerName: "CCCC",
-
+            field: "zzzz",
+            headerName: "ZZZZ",
+            width: 100,
             haveChildren: true,
-            // frozen: true,
             children: [
               {
-                field: "yuwgd",
-                headerName: "HGFBGV",
+                field: "jjjj",
+                headerName: "JJJJ",
                 haveChildren: false,
                 width: 100,
-                // frozen: true,
+                topHeader: "title",
               },
               {
-                field: "yqugd1",
-                headerName: "HGFBGV1",
+                field: "kkkk",
+                headerName: "KKKK",
                 haveChildren: true,
+                topHeader: "title",
                 width: 100,
-                // frozen: true,
                 children: [
                   {
-                    field: "cvdcv",
-                    headerName: "FGHT",
+                    field: "llll",
+                    headerName: "LLLL",
                     haveChildren: false,
+                    topHeader: "title",
+                    sortable: true,
                     width: 60,
-                    // frozen: true,
                   },
                   {
-                    field: "cvacv",
-                    headerName: "FGHT",
+                    field: "mmmm",
+                    headerName: "MMMM",
                     haveChildren: false,
+                    topHeader: "title",
                     width: 60,
-                    // frozen: true,
                   },
                 ],
               },
@@ -146,44 +167,52 @@ export default function NoRows({ direction }) {
     ];
   }, []);
 
-  
-function createRows() {
-  const rows = [];
-  for (let i = 1; i < 50; i++) {
-    rows.push({
-      id: i,
-      rdsrd: `Task ${i}`,
-      vvvv: Math.min(100, Math.round(Math.random() * 110)),
-      rrrr: ['Critical', 'High', 'Medium', 'Low'][Math.floor(Math.random() * 4)],
-      uuuu: ['Bug', 'Improvement', 'Epic', 'Story'][Math.floor(Math.random() * 4)],
-      wsdc: `wsdc${i}`,
-      yugd: Math.min(100, Math.round(Math.random() * 110)),
-      cvdcv: ['Critical', 'High', 'Medium', 'Low'][Math.floor(Math.random() * 4)],
-      cvacv: ['Bug', 'Improvement', 'Epic', 'Story'][Math.floor(Math.random() * 4)],
-    });
+  function createRows(numberOfRows) {
+    const row = [];
+
+    for (let i = 0; i < numberOfRows; i++) {
+      row[i] = {
+        id: i,
+        rdrd: `column ${i}`,
+        cccc: `column ${i}`,
+        dddd: `column ${i}`,
+        eeee: `column ${i}`,
+        ffff: `column ${i}`,
+        gggg: `column ${i}`,
+        hhhh: `column ${i}`,
+        iiii: `column ${i}`,
+        jjjj: `column ${i}`,
+        kkkk: `column ${i}`,
+        llll: `column ${i}`,
+        mmmm: `column ${i}`,
+      };
+    }
+
+    return row;
   }
-  return rows;
-}
-
-  const [rows, setRows] = useState(createRows);
-
+  const rows = createRows(10);
   const selectedCellHeaderStyle = {
-    backgroundColor: "green",
+    backgroundColor: "red",
     fontSize: "12px",
   };
+  const selectedCellRowStyle = {
+    backgroundColor: "yellow",
+  };
   return (
-    <DataGrid
-      columnData={columns}
-      rowData={rows}
-      selectedRows={selectedRows}
-      onRowsChange={setRows}
-      onFill={true}
-      onSelectedRowsChange={onSelectedRowsChange}
-      selectedCellHeaderStyle={selectedCellHeaderStyle}
-      headerRowHeight={24}
-      className="fill-grid"
-      rowClass={(row) => (row.id === "7" ? highlightClassName : undefined)}
-      rowFridgeIndexEnd={7}
-    />
+    <FilterContext.Provider value={filters}>
+      <DataGrid
+        columnData={columns}
+        rowData={rows}
+        renderers={{ noRowsFallback: <EmptyRowsRenderer /> }}
+        selectedRows={selectedRows}
+        onSelectedRowsChange={onSelectedRowsChange}
+        frameworkComponents={frameworkComponents}
+        headerRowHeight={24}
+        rowKeyGetter={rowKeyGetter}
+        selectedCellHeaderStyle={selectedCellHeaderStyle}
+        selectedCellRowStyle={selectedCellRowStyle}
+        className="fill-grid"
+      />
+    </FilterContext.Provider>
   );
 }

@@ -5,11 +5,12 @@ import { valueFormatter, toggleGroupFormatter } from "../formatters";
 import { SELECT_COLUMN_KEY } from "../Columns";
 import { clampColumnWidth, max, min } from "../utils";
 import { textEditorClassname } from "../editors/textEditor";
+import { checkboxFormatter } from "../formatters";
 const DEFAULT_COLUMN_WIDTH = "auto";
 const DEFAULT_COLUMN_MIN_WIDTH = 40;
 
-export function useCalculatedColumns({
-  newData,
+export function useCalculatedRowColumns({
+  columns4,
   columnWidths,
   viewportWidth,
   scrollLeft,
@@ -27,13 +28,13 @@ export function useCalculatedColumns({
   const defaultResizable = defaultColumnOptions?.resizable ?? false;
   const defaultFilter = defaultColumnOptions?.dilter ?? false;
 
-  const { columns, colSpanColumns, lastFrozenColumnIndex, groupBy } =
+  const { columns5, colSpanColumns, lastFrozenColumnIndex, groupBy } =
     useMemo(() => {
       // Filter rawGroupBy and ignore keys that do not match the columns prop
       const groupBy = [];
       let lastFrozenColumnIndex = -1;
 
-      const columns = newData?.map((rawColumn,pos) => {
+      const columns5 = columns4?.map((rawColumn,pos) => {
         const rowGroup = rawGroupBy?.includes(rawColumn.field) ?? false;
         const frozen = rowGroup || rawColumn.frozen;
 
@@ -53,16 +54,6 @@ export function useCalculatedColumns({
                   ...subChild2,
                   parent: subChild.field,
                   // topHeader: rawColumn.field,
-                  sortable: rawColumn.sortable ?? defaultSortable,
-                  resizable: rawColumn.resizable ?? defaultResizable,
-                  formatter: rawColumn.cellRenderer
-                    ? rawColumn.cellRenderer
-                    : rawColumn.valueFormatter ?? defaultFormatter,
-                  filter: rawColumn.filter ?? defaultFilter,
-                  cellRenderer:frameworkComponents?.[customComponentName] ??
-                    rawColumn.cellRenderer ??
-                    rawColumn.valueFormatter ??
-                    defaultFormatter,
                   children: recursiveChild(subChild2, rawColumn),
                   // idx: index1,
                    key: subChild2.field
@@ -78,7 +69,7 @@ export function useCalculatedColumns({
           parent:null,
           key: rawColumn.field,
           idx: 0,
-          index:pos,
+          
           frozen,
           isLastFrozenColumn: false,
           rowGroup,
@@ -96,43 +87,7 @@ export function useCalculatedColumns({
             rawColumn.valueFormatter ??
             defaultFormatter,
             // topHeader: rawColumn.field,
-            children:
-              rawColumn.haveChildren === true &&
-              rawColumn?.children.map((child, index1) => {
-  
-                const rawChild = {
-                  ...child,
-                  parent: rawColumn.field,
-                  // topHeader: rawColumn.field,
-                  sortable: rawColumn.sortable ?? defaultSortable,
-                  resizable: rawColumn.resizable ?? defaultResizable,
-                  formatter: rawColumn.cellRenderer
-                    ? rawColumn.cellRenderer
-                    : rawColumn.valueFormatter ?? defaultFormatter,
-                  filter: rawColumn.filter ?? defaultFilter,
-                  cellRenderer:frameworkComponents?.[customComponentName] ??
-                    rawColumn.cellRenderer ??
-                    rawColumn.valueFormatter ??
-                    defaultFormatter,
-                  children:
-                    child.haveChildren === true &&
-                    child?.children.map((subChild, index2) => {
-                      const rawChild1 = {
-                        ...subChild,
-                        // topHeader: rawColumn.field,
-                        parent: child.field,
-                        children: recursiveChild(subChild, rawColumn),
-                        // idx: index2,
-                        key: subChild.field,
-                      };
-                      return rawChild1;
-                    }),
-                  // idx: index1,
-                };
-                return rawChild;
-              })
-              
-              ,
+           
         };
 
         if (rowGroup) {
@@ -163,7 +118,7 @@ export function useCalculatedColumns({
         return column;
       });
 
-      columns?.sort(
+      columns5?.sort(
         ({ key: aKey, frozen: frozenA }, { key: bKey, frozen: frozenB }) => {
           // Sort select column first:
           if (aKey === SELECT_COLUMN_KEY) return -1;
@@ -191,7 +146,7 @@ export function useCalculatedColumns({
       );
 
       const colSpanColumns = [];
-      columns?.forEach((column, idx) => {
+      columns5?.forEach((column, idx) => {
         column.idx = idx;
 
         if (column.rowGroup) {
@@ -204,17 +159,17 @@ export function useCalculatedColumns({
       });
 
       if (lastFrozenColumnIndex !== -1) {
-        columns[lastFrozenColumnIndex].isLastFrozenColumn = true;
+        columns5[lastFrozenColumnIndex].isLastFrozenColumn = true;
       }
 
       return {
-        columns,
+        columns5,
         colSpanColumns,
         lastFrozenColumnIndex,
         groupBy,
       };
     }, [
-      newData,
+      columns4,
       defaultWidth,
       defaultMinWidth,
       defaultMaxWidth,
@@ -235,7 +190,7 @@ export function useCalculatedColumns({
     let totalFrozenColumnWidth = 0;
     const columnMetrics = new Map();
 
-    for (const column of columns) {
+    for (const column of columns5) {
       let width = columnWidths.get(column.key) ?? column.width;
       if (typeof width === "number") {
         width = clampColumnWidth(width, column);
@@ -250,7 +205,7 @@ export function useCalculatedColumns({
     }
 
     if (lastFrozenColumnIndex !== -1) {
-      const columnMetric = columnMetrics.get(columns[lastFrozenColumnIndex]);
+      const columnMetric = columnMetrics.get(columns5[lastFrozenColumnIndex]);
       totalFrozenColumnWidth = columnMetric.left + columnMetric.width;
     }
 
@@ -258,7 +213,7 @@ export function useCalculatedColumns({
       gridTemplateColumns: templateColumns.join(" "),
     };
     for (let i = 0; i <= lastFrozenColumnIndex; i++) {
-      const column = columns[i];
+      const column = columns5[i];
       layoutCssVars[`--rdg-frozen-left-${column.idx}`] = `${
         columnMetrics.get(column).left
       }px`;
@@ -270,17 +225,17 @@ export function useCalculatedColumns({
       totalFrozenColumnWidth,
       columnMetrics,
     };
-  }, [columnWidths, columns, lastFrozenColumnIndex]);
+  }, [columnWidths, columns5, lastFrozenColumnIndex]);
 
   const [colOverscanStartIdx, colOverscanEndIdx] = useMemo(() => {
     if (!enableVirtualization) {
-      return [0, columns.length - 1];
+      return [0, columns5.length - 1];
     }
     // get the viewport's left side and right side positions for non-frozen columns
     const viewportLeft = scrollLeft + totalFrozenColumnWidth;
     const viewportRight = scrollLeft + viewportWidth;
     // get first and last non-frozen column indexes
-    const lastColIdx = columns.length - 1;
+    const lastColIdx = columns5.length - 1;
     const firstUnfrozenColumnIdx = min(lastFrozenColumnIndex + 1, lastColIdx);
 
     // skip rendering non-frozen columns if the frozen columns cover the entire viewport
@@ -291,7 +246,7 @@ export function useCalculatedColumns({
     // get the first visible non-frozen column index
     let colVisibleStartIdx = firstUnfrozenColumnIdx;
     while (colVisibleStartIdx < lastColIdx) {
-      const { left, width } = columnMetrics.get(columns[colVisibleStartIdx]);
+      const { left, width } = columnMetrics.get(columns5[colVisibleStartIdx]);
       // if the right side of the columnn is beyond the left side of the available viewport,
       // then it is the first column that's at least partially visible
       if (left + width > viewportLeft) {
@@ -303,7 +258,7 @@ export function useCalculatedColumns({
     // get the last visible non-frozen column index
     let colVisibleEndIdx = colVisibleStartIdx;
     while (colVisibleEndIdx < lastColIdx) {
-      const { left, width } = columnMetrics.get(columns[colVisibleEndIdx]);
+      const { left, width } = columnMetrics.get(columns5[colVisibleEndIdx]);
       // if the right side of the column is beyond or equal to the right side of the available viewport,
       // then it the last column that's at least partially visible, as the previous column's right side is not beyond the viewport.
       if (left + width >= viewportRight) {
@@ -321,7 +276,7 @@ export function useCalculatedColumns({
     return [colOverscanStartIdx, colOverscanEndIdx];
   }, [
     columnMetrics,
-    columns,
+    columns5,
     lastFrozenColumnIndex,
     scrollLeft,
     totalFrozenColumnWidth,
@@ -330,7 +285,7 @@ export function useCalculatedColumns({
   ]);
 
   return {
-    columns,
+    columns5,
     colSpanColumns,
     colOverscanStartIdx,
     colOverscanEndIdx,

@@ -6,37 +6,38 @@ const columns = [
   {
     field: "id",
     headerName: "ID",
+    haveChildren: false,
     width: 80,
   },
   {
     field: "task",
     headerName: "Title",
-    width: 200,
+    haveChildren: false,
   },
   {
     field: "priority",
     headerName: "Priority",
-    width: 200,
+    haveChildren: false,
   },
   {
     field: "issueType",
     headerName: "Issue Type",
-    width: 200,
+    haveChildren: false,
   },
   {
     field: "complete",
     headerName: "% Complete",
-    width: 200,
+    haveChildren: false,
   },
   {
     field: "startDate",
     headerName: "Start Date",
-    width: 200,
+    haveChildren: false,
   },
   {
     field: "completeDate",
     headerName: "Expected Complete",
-    width: 200,
+    haveChildren: false,
   },
 ];
 
@@ -106,9 +107,10 @@ export default function CellNavigation({ direction }) {
       <DataGrid
         columnData={columns}
         rowData={rows}
-        headerRowHeight={24}
-        cellNavigationMode={cellNavigationMode}
+        // cellNavigationMode={cellNavigationMode}
         direction={direction}
+        headerRowHeight={24}
+        rowHeight={24}
       />
     </>
   );

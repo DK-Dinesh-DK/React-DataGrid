@@ -1,5 +1,5 @@
 import { useDrag, useDrop } from 'react-dnd';
-import headerRenderer from '../components/datagrid/headerRenderer';
+import HeaderRenderer from '../components/datagrid/HeaderRenderer';
 
 
 
@@ -12,7 +12,7 @@ export default function DraggableHeaderRenderer({
 }) {
   const [{ isDragging }, drag] = useDrag({
     type: 'COLUMN_DRAG',
-    item: { key: column.key },
+    item: { key: column.k },
     collect: (monitor) => ({
       isDragging: monitor.isDragging()
     })
@@ -41,7 +41,7 @@ export default function DraggableHeaderRenderer({
         cursor: 'move'
       }}
     >
-      {headerRenderer({ column, ...props })}
+      {HeaderRenderer({ column, ...props })}
     </div>
   );
 }

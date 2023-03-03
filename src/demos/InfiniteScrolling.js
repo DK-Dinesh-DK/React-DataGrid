@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
-
+import textEditor from "../components/datagrid/editors/textEditor";
 import DataGrid from "../components/datagrid/DataGrid";
 
 const loadMoreRowsClassname = css`
@@ -24,39 +24,56 @@ const columns = [
   {
     field: "id",
     headerName: "ID",
-
-    // width: 200,
+    width: 80,
+    topHeader: "id",
+    haveChildren: false,
+    // cellRenderer: (props) => {
+    //   return textEditor(props);
+    // },
   },
   {
     field: "title",
+    topHeader: "title",
     headerName: "Title",
-    // resizable: true,
-    // width: 200,
+    editable: true,
+    haveChildren: false,
+    width: 200,
   },
   {
     field: "firstName",
+    topHeader: "firstName",
     headerName: "First Name",
-    // width: 200,
+    width: 200,
+    haveChildren: false,
+    // cellRenderer: (props) => {
+    //   return textEditor(props);
+    // },  
   },
   {
     field: "lastName",
+    topHeader: "lastName",
     headerName: "Last Name",
-    // width: 200,
+    width: 200,
+    haveChildren: false,
   },
   {
     field: "email",
+    topHeader: "email",
     headerName: "Email",
-    // width: 200,
+    width: 300,
+    haveChildren: false,
+    valueFormatter: ({ row, column }) => `Email: ${row[column.key]}`,
   },
 ];
 
 function createFakeRowObjectData(index) {
   return {
     id: `id_${index}`,
-    email: faker.internet.email(),
     title: faker.name.prefix(),
     firstName: faker.name.firstName(),
-    lastName: faker.name.lastName(),
+    lastName: faker.name.firstName(),
+    email: faker.internet.email(),
+    phone: faker.phone.phoneNumber(),
   };
 }
 
@@ -103,19 +120,30 @@ export default function InfiniteScrolling({ direction }) {
     setRows([...rows, ...newRows]);
     setIsLoading(false);
   }
-
+  const dataGridRef = useRef(null);
   return (
     <>
+      {/* <button
+        onClick={() => {
+          console.log(dataGridRef);
+          // var rowNode = dataGridRef.current.api.getRowNodes(2);
+          // rowNode.setDataValue("email", "dineshkumar@gmail.com");
+        }}
+        style={{ color: "white", backgroundColor: "red" }}
+      >
+        ADD
+      </button> */}
       <DataGrid
         columnData={columns}
         rowData={rows}
         rowKeyGetter={rowKeyGetter}
         onRowsChange={setRows}
         rowHeight={25}
-        headerRowHeight={24}
-        summaryRowHeight={24}
         onScroll={handleScroll}
         className="fill-grid"
+        // userRef={dataGridRef}
+        headerRowHeight={24}
+        ref={dataGridRef}
         direction={direction}
       />
       {isLoading && (

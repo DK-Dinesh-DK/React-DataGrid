@@ -1,13 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
-
+import textEditor from "../components/datagrid/editors/textEditor";
 import DataGrid from "../components/datagrid/DataGrid";
-import {
-  exportToCsv,
-  exportToPdf,
-  exportToXlsx,
-} from "../components/exportUtils";
+
 const loadMoreRowsClassname = css`
   inline-size: 180px;
   padding-block: 8px;
@@ -28,39 +24,42 @@ const columns = [
   {
     field: "id",
     headerName: "ID",
-
-    // width: 200,
+    width: 80,
+    // cellRenderer: (props) => {
+    //   return textEditor(props);
+    // },
   },
   {
     field: "title",
     headerName: "Title",
-    // resizable: true,
-    // width: 200,
+    editable: true,
   },
   {
     field: "firstName",
     headerName: "First Name",
-    // width: 200,
+    cellRenderer: (props) => {
+      return textEditor(props);
+    },
   },
   {
     field: "lastName",
     headerName: "Last Name",
-    // width: 200,
   },
   {
     field: "email",
     headerName: "Email",
-    // width: 200,
+    valueFormatter: ({ row, column }) => `Email: ${row[column.key]}`,
   },
 ];
 
 function createFakeRowObjectData(index) {
   return {
     id: `id_${index}`,
-    email: faker.internet.email(),
     title: faker.name.prefix(),
     firstName: faker.name.firstName(),
-    lastName: faker.name.lastName(),
+    lastName: faker.name.firstName(),
+    email: faker.internet.email(),
+    phone: faker.phone.number(),
   };
 }
 
@@ -93,8 +92,8 @@ function loadMoreRows(newRowsCount, length) {
   });
 }
 
-export default function FileExport({ direction }) {
-  const [rows, setRows] = useState(() => createRows(50));
+export default function ExportFile({ direction }) {
+  const [rows, setRows] = useState(() => createRows(100));
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleScroll(event) {
@@ -107,44 +106,25 @@ export default function FileExport({ direction }) {
     setRows([...rows, ...newRows]);
     setIsLoading(false);
   }
-
+  const dataGridRef = useRef(null);
+  const [selectedRows, setSelectedRows] = useState([]);
   return (
     <>
-      <div>
-        <button
-          onClick={() => {
-            exportToXlsx(rows, columns, "TableData");
-          }}
-        >
-          Export Excel
-        </button>
-        <button
-          onClick={() => {
-            exportToCsv(rows, columns, "TableData");
-          }}
-        >
-          Export CSV
-        </button>
-        <button
-          onClick={() => {
-            exportToPdf(rows, columns, "TableData");
-          }}
-        >
-          Export PDF
-        </button>
-      </div>
-
       <DataGrid
         columnData={columns}
         rowData={rows}
         rowKeyGetter={rowKeyGetter}
         onRowsChange={setRows}
         rowHeight={25}
-        headerRowHeight={24}
-        summaryRowHeight={24}
-        onScroll={handleScroll}
         className="fill-grid"
+        // userRef={dataGridRef}
+        ref={dataGridRef}
         direction={direction}
+        export={{
+          pdfFileName: "TableData",
+          csvFileName: "TableData",
+          excelFileName: "TableData",
+        }}
       />
       {isLoading && (
         <div className={loadMoreRowsClassname}>Loading more rows...</div>

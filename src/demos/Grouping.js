@@ -56,31 +56,31 @@ const sports = [
 ];
 
 const columns = [
-  { ...SelectColumn, width: 80 },
+  SelectColumn,
   {
     field: "country",
     headerName: "Country",
-    width: 150,
+    haveChildren: false,
   },
   {
     field: "year",
     headerName: "Year",
-    width: 150,
+    haveChildren: false,
   },
   {
     field: "sport",
     headerName: "Sport",
-    width: 150,
+    haveChildren: false,
   },
   {
     field: "athlete",
     headerName: "Athlete",
-    width: 150,
+    haveChildren: false,
   },
   {
     field: "gold",
     headerName: "Gold",
-    width: 150,
+    haveChildren: false,
     groupFormatter({ childRows }) {
       return <>{childRows.reduce((prev, { gold }) => prev + gold, 0)}</>;
     },
@@ -88,7 +88,7 @@ const columns = [
   {
     field: "silver",
     headerName: "Silver",
-    width: 150,
+    haveChildren: false,
     groupFormatter({ childRows }) {
       return <>{childRows.reduce((prev, { silver }) => prev + silver, 0)}</>;
     },
@@ -96,7 +96,7 @@ const columns = [
   {
     field: "bronze",
     headerName: "Bronze",
-    width: 150,
+    haveChildren: false,
     groupFormatter({ childRows }) {
       return <>{childRows.reduce((prev, { silver }) => prev + silver, 0)}</>;
     },
@@ -104,8 +104,8 @@ const columns = [
   {
     field: "total",
     headerName: "Total",
-    width: 150,
-    valueFormatter({ row }) {
+    haveChildren: false,
+    formatter({ row }) {
       return <>{row.gold + row.silver + row.bronze}</>;
     },
     groupFormatter({ childRows }) {
@@ -147,7 +147,7 @@ const options = ["country", "year", "sport", "athlete"];
 
 export default function Grouping({ direction }) {
   const [rows] = useState(createRows);
-  const [selectedRows, setSelectedRows] = useState(() => new Set());
+  const [selectedRows, setSelectedRows] = useState();
   const [selectedOptions, setSelectedOptions] = useState([
     options[0],
     options[1],
@@ -197,11 +197,10 @@ export default function Grouping({ direction }) {
         onSelectedRowsChange={setSelectedRows}
         groupBy={selectedOptions}
         rowGrouper={rowGrouper}
-        headerRowHeight={24}
         expandedGroupIds={expandedGroupIds}
         onExpandedGroupIdsChange={setExpandedGroupIds}
-        // defaultColumnOptions={{ resizable: true }}
-        summaryRowHeight={24}
+        defaultColumnOptions={{ resizable: true }}
+        headerRowHeight={24}
         direction={direction}
       />
     </div>

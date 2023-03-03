@@ -43,49 +43,54 @@ const columns = [
     field: "id",
     headerName: "ID",
     width: 80,
+    haveChildren: false,
   },
   {
     field: "task",
     headerName: "Title",
-    width: 150,
+    resizable: true,
+    haveChildren: false,
   },
   {
     field: "priority",
     headerName: "Priority",
-    width: 150,
+    resizable: true,
+    haveChildren: false,
   },
   {
     field: "issueType",
     headerName: "Issue Type",
-    width: 150,
+    resizable: true,
+    haveChildren: false,
   },
   {
     field: "complete",
     headerName: "% Complete",
-    width: 150,
+    resizable: true,
+    haveChildren: false,
   },
 ];
 
 const rows = createRows();
 
 export default function ColumnsReordering({ direction }) {
-  const [rowHeight, setRowHeight] = useState(24);
+  const [rowHeight, setRowHeight] = useState(30);
 
   return (
     <>
       <div className={rangeClassname}>
         Row Height
-        <button onClick={() => setRowHeight(24)}>Small</button>
+        <button onClick={() => setRowHeight(30)}>Small</button>
         <button onClick={() => setRowHeight(60)}>Medium</button>
         <button onClick={() => setRowHeight(90)}>Large</button>
       </div>
       <DataGrid
         className={`${transitionClassname} fill-grid`}
         columnData={columns}
-        headerRowHeight={24}
         rowData={rows}
         direction={direction}
         rowHeight={rowHeight}
+        headerRowHeight={24}
       />
     </>
   );

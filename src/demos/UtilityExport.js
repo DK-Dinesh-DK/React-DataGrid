@@ -14,7 +14,7 @@ export async function exportToCsv(
 }
 
 export async function exportToXlsx(
-  gridElement,
+  gridElement, 
   fileName
 ) {
   const [{ utils, writeFile }, { head, body, foot }] = await Promise.all([
@@ -46,7 +46,7 @@ export async function exportToPdf(
     body,
     foot,
     horizontalPageBreak: true,
-    styles: { cellPadding: 1.5, fontSize: 8, width: 'wrap' },
+    styles: { cellPadding: 1.5, fontSize: 8, cellWidth: 'wrap' },
     tableWidth: 'wrap'
   });
   doc.save(fileName);
@@ -68,8 +68,8 @@ async function getGridContent(gridElement) {
   };
 
   function getRows(selector) {
-    return Array.from(grid.querySelectorAll<HTMLDivElement>(selector)).map((gridRow) => {
-      return Array.from(gridRow.querySelectorAll<HTMLDivElement>('.rdg-cell')).map(
+    return Array.from(grid.querySelectorAll(selector)).map((gridRow) => {
+      return Array.from(gridRow.querySelectorAll('.rdg-cell')).map(
         (gridCell) => gridCell.innerText
       );
     });

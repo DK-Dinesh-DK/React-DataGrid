@@ -2,11 +2,12 @@ import React from "react";
 import { memo } from "react";
 import clsx from "clsx";
 import { css } from "@linaria/core";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
+
 import HeaderCell from "./HeaderCell";
 import { getColSpan, getRowStyle } from "./utils";
 import { cell, cellFrozen, rowSelectedClassname } from "./style";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 const headerRow = css`
   @layer rdg.HeaderRow {
@@ -35,27 +36,29 @@ const headerRowClassname = `rdg-header-row ${headerRow}`;
 
 function HeaderRow({
   columns,
-  headerHeight, //need to be changed
-  headerData, //need to be changed
-  allRowsSelected,
   rows,
-  lastColumnCell,
-  headerRowHeight,
+  headerHeight,
+  headerData,
+  allRowsSelected,
   onAllRowsSelectionChange,
   onColumnResize,
   sortColumns,
   onSortColumnsChange,
   lastFrozenColumnIndex,
   selectedCellIdx,
+  selectCell,
   selectedCellHeaderStyle,
   selectedPosition,
   shouldFocusGrid,
   direction,
   setFilters,
-  selectCell,
-  handleReorderColumn
+  handleReorderColumn,
+  ...props
 }) {
   const cells = [];
+  function ChildColumnSetup(data) {
+    props.ChildColumnSetup(data);
+  }
   for (let index = 0; index < columns.length; index++) {
     const column = columns[index];
     const colSpan = getColSpan(column, lastFrozenColumnIndex, {
@@ -64,16 +67,15 @@ function HeaderRow({
     if (colSpan !== undefined) {
       index += colSpan - 1;
     }
-
     cells.push(
       <HeaderCell
         key={column.key}
         column={column}
+        rows={rows}
+        handleReorderColumn={handleReorderColumn}
         columns={columns}
         cellHeight={headerHeight}
-        headerRowHeight={headerRowHeight} //need to be changed
-        cellData={headerData} //need to be changed
-        rows={rows}
+        cellData={headerData}
         colSpan={colSpan}
         selectedPosition={selectedPosition}
         selectedCellHeaderStyle={selectedCellHeaderStyle}
@@ -87,7 +89,7 @@ function HeaderRow({
         shouldFocusGrid={shouldFocusGrid && index === 0}
         direction={direction}
         setFilters={setFilters}
-        handleReorderColumn={handleReorderColumn}
+        ChildColumnSetup={ChildColumnSetup}
       />
     );
   }

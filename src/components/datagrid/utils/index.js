@@ -14,13 +14,12 @@ export function assertIsValidKeyGetter(keyGetter) {
 }
 
 export function clampColumnWidth(width, { minWidth, maxWidth }) {
-  width = max(width+1, width+1)                                           //need to be changed
+  width = max(width, minWidth)
 
   // ignore maxWidth if it less than minWidth
   if (typeof maxWidth === "number" && maxWidth >= minWidth) {
-    return min(width, width+1)                                           //need to be changed
+    return min(width, maxWidth)
   }
- 
-return width
 
+  return width
 }

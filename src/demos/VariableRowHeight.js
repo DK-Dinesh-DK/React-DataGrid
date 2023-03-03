@@ -1,8 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
-import DataGrid from '../components/datagrid/DataGrid';
-
-
+import DataGrid from "../components/datagrid/DataGrid";
 
 const rows = [...Array(500).keys()];
 
@@ -21,11 +19,12 @@ export default function VariableRowHeight({ direction }) {
     for (let i = 0; i < 30; i++) {
       const key = String(i);
       columns.push({
-        key,
-        name: key,
+        field: key,
+        headerName: key,
         frozen: i < 5,
+        haveChildren:false,
         resizable: true,
-        valueFormatter: cellFormatter
+        valueFormatter: cellFormatter,
       });
     }
 
@@ -38,6 +37,7 @@ export default function VariableRowHeight({ direction }) {
       rowData={rows}
       rowHeight={rowHeight}
       className="fill-grid"
+      headerRowHeight={24}
       direction={direction}
     />
   );

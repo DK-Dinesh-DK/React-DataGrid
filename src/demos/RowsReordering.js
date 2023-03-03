@@ -1,4 +1,7 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
+
+// import { DraggableRowRenderer } from './components/RowRenderers';
+import textEditor from "../components/datagrid/editors/textEditor";
 import DataGrid from "../components/datagrid/DataGrid";
 
 function createRows() {
@@ -25,41 +28,43 @@ const columns = [
   {
     field: "id",
     headerName: "ID",
-    width: 80,
+    width: 100,
+    rowDrag: true,
+    haveChildren: false,
   },
   {
     field: "task",
     headerName: "Title",
-    rowDrag: true,
-    width: 200,
+    cellEditor: textEditor,
+    haveChildren:false
   },
   {
     field: "priority",
     headerName: "Priority",
-    width: 200,
+    haveChildren:false
   },
   {
     field: "issueType",
     headerName: "Issue Type",
-    width: 200,
+    haveChildren:false
   },
   {
     field: "complete",
     headerName: "% Complete",
-    width: 200,
+    haveChildren:false
   },
 ];
 
 export default function RowsReordering({ direction }) {
   const [rows, setRows] = useState(createRows);
 
-
   return (
     <DataGrid
       columnData={columns}
       rowData={rows}
-      headerRowHeight={25}
+      serialNumber={true}
       onRowsChange={setRows}
+      headerRowHeight={24}
       direction={direction}
     />
   );

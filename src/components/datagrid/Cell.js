@@ -26,63 +26,27 @@ const cellDraggedOver = css`
 `;
 
 const cellDraggedOverClassname = `rdg-cell-dragged-over ${cellDraggedOver}`;
-//-----------------------Need to be changed-Start-------------------------------------------------------
-const rowCellClassname = css`
-  @layer rdg.rowCell {
-    position: sticky;
-    z-index: 2;
-    background: var(--rdg-Row-Cell-Color);
-    inset-block-start: var(--rdg-summary-row-top);
-    inset-block-end: var(--rdg-summary-row-bottom);
-  }
-`;
-const rowFridge = css`
-  @layer rdg.rowFridge {
-    position: sticky;
-    z-index: 3;
-    background: var(--rdg-Row-Cell-Color);
-    inset-block-start: var(--rdg-summary-row-top);
-  }
-`;
-
-const rowCellClassname1 = css`
-  @layer rdg.rowCell {
-    position: sticky;
-    z-index: 2;
-    background: var(--rdg-Row-Cell-Color);
-    inset-block-start: var(--rdg-summary-row-top);
-    inset-block-end: var(--rdg-summary-row-bottom);
-  }
-`;
-const rowFridge1 = css`
-  @layer rdg.rowFridge {
-    position: sticky;
-    z-index: 3;
-    background: var(--rdg-Row-Cell-Color);
-    inset-block-start: var(--rdg-summary-row-top);
-  }
-`;
-// --------------------------------End---------------------------------------------------------
 
 function Cell({
   column,
-  rowHeight,//need to be addaed
-  allrow, //need to be changed
-  rowFridgeIndexEnd,//need to be addaed
-  singleRowFridgeIndex, //need to be addaed
-  summaryRowHeight, //need to be changed
-  rowIndex, //need to be changed
+  rowArray,
+  colData,
   colSpan,
   isCellSelected,
   isCopied,
+  api,
   isDraggedOver,
   row,
+  rowIndex,
+  allrow,
   dragHandle,
   onRowClick,
   onRowDoubleClick,
   onRowChange,
   selectCell,
+  node,
   handleReorderRow,
+  subColumn,
   ...props
 }) {
   const { ref, tabIndex, onFocus } = useRovingCellRef(isCellSelected);
@@ -93,12 +57,6 @@ function Cell({
     `rdg-cell-column-${column.idx % 2 === 0 ? "even" : "odd"}`,
     {
       [cellCopiedClassname]: isCopied,
-      // [rowCellClassname]: rowIndex <= rowFridgeIndexEnd,                               //need to be changed
-      // [rowFridge]: rowIndex <= rowFridgeIndexEnd && column.frozen === true,            //need to be changed
-
-      [rowCellClassname1]: rowIndex === singleRowFridgeIndex, //need to be changed
-      [rowFridge1]: rowIndex === singleRowFridgeIndex && column.frozen === true, //need to be changed
-
       [cellDraggedOverClassname]: isDraggedOver,
     },
     typeof cellClass === "function" ? cellClass(row) : cellClass
@@ -110,7 +68,11 @@ function Cell({
 
   function handleClick() {
     selectCellWrapper(column.editorOptions?.editOnClick);
-    onRowClick?.(row, column);
+    onRowClick?.(row, column.children);
+  }
+  function handleClick1() {
+    selectCellWrapper(column.editorOptions?.editOnClick);
+    onRowClick?.(row, column.children);
   }
 
   function handleContextMenu() {
@@ -126,13 +88,8 @@ function Cell({
     onRowChange(column, newRow);
   }
 
-  var style = {
-    //need to be changed
-    ...getCellStyle(column, colSpan, row), //need to be changed
-    "--rdg-summary-row-top": singleRowFridgeIndex
-      ? `${rowHeight + summaryRowHeight}px`
-      : `${rowHeight + summaryRowHeight + rowIndex * 24}px`, //need to be changed
-  };
+  // -----------
+  var style = getCellStyle(column, colSpan);
   const rowSpan = column.rowSpan?.({ type: "ROW", row }) ?? undefined;
 
   if (column.validation) {
@@ -263,7 +220,7 @@ function Cell({
     }),
   });
   function onRowReorder(fromIndex, toIndex) {
-    console.log("fromIndex", fromIndex, "toIndex", toIndex);
+    // console.log("fromIndex", fromIndex, "toIndex", toIndex);
     const newRows = [...allrow];
     newRows.splice(toIndex, 0, newRows.splice(fromIndex, 1)[0]);
     handleReorderRow(newRows);
@@ -278,68 +235,174 @@ function Cell({
       canDrop: monitor.canDrop(),
     }),
   });
-  return (
-    <div
-      role="gridcell"
-      // aria-colindex is 1-based
-      aria-colindex={column.idx + 1}
-      aria-selected={isCellSelected}
-      aria-colspan={colSpan}
-      aria-rowspan={rowSpan}
-      aria-readonly={!isCellEditable(column, row) || undefined}
-      ref={ref}
-      tabIndex={tabIndex}
-      className={className}
-      style={style}
-      onClick={handleClick}
-      onDoubleClick={handleDoubleClick}
-      onContextMenu={handleContextMenu}
-      onFocus={onFocus}
-      {...props}
-    >
-      {!column.rowGroup && (
-        <>
-          {column.rowDrag && (
-            <div
-              ref={(ele) => {
-                drag(ele);
-                drop(ele);
-              }}
-            >
-              <span style={{ marginRight: "10px", cursor: "grab" }}>
-                &#9674;
-              </span>
-              {column.formatter({
+  var rowData = [];
+  if (column.haveChildren === false) {
+    return (
+      <div
+        role="gridcell"
+        // aria-colindex is 1-based
+        aria-colindex={column.idx + 1}
+        aria-selected={isCellSelected}
+        aria-colspan={colSpan}
+        aria-rowspan={rowSpan}
+        aria-readonly={!isCellEditable(column, row) || undefined}
+        ref={ref}
+        tabIndex={tabIndex}
+        className={className}
+        style={style}
+        onClick={handleClick}
+        // onDoubleClick={handleDoubleClick}
+        // onContextMenu={handleContextMenu}
+        // onFocus={onFocus}
+        title={row[column.key]}
+        {...props}
+      >
+        {!column.rowGroup && (
+          <>
+            {column.rowDrag && (
+              <div
+                ref={(ele) => {
+                  drag(ele);
+                  drop(ele);
+                }}
+              >
+                <span style={{ marginRight: "10px", cursor: "grab" }}>
+                  &#9674;
+                </span>
+                {column.cellRenderer({
+                  column,
+                  colDef: column,
+                  row,
+                  rowArray,
+                  data: row,
+                  onRowChange,
+                  allrow,
+                  api,
+                  node,
+                  rowIndex,
+                  value: row[column.key],
+                  isCellSelected,
+                  onRowChange: handleRowChange,
+                  onRowClick,
+                  selectCell,
+                  onRowDoubleClick,
+                  subColumn,
+                  isCellSelected,
+                })}
+              </div>
+            )}
+            {!column.rowDrag &&
+              column.cellRenderer({
                 column,
                 colDef: column,
                 row,
                 data: row,
                 onRowChange,
+                rowArray,
                 allrow,
+                api,
+                node,
                 rowIndex,
                 value: row[column.key],
                 isCellSelected,
+                selectCell,
                 onRowChange: handleRowChange,
+                onRowClick,
+                onRowDoubleClick,
               })}
-            </div>
-          )}
-          {!column.rowDrag && column.formatter({
-            column,
-            colDef: column,
-            row,
-            data: row,
-            onRowChange,
-            allrow,
-            rowIndex,
-            value: row[column.key],
-            isCellSelected,
-            onRowChange: handleRowChange,
-          })}
-          {dragHandle}
-        </>
-      )}
-    </div>
-  );
+            {dragHandle}
+          </>
+        )}
+      </div>
+    );
+  } else if (column.haveChildren === true) {
+    return (
+      <div
+        role="gridcell"
+        // aria-colindex is 1-based
+        aria-colindex={column.idx + 1}
+        aria-selected={isCellSelected}
+        aria-colspan={colSpan}
+        aria-rowspan={rowSpan}
+        aria-readonly={!isCellEditable(column, row) || undefined}
+        ref={ref}
+        tabIndex={tabIndex}
+        className={className}
+        style={style}
+        // onClick={handleClick}
+        // onDoubleClick={handleDoubleClick}
+        // onContextMenu={handleContextMenu}
+        // onFocus={onFocus}
+        title={row[column.key]}
+        {...props}
+      >
+        {!column.rowGroup && (
+          <>
+            {column.rowDrag && (
+              <div
+                ref={(ele) => {
+                  drag(ele);
+                  drop(ele);
+                }}
+              >
+                <span style={{ marginRight: "10px", cursor: "grab" }}>
+                  &#9674;
+                </span>
+                {column.cellRenderer({
+                  column,
+                  colDef: column,
+                  row,
+                  rowArray,
+                  data: row,
+                  onRowChange,
+                  allrow,
+                  api,
+                  node,
+                  rowIndex,
+                  value: row[column.key],
+                  isCellSelected,
+                  onRowChange: handleRowChange,
+                  onRowClick,
+                  selectCell,
+                  onRowDoubleClick,
+                  subColumn,
+                  handleClick1,
+                  isCellSelected,
+                  style,
+                  ...props,
+                })}
+              </div>
+            )}
+            {!column.rowDrag &&
+              column.cellRenderer({
+                column,
+                colDef: column,
+                row,
+                data: row,
+                onRowChange,
+                rowArray,
+                allrow,
+                api,
+                node,
+                rowIndex,
+                value: row[column.key],
+                isCellSelected,
+                selectCell,
+                onRowChange: handleRowChange,
+                onRowClick,
+                onRowDoubleClick,
+                handleClick1,
+                isCellSelected,
+                subColumn,
+                style,
+                ...props,
+              })}
+            {dragHandle}
+          </>
+        )}
+      </div>
+    );
+  }
 }
 
 export default memo(Cell);

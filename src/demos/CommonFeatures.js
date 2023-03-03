@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
@@ -8,11 +8,7 @@ import textEditor from "../components/datagrid/editors/textEditor";
 import { SelectCellFormatter } from "../components/datagrid/formatters/SelectCellFormatter";
 import DataGrid from "../components/datagrid/DataGrid";
 
-import {
-  exportToCsv,
-  exportToPdf,
-  exportToXlsx,
-} from "../components/exportUtils";
+import { exportToCsv, exportToXlsx, exportToPdf } from "./UtilityExport";
 import textEditorClassname from "../components/datagrid/editors/textEditor";
 
 const toolbarClassname = css`
@@ -65,14 +61,15 @@ const selectCellClassname = css`
 `;
 function getColumns(countries, direction) {
   return [
-    {
-      ...SelectColumn,
-      headerCellClass: selectCellClassname,
-      cellClass: selectCellClassname,
-      width: 80,
-    },
+    // {
+    //   ...SelectColumn,
+    //   headerCellClass: selectCellClassname,
+    //   cellClass: selectCellClassname,
+    // },
     {
       field: "id",
+      topHeader: "id",
+      haveChildren: false,
       headerName: "ID",
       width: 60,
       frozen: true,
@@ -83,29 +80,36 @@ function getColumns(countries, direction) {
     },
     {
       field: "title",
+      topHeader: "title",
+      haveChildren: false,
       headerName: "Task",
       width: 120,
       frozen: true,
-      cellRenderer: textEditor,
+      cellEditor: textEditor,
       summaryFormatter({ row }) {
         return <>{row.totalCount} records</>;
       },
     },
     {
       field: "client",
+      topHeader: "client",
+      haveChildren: false,
       headerName: "Client",
-      width: "max-content",
-      cellEditor: textEditor,
-      width: 150,
-    },
-    {
-      field: "area",
-      headerName: "Area",
-      width: 120,
+      width: 200,
       cellRenderer: textEditor,
     },
     {
+      field: "area",
+      topHeader: "area",
+      haveChildren: false,
+      headerName: "Area",
+      width: 120,
+      // cellRenderer: textEditor,
+    },
+    {
       field: "country",
+      topHeader: "country",
+      haveChildren: false,
       headerName: "Country",
       width: 180,
       cellRenderer: (p) => (
@@ -128,21 +132,27 @@ function getColumns(countries, direction) {
     },
     {
       field: "contact",
+      topHeader: "contact",
+      haveChildren: false,
       headerName: "Contact",
       width: 160,
-      cellRenderer: textEditor,
+      // cellRenderer: textEditor,
     },
     {
       field: "assignee",
+      topHeader: "assignee",
+      haveChildren: false,
       headerName: "Assignee",
       width: 150,
-      cellRenderer: textEditor,
+      // cellRenderer: textEditor,
     },
     {
       field: "progress",
+      topHeader: "progress",
+      haveChildren: false,
       headerName: "Completion",
       width: 110,
-      valueFormatter(props) {
+      valueFormater(props) {
         const value = props.row.progress;
         return (
           <>
@@ -187,6 +197,8 @@ function getColumns(countries, direction) {
     },
     {
       field: "startTimestamp",
+      topHeader: "startTimestamp",
+      haveChildren: false,
       headerName: "Start date",
       width: 100,
       valueFormatter(props) {
@@ -195,6 +207,8 @@ function getColumns(countries, direction) {
     },
     {
       field: "endTimestamp",
+      topHeader: "endTimestamp",
+      haveChildren: false,
       headerName: "Deadline",
       width: 100,
       valueFormatter(props) {
@@ -203,6 +217,8 @@ function getColumns(countries, direction) {
     },
     {
       field: "budget",
+      topHeader: "budget",
+      haveChildren: false,
       headerName: "Budget",
       width: 100,
       valueFormatter(props) {
@@ -211,22 +227,29 @@ function getColumns(countries, direction) {
     },
     {
       field: "transaction",
-      headerName: "Transaction type",
+      topHeader: "transaction",
+      haveChildren: false,
       width: 100,
+      headerName: "Transaction type",
     },
     {
       field: "account",
+      haveChildren: false,
       headerName: "Account",
       width: 150,
     },
     {
       field: "version",
+      topHeader: "version",
+      haveChildren: false,
       headerName: "Version",
-      cellRenderer: textEditor,
-      width: 100,
+      width: 150,
+      // cellRenderer: textEditor,
     },
     {
       field: "available",
+      topHeader: "available",
+      haveChildren: false,
       headerName: "Available",
       width: 80,
       valueFormatter({ row, onRowChange, isCellSelected }) {
@@ -312,8 +335,9 @@ function getComparator(sortColumn) {
 export default function CommonFeatures({ direction }) {
   const [rows, setRows] = useState(createRows);
   const [sortColumns, setSortColumns] = useState([]);
-  const [selectedRows, setSelectedRows] = useState(() => new Set());
-
+  // const [selectedRows, setSelectedRows] = useState(() => new Set());
+  const [selectedRows, setSelectedRows] = useState();
+  console.log("selectedRows", selectedRows);
   const countries = useMemo(() => {
     return [...new Set(rows.map((r) => r.country))].sort(
       new Intl.Collator().compare
@@ -348,11 +372,15 @@ export default function CommonFeatures({ direction }) {
       return 0;
     });
   }, [rows, sortColumns]);
-  const gridRef = useRef(null);
+
   const gridElement = (
     <DataGrid
       rowKeyGetter={rowKeyGetter}
       columnData={columns}
+      restriction={{
+        copy: true,
+        paste: true,
+      }}
       rowData={sortedRows}
       // defaultColumnOptions={{
       //   sortable: true,
@@ -364,45 +392,38 @@ export default function CommonFeatures({ direction }) {
       // selectedRows={selectedRows}
       // onSelectedRowsChange={setSelectedRows}
       onRowsChange={setRows}
-      headerRowHeight={24}
-      summaryRowHeight={24}
       // sortColumns={sortColumns}
       // onSortColumnsChange={setSortColumns}
+      selectedRows={selectedRows}
+      headerRowHeight={24}
+      onSelectedRowsChange={setSelectedRows}
       topSummaryRows={summaryRows}
       bottomSummaryRows={summaryRows}
       className="fill-grid"
       direction={direction}
-      ref={gridRef}
+      selection={true}
     />
   );
-  var fileData = sortedRows;
-  var fileName = "NEwFILE.xlsx";
+
   return (
     <>
-      <div className={toolbarClassname}>
-        <button
-          onClick={() => {
-            exportToXlsx(fileData, columns, fileName);
-          }}
-        >
-          Export Excel
-        </button>
-
+      {/* <div className={toolbarClassname}>
         <ExportButton
-          onExport={() => {
-            exportToCsv(sortedRows, columns, "CommonFeatures.xlsx");
-          }}
+          onExport={() => exportToCsv(gridElement, "CommonFeatures.csv")}
         >
           Export to CSV
         </ExportButton>
         <ExportButton
-          onExport={() =>
-            exportToPdf(sortedRows, columns, "CommonFeatures.pdf")
-          }
+          onExport={() => exportToXlsx(gridElement, "CommonFeatures.xlsx")}
+        >
+          Export to XSLX
+        </ExportButton>
+        <ExportButton
+          onExport={() => exportToPdf(gridElement, "CommonFeatures.pdf")}
         >
           Export to PDF
         </ExportButton>
-      </div>
+      </div> */}
       {gridElement}
     </>
   );

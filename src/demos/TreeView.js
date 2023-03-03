@@ -4,7 +4,7 @@ import { ChildRowDeleteButton } from "./ChildRowDeleteButton";
 
 import DataGrid from "../components/datagrid/DataGrid";
 
-// import { CellExpanderFormatter, ChildRowDeleteButton } from '../components/Formatters';
+// import { CellExpanderFormatter, ChildRowDeleteButton } from './components/Formatters';
 
 function createRows() {
   const rows = [];
@@ -109,17 +109,17 @@ export default function TreeView({ direction }) {
         field: "id",
         headerName: "id",
         frozen: true,
-        width: 100,
+        haveChildren: false,
       },
       {
         field: "name",
         headerName: "Name",
-        width: 100,
+        haveChildren: false,
       },
       {
         field: "format",
         headerName: "format",
-        width: 200,
+        haveChildren: false,
         valueFormatter({ row, isCellSelected }) {
           const hasChildren = row.children !== undefined;
           const style = !hasChildren ? { marginInlineStart: 30 } : undefined;
@@ -153,12 +153,12 @@ export default function TreeView({ direction }) {
       {
         field: "position",
         headerName: "position",
-        width: 200,
+        haveChildren: false,
       },
       {
         field: "price",
         headerName: "price",
-        width: 200,
+        haveChildren: false,
       },
     ];
   }, [allowDelete]);
@@ -176,9 +176,9 @@ export default function TreeView({ direction }) {
       <DataGrid
         columnData={columns}
         rowData={rows}
-        headerRowHeight={25}
         className="big-grid"
         direction={direction}
+        headerRowHeight={24}
       />
     </>
   );

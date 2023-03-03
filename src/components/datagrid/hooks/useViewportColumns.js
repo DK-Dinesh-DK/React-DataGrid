@@ -1,7 +1,7 @@
-import React from 'react';
-import { useMemo } from "react"
+import React from "react";
+import { useMemo } from "react";
 
-import { getColSpan } from "../utils"
+import { getColSpan } from "../utils";
 
 export function useViewportColumns({
   columns,
@@ -15,33 +15,33 @@ export function useViewportColumns({
   rowOverscanStartIdx,
   rowOverscanEndIdx,
   columnWidths,
-  isGroupRow
+  isGroupRow,
 }) {
   // find the column that spans over a column within the visible columns range and adjust colOverscanStartIdx
   const startIdx = useMemo(() => {
-    if (colOverscanStartIdx === 0) return 0
+    if (colOverscanStartIdx === 0) return 0;
 
-    let startIdx = colOverscanStartIdx
+    let startIdx = colOverscanStartIdx;
 
     const updateStartIdx = (colIdx, colSpan) => {
       if (colSpan !== undefined && colIdx + colSpan > colOverscanStartIdx) {
-        startIdx = colIdx
-        return true
+        startIdx = colIdx;
+        return true;
       }
-      return false
-    }
+      return false;
+    };
 
     for (const column of colSpanColumns) {
       // check header row
-      const colIdx = column.idx
-      if (colIdx >= startIdx) break
+      const colIdx = column.idx;
+      if (colIdx >= startIdx) break;
       if (
         updateStartIdx(
           colIdx,
           getColSpan(column, lastFrozenColumnIndex, { type: "HEADER" })
         )
       ) {
-        break
+        break;
       }
 
       // check viewport rows
@@ -50,15 +50,15 @@ export function useViewportColumns({
         rowIdx <= rowOverscanEndIdx;
         rowIdx++
       ) {
-        const row = rows[rowIdx]
-        if (isGroupRow(row)) continue
+        const row = rows[rowIdx];
+        if (isGroupRow(row)) continue;
         if (
           updateStartIdx(
             colIdx,
             getColSpan(column, lastFrozenColumnIndex, { type: "ROW", row })
           )
         ) {
-          break
+          break;
         }
       }
 
@@ -70,11 +70,11 @@ export function useViewportColumns({
               colIdx,
               getColSpan(column, lastFrozenColumnIndex, {
                 type: "SUMMARY",
-                row
+                row,
               })
             )
           ) {
-            break
+            break;
           }
         }
       }
@@ -86,17 +86,17 @@ export function useViewportColumns({
               colIdx,
               getColSpan(column, lastFrozenColumnIndex, {
                 type: "SUMMARY",
-                row
+                row,
               })
             )
           ) {
-            break
+            break;
           }
         }
       }
     }
 
-    return startIdx
+    return startIdx;
   }, [
     rowOverscanStartIdx,
     rowOverscanEndIdx,
@@ -106,34 +106,33 @@ export function useViewportColumns({
     colOverscanStartIdx,
     lastFrozenColumnIndex,
     colSpanColumns,
-    isGroupRow
-  ])
+    isGroupRow,
+  ]);
 
   const { viewportColumns, flexWidthViewportColumns } = useMemo(() => {
-    const viewportColumns = []
-    const flexWidthViewportColumns = []
+    const viewportColumns = [];
+    const flexWidthViewportColumns = [];
     for (let colIdx = 0; colIdx <= colOverscanEndIdx; colIdx++) {
-      const column = columns[colIdx]
+      const column = columns[colIdx];
 
-      if (colIdx < startIdx && !column.frozen) continue
-      
-      viewportColumns.push(column)
+      if (colIdx < startIdx && !column.frozen) continue;
+      viewportColumns.push(column);
       if (typeof column.width === "string") {
-        flexWidthViewportColumns.push(column)
+        flexWidthViewportColumns.push(column);
       }
     }
 
-    return { viewportColumns, flexWidthViewportColumns }
-  }, [startIdx, colOverscanEndIdx, columns])
+    return { viewportColumns, flexWidthViewportColumns };
+  }, [startIdx, colOverscanEndIdx, columns]);
 
   const unsizedFlexWidthViewportColumns = useMemo(() => {
     return flexWidthViewportColumns.filter(
-      column => !columnWidths.has(column.key)
-    )
-  }, [flexWidthViewportColumns, columnWidths])
+      (column) => !columnWidths.has(column.key)
+    );
+  }, [flexWidthViewportColumns, columnWidths]);
 
   return {
     viewportColumns,
-    flexWidthViewportColumns: unsizedFlexWidthViewportColumns
-  }
+    flexWidthViewportColumns: unsizedFlexWidthViewportColumns,
+  };
 }

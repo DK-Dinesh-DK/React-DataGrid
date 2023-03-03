@@ -1,7 +1,9 @@
-import { cloneElement } from "react"
+import React,{ cloneElement } from "react"
 
 export async function exportToCsv(gridElement, fileName) {
+  // console.log('gridElement,fileName', gridElement,fileName)
   const { head, body, foot } = await getGridContent(gridElement)
+  // console.log('head,body,foot', head,body,foot)
   const content = [...head, ...body, ...foot]
     .map(cells => cells.map(serialiseCellValue).join(","))
     .join("\n")

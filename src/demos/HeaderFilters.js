@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
-import { css } from '@linaria/core';
-import { faker } from '@faker-js/faker';
+import { useMemo, useState } from "react";
+import { css } from "@linaria/core";
+import { faker } from "@faker-js/faker";
 import DataGrid from "../components/datagrid/DataGrid";
-import { Parser, SUPPORTED_FORMULAS } from 'hot-formula-parser';
+// import { Parser, SUPPORTED_FORMULAS } from 'hot-formula-parser';
 
 const rootClassname = css`
   display: flex;
@@ -24,34 +24,35 @@ export default function HeaderFilters({ direction }) {
   const columns = useMemo(() => {
     return [
       {
-        field: 'id',
-        headerName: 'ID',
-        width: 50
+        field: "id",
+        headerName: "ID",
+        width: 50,
+        haveChildren: false,
       },
       {
-        field: 'task',
-        headerName: 'Title',
+        field: "task",
+        headerName: "Title",
         sortable: true,
         filter: true,
-        width: 260,
+        haveChildren: false,
       },
       {
-        field: 'priority',
-        headerName: 'Priority',
+        field: "priority",
+        headerName: "Priority",
         filter: true,
-        width: 250,
+        haveChildren: false,
       },
       {
-        field: 'issueType',
-        headerName: 'Issue Type',
+        field: "issueType",
+        headerName: "Issue Type",
         sortable: true,
-        width: 150
+        haveChildren: false,
       },
       {
-        field: 'complete',
-        headerName: '% Complete',
-        width: 150
-      }
+        field: "complete",
+        headerName: "% Complete",
+        haveChildren: false,
+      },
     ];
   }, []);
 
@@ -60,10 +61,8 @@ export default function HeaderFilters({ direction }) {
       <DataGrid
         columnData={columns}
         rowData={rows}
-        rowHeight={25}
-        headerRowHeight={24}
-        summaryRowHeight={24}
         direction={direction}
+        headerRowHeight={24}
       />
     </div>
   );
@@ -76,8 +75,12 @@ function createRows() {
       id: i,
       task: `Task ${i}`,
       complete: Math.min(100, Math.round(Math.random() * 110)),
-      priority: ['Critical', 'High', 'Medium', 'Low'][Math.floor(Math.random() * 4)],
-      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.floor(Math.random() * 4)],
+      priority: ["Critical", "High", "Medium", "Low"][
+        Math.floor(Math.random() * 4)
+      ],
+      issueType: ["Bug", "Improvement", "Epic", "Story"][
+        Math.floor(Math.random() * 4)
+      ],
     });
   }
   return rows;

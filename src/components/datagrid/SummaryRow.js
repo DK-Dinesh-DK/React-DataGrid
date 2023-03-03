@@ -9,7 +9,7 @@ import SummaryCell from "./SummaryCell"
 
 const summaryRow = css`
   @layer rdg.SummaryRow {
-    line-height: var(--rdg-summary-row-height);
+    line-height: var(--rdg-sumary-row-height);
 
     > .${cell} {
       position: sticky;
@@ -33,6 +33,9 @@ const topSummaryRowBorderClassname = css`
   @layer rdg.SummaryRow {
     > .${cell} {
       border-block-end: 2px solid var(--rdg-summary-border-color);
+      display:flex;
+      justify-content: center;
+    align-items: center;
     }
   }
 `
@@ -41,6 +44,9 @@ const bottomSummaryRowBorderClassname = css`
   @layer rdg.SummaryRow {
     > .${cell} {
       border-block-start: 2px solid var(--rdg-summary-border-color);
+      display:flex;
+      justify-content: center;
+    align-items: center;
     }
   }
 `
@@ -95,7 +101,7 @@ function SummaryRow({
       aria-rowindex={ariaRowIndex}
       className={clsx(
         rowClassname,
-        `rdg-row-summary-row-${rowIdx % 2 === 0 ? "even" : "odd"}`,               //need to be changed
+        `rdg-row-summary-row-${rowIdx % 2 === 0 ? "even" : "odd"}`,
         summaryRowClassname,
         {
           [rowSelectedClassname]: selectedCellIdx === -1,

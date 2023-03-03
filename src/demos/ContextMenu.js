@@ -1,17 +1,7 @@
-import { useState, useReducer } from "react";
-import { createPortal } from "react-dom";
-import {
-  ContextMenu,
-  MenuItem,
-  SubMenu,
-  ContextMenuTrigger,
-} from "react-contextmenu";
+import { useState, useReducer, useCallback } from "react";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
 import DataGrid from "../components/datagrid/DataGrid";
-import RowComponent from "../components/datagrid/Row";
-
-// import DataGrid, { Row as GridRow } from '../../src';
 
 css`
   @at-root {
@@ -120,94 +110,135 @@ function createRows() {
 }
 
 const columns = [
-  { field: "id", headerName: "ID", width: 150 },
-  {
-    field: "product",
-    headerName: "Product",
-    width: 150,
-  },
-  { field: "price", headerName: "Price", width: 150 },
+  { field: "id", headerName: "ID", haveChildren: false },
+  { field: "product", headerName: "Product", haveChildren: false },
+  { field: "price", headerName: "Price", haveChildren: false },
 ];
 
 function rowKeyGetter(row) {
   return row.id;
 }
 
-function rowRenderer(key, props) {
-  return (
-    // @ts-expect-error
-    <ContextMenuTrigger
-      key={key}
-      id="grid-context-menu"
-      collect={() => ({ rowIdx: props.rowIdx })}
-    >
-      <RowComponent {...props} />
-    </ContextMenuTrigger>
-  );
-}
-
 export default function ContextMenuDemo({ direction }) {
-  const [rows, setRows] = useState(createRows);
-  const [nextId, setNextId] = useReducer(
-    (id) => id + 1,
-    rows[rows.length - 1].id + 1
-  );
-
-  function onRowDelete(e, { rowIdx }) {
-    setRows([...rows.slice(0, rowIdx), ...rows.slice(rowIdx + 1)]);
-  }
-
-  function onRowInsertAbove(e, { rowIdx }) {
-    insertRow(rowIdx);
-  }
-
-  function onRowInsertBelow(e, { rowIdx }) {
-    insertRow(rowIdx + 1);
-  }
-
-  function insertRow(insertRowIdx) {
-    const newRow = {
-      id: nextId,
-      product: faker.commerce.productName(),
-      price: faker.commerce.price(),
-    };
-
-    setRows([
-      ...rows.slice(0, insertRowIdx),
-      newRow,
-      ...rows.slice(insertRowIdx),
-    ]);
-    setNextId();
-  }
+  const getContextMenuItems = useCallback((params) => {
+    var result = [
+      {
+        // custom item
+        name: "Alert ",
+        action: () => {
+          window.alert("Alerting about ");
+        },
+        cssClasses: ["redFont", "bold"],
+      },
+      {
+        // custom item
+        name: "Always Disabled",
+        disabled: true,
+        tooltip:
+          "Very long tooltip, did I mention that I am very long, well I am! Long!  Very Long!",
+      },
+      {
+        name: "Country",
+      },
+      {
+        name: "Person",
+        subMenu: [
+          {
+            name: "Niall",
+            action: () => {
+              console.log("Niall was pressed");
+            },
+          },
+          {
+            name: "Sean",
+            action: () => {
+              console.log("Sean was pressed");
+            },
+          },
+          {
+            name: "John",
+            action: () => {
+              console.log("John was pressed");
+            },
+          },
+          {
+            name: "Alberto",
+            action: () => {
+              console.log("Alberto was pressed");
+            },
+          },
+          {
+            name: "Tony",
+            action: () => {
+              console.log("Tony was pressed");
+            },
+          },
+          {
+            name: "Andrew",
+            action: () => {
+              console.log("Andrew was pressed");
+            },
+          },
+          {
+            name: "Kev",
+            action: () => {
+              console.log("Kev was pressed");
+            },
+          },
+          {
+            name: "Will",
+            action: () => {
+              console.log("Will was pressed");
+            },
+          },
+          {
+            name: "Armaan",
+            action: () => {
+              console.log("Armaan was pressed");
+            },
+          },
+        ],
+      },
+      {
+        // custom item
+        name: "Windows",
+        shortcut: "Alt + W",
+        action: () => {
+          console.log("Windows Item Selected");
+        },
+        icon: '<img src="https://www.ag-grid.com/example-assets/skills/windows.png" />',
+      },
+      {
+        // custom item
+        name: "Mac",
+        shortcut: "Alt + M",
+        action: () => {
+          console.log("Mac Item Selected");
+        },
+        icon: '<img src="https://www.ag-grid.com/example-assets/skills/mac.png"/>',
+      },
+      {
+        // custom item
+        name: "Checked",
+        checked: true,
+        action: () => {
+          console.log("Checked Selected");
+        },
+        icon: '<img src="https://www.ag-grid.com/example-assets/skills/mac.png"/>',
+      },
+    ];
+    return result;
+  }, []);
 
   return (
-    <>
-      <DataGrid
-        rowKeyGetter={rowKeyGetter}
-        columnData={columns}
-        rowData={rows}
-        renderers={{ rowRenderer }}
-        className="fill-grid"
-        headerRowHeight={24}
-        direction={direction}
-      />
-      {createPortal(
-        <div dir={direction}>
-          {/* @ts-expect-error */}
-          <ContextMenu id="grid-context-menu" rtl={direction === "rtl"}>
-            {/* @ts-expect-error */}
-            <MenuItem onClick={onRowDelete}>Delete Row</MenuItem>
-            {/* @ts-expect-error */}
-            <SubMenu title="Insert Row">
-              {/* @ts-expect-error */}
-              <MenuItem onClick={onRowInsertAbove}>Above</MenuItem>
-              {/* @ts-expect-error */}
-              <MenuItem onClick={onRowInsertBelow}>Below</MenuItem>
-            </SubMenu>
-          </ContextMenu>
-        </div>,
-        document.body
-      )}
-    </>
+    <DataGrid
+      rowKeyGetter={rowKeyGetter}
+      columnData={columns}
+      rowData={createRows()}
+      className="fill-grid"
+      direction={direction}
+      headerRowHeight={24}
+      getContextMenuItems={getContextMenuItems}
+    />
   );
 }

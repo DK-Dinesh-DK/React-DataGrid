@@ -25,8 +25,7 @@ import RowsReordering from "./demos/RowsReordering";
 import ScrollToRow from "./demos/ScrollToRow";
 import TreeView from "./demos/TreeView";
 import VariableRowHeight from "./demos/VariableRowHeight";
-import Animation from "./demos/Animation";
-import FileExport from "./demos/FileExport";
+import Animation from "./demos/Animation"
 
 css`
   @at-root {
@@ -53,6 +52,7 @@ css`
 
     #root {
       display: grid;
+      /* flex-direction: column; */
       grid-template-columns: auto 1fr;
     }
 
@@ -63,21 +63,13 @@ css`
     }
   }
 `;
-const mainClassname = css`
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  block-size: 100vh;
-  padding: 8px;
-  overflow: hidden;
-`;
 
 function App() {
   const [direction, setDirection] = useState("ltr");
   return (
     <Router>
       <Nav direction={direction} onDirectionChange={setDirection} />
-      <main className={mainClassname} dir={direction}>
+      <main className="view-container" dir={direction}>
         <Routes>
           <Route index element={<Navigate to="common-features" replace />} />
           <Route
@@ -131,10 +123,6 @@ function App() {
             element={<ResizableGrid direction={direction} />}
           />
           <Route
-            path="file-export"
-            element={<FileExport direction={direction} />}
-          />
-          <Route
             path="rows-reordering"
             element={<RowsReordering direction={direction} />}
           />
@@ -150,10 +138,7 @@ function App() {
             path="variable-row-height"
             element={<VariableRowHeight direction={direction} />}
           />
-          <Route
-            path="animation"
-            element={<Animation direction={direction} />}
-          />
+          <Route path="chnageinheight" element={<Animation direction={direction} />} />
           <Route path="*" element="Nothing to see here" />
         </Routes>
       </main>

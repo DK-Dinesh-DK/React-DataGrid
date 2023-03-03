@@ -31,7 +31,11 @@ export default function EditCell({
   column,
   colSpan,
   row,
+  allrow,
+  rowIndex,
   onRowChange,
+  api,
+  node,
   closeEditor,
   handleReorderRow,
 }) {
@@ -154,9 +158,11 @@ export default function EditCell({
                 data: row,
                 onRowChange,
                 value: row[column.key],
+                node,
                 valueFormatted: column.valueFormatter,
                 allrow,
                 rowIndex,
+                api,
                 onClose,
               })}
               {column.editorOptions?.renderFormatter &&
@@ -166,6 +172,8 @@ export default function EditCell({
                   column,
                   data: row,
                   row,
+                  api,
+                  node,
                   value: row[column.key],
                   valueFormatted: column.valueFormatter,
                   onRowChange,
@@ -178,10 +186,13 @@ export default function EditCell({
                   column,
                   data: row,
                   row,
+                  api,
+                  node,
                   value: row[column.key],
                   valueFormatted: column.valueFormatter,
                   onRowChange,
                   isCellSelected: true,
+                  onRowChange,
                 })}
             </>
           )}
@@ -197,9 +208,11 @@ export default function EditCell({
               data: row,
               onRowChange,
               value: row[column.key],
+              node,
               valueFormatted: column.valueFormatter,
               allrow,
               rowIndex,
+              api,
               onClose,
             })}
             {column.editorOptions?.renderFormatter &&
@@ -209,6 +222,8 @@ export default function EditCell({
                 column,
                 data: row,
                 row,
+                api,
+                node,
                 value: row[column.key],
                 valueFormatted: column.valueFormatter,
                 onRowChange,

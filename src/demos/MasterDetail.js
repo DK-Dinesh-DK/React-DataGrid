@@ -35,18 +35,10 @@ function getProducts(parentId) {
 }
 
 const productColumns = [
-  { field: "id", headerName: "ID", width: 35 },
-  {
-    field: "product",
-    headerName: "Product",
-    width: 100,
-  },
-  {
-    field: "description",
-    headerName: "Description",
-    width: 100,
-  },
-  { field: "price", headerName: "Price", width: 100 },
+  { field: "id", headerName: "ID", width: 35, haveChildren: false },
+  { field: "product", headerName: "Product", haveChildren: false },
+  { field: "description", headerName: "Description", haveChildren: false },
+  { field: "price", headerName: "Price", haveChildren: false },
 ];
 
 export default function MasterDetail({ direction }) {
@@ -56,6 +48,7 @@ export default function MasterDetail({ direction }) {
         field: "expanded",
         headerName: "",
         minWidth: 30,
+        haveChildren: false,
         width: 30,
         colSpan(args) {
           return args.type === "ROW" && args.row.type === "DETAIL"
@@ -91,12 +84,8 @@ export default function MasterDetail({ direction }) {
           );
         },
       },
-      { field: "id", headerName: "ID", width: 100 },
-      {
-        field: "department",
-        headerName: "Department",
-        width: 400,
-      },
+      { field: "id", headerName: "ID", width: 35, haveChildren: false },
+      { field: "department", headerName: "Department", haveChildren: false },
     ];
   }, [direction]);
   const [rows, setRows] = useState(createDepartments);
@@ -123,13 +112,12 @@ export default function MasterDetail({ direction }) {
       columnData={columns}
       rowData={rows}
       onRowsChange={onRowsChange}
-      headerRowHeight={25}
+      headerRowHeight={45}
       rowHeight={(args) =>
         args.type === "ROW" && args.row.type === "DETAIL" ? 300 : 45
       }
       className="fill-grid"
       enableVirtualization={false}
-      summaryRowHeight={24}
       direction={direction}
     />
   );
@@ -139,9 +127,9 @@ function ProductGrid({ parentId, isCellSelected, direction }) {
   const gridRef = useRef(null);
   useEffect(() => {
     if (!isCellSelected) return;
-    gridRef.current.element.querySelector <
-      HTMLDivElement >
-      '[tabindex="0"]'.focus({ preventScroll: true });
+    gridRef.current.element
+      .querySelector('[tabindex="0"]')
+      .focus({ preventScroll: true });
   }, [isCellSelected]);
   const products = getProducts(parentId);
 
@@ -156,12 +144,11 @@ function ProductGrid({ parentId, isCellSelected, direction }) {
       <DataGrid
         ref={gridRef}
         rowData={products}
-        headerRowHeight={25}
-        rowHeight={25}
         columnData={productColumns}
         rowKeyGetter={rowKeyGetter}
         style={{ blockSize: 250 }}
         direction={direction}
+        headerRowHeight={24}
       />
     </div>
   );

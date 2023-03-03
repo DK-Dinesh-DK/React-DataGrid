@@ -24,7 +24,7 @@ const sortPriorityClassname = css`
 function createRows() {
   const rows = [];
 
-  for (let i = 1; i < 500; i++) {
+  for (let i = 1; i <= 500; i++) {
     rows.push({
       id: i,
       task: `Task ${i}`,
@@ -51,7 +51,6 @@ const columns = [
     field: "id",
     headerName: "ID",
     width: 80,
-    haveChildren:false,
   },
   {
     field: "task",
@@ -61,32 +60,28 @@ const columns = [
       return textEditor(props);
     },
     sortable: true,
-    haveChildren:false,
   },
   {
     field: "priority",
     headerName: "Priority",
     sortable: true,
-    haveChildren:false,
   },
   {
     field: "issueType",
     headerName: "Issue Type",
     sortable: true,
-    haveChildren:false,
   },
   {
     field: "complete",
     headerName: "% Complete",
     sortable: true,
-    haveChildren:false,
   },
 ];
 
-export default function CustomizableComponents({ direction }) {
+export default function Pagination({ direction }) {
   const [rows, setRows] = useState(createRows);
   const [sortColumns, setSortColumns] = useState([]);
-  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRows, setSelectedRows] = useState(() => new Set());
 
   const sortedRows = useMemo(() => {
     if (sortColumns.length === 0) return rows;
@@ -105,18 +100,23 @@ export default function CustomizableComponents({ direction }) {
 
   return (
     <DataGrid
-      className="fill-grid"
+      // className="fill-grid"
       columnData={columns}
       rowData={sortedRows}
       rowKeyGetter={rowKeyGetter}
       onRowsChange={setRows}
       sortColumns={sortColumns}
-      headerRowHeight={24}
       onSortColumnsChange={setSortColumns}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
       renderers={{ sortStatus, checkboxFormatter }}
       direction={direction}
+      pagination={true}
+      defaultPage={3}
+      headerRowHeight={24}
+      // paginationAutoPageSize={true}
+      // paginationPageSize={39}
+      // suppressPaginationPanel={true}
     />
   );
 }
@@ -142,7 +142,7 @@ function sortStatus({ sortDirection, priority }) {
   );
 }
 function rowKeyGetter(row) {
-  return row.id;
+  return row?.id;
 }
 
 function getComparator(sortColumn) {

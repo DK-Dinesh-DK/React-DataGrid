@@ -2,12 +2,12 @@ import { useState } from "react";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
 
-import { SelectColumn } from "../components/datagrid/Columns";
+// import { SelectColumn } from "../components/datagrid/Columns";
 import textEditor from "../components/datagrid/editors/textEditor";
 
 import DataGrid from "../components/datagrid/DataGrid";
 
-import dropDownEditor from "../components/datagrid/editors/textEditor";
+import dropDownEditor from "../components/datagrid/editors/dropDownEditors";
 import ImageFormatter from "./ImageFormatter";
 
 const highlightClassname = css`
@@ -26,28 +26,40 @@ function rowKeyGetter(row) {
 }
 
 const columns = [
-  SelectColumn,
+  // SelectColumn,
   {
     field: "id",
+    haveChildren: false,
     headerName: "ID",
     width: 80,
+    resizable: true,
+    cellEditor: textEditor,
     frozen: true,
   },
   {
     field: "avatar",
+    haveChildren: false,
     headerName: "Avatar",
-    width: 80,
+    width: 40,
+    resizable: true,
     frozen: true,
     headerRenderer: () => <ImageFormatter value={faker.image.cats()} />,
     valueFormatter: ({ row }) => <ImageFormatter value={row.avatar} />,
   },
   {
     field: "title",
+    haveChildren: false,
     headerName: "Title",
     width: 200,
-    valueFormatter(props) {
+    resizable: true,
+    frozen: true,
+    formatter(props) {
       return <>{props.row.title}</>;
     },
+    option: [
+      { label: "task1", value: "task1" },
+      { label: "task2", value: "task2" },
+    ],
     cellRenderer: dropDownEditor,
     editorOptions: {
       editOnClick: true,
@@ -55,74 +67,101 @@ const columns = [
   },
   {
     field: "firstName",
+    haveChildren: false,
     headerName: "First Name",
     width: 200,
-    frozen: true,
-    cellRenderer: (props) => {
-      return textEditor(props);
+  },
+  {
+    haveChildren: false,
+    headerName: "Money",
+    field: "money",
+    width: 200,
+    cellEditor: textEditor,
+    validation: {
+      style: { backgroundColor: "red", color: "blue" },
+      method: (value) => value >= 100,
     },
   },
   {
     field: "lastName",
+    haveChildren: false,
     headerName: "Last Name",
     width: 200,
-    frozen: true,
-    cellRenderer: textEditor,
+    cellEditor: textEditor,
+    resizable: true,
+
+    // cellRenderer: textEditor,
   },
   {
     field: "email",
+    haveChildren: false,
     headerName: "Email",
-    width: 100,
+    width: "max-content",
+    resizable: true,
     cellRenderer: textEditor,
   },
   {
     field: "street",
+    haveChildren: false,
     headerName: "Street",
     width: 200,
-    cellRenderer: textEditor,
+    resizable: true,
+    // cellRenderer: textEditor,
   },
   {
     field: "zipCode",
+    haveChildren: false,
     headerName: "ZipCode",
     width: 200,
+    resizable: true,
     cellRenderer: textEditor,
   },
   {
     field: "date",
+    haveChildren: false,
     headerName: "Date",
     width: 200,
-    cellRenderer: textEditor,
+    resizable: true,
+    // cellRenderer: textEditor,
   },
   {
     field: "bs",
+    haveChildren: false,
     headerName: "bs",
     width: 200,
-    cellRenderer: textEditor,
+    resizable: true,
+    // cellRenderer: textEditor,
   },
   {
     field: "catchPhrase",
+    haveChildren: false,
     headerName: "Catch Phrase",
-    width: 200,
-    cellRenderer: textEditor,
+    width: "max-content",
+    resizable: true,
+    // cellRenderer: textEditor,
   },
   {
     field: "companyName",
+    haveChildren: false,
     headerName: "Company Name",
     width: 200,
-    cellRenderer: textEditor,
+    // resizable: true,
+    // cellRenderer: textEditor,
   },
   {
     field: "sentence",
+    haveChildren: false,
     headerName: "Sentence",
-    width: 100,
-    cellRenderer: textEditor,
+    width: "max-content",
+    resizable: true,
+    // cellRenderer: textEditor,
   },
 ];
 
 function createRows() {
   const rows = [];
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 2000; i++) {
     rows.push({
       id: `id_${i}`,
       avatar: faker.image.avatar(),
@@ -138,6 +177,7 @@ function createRows() {
       companyName: faker.company.name(),
       words: faker.lorem.words(),
       sentence: faker.lorem.sentence(),
+      money: Math.floor(Math.random(0, 1000) * 1000),
     });
   }
 
@@ -151,6 +191,9 @@ export default function AllFeatures({ direction }) {
   const selectedCellHeaderStyle = {
     backgroundColor: "red",
     fontSize: "12px",
+  };
+  const selectedCellRowStyle = {
+    backgroundColor: "yellow",
   };
   function handlePaste({
     sourceColumnKey,
@@ -189,15 +232,19 @@ export default function AllFeatures({ direction }) {
       onPaste={handlePaste}
       // rowHeight={30}
       headerRowHeight={24}
-      summaryRowHeight={24}
       selectedCellHeaderStyle={selectedCellHeaderStyle}
+      selectedCellRowStyle={selectedCellRowStyle}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
       className="fill-grid"
-      // rowClass={(row) =>
-      //   row.id.includes("7") ? highlightClassname : undefined
-      // }
+      rowClass={(row) =>
+        row.id.includes("7") ? highlightClassname : undefined
+      }
       direction={direction}
+      restriction={{
+        copy: true,
+        paste: true,
+      }}
     />
   );
 }

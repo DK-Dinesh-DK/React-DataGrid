@@ -4,11 +4,11 @@ import { row } from "./row";
 
 const lightTheme = `
   --rdg-color: #000;
-  --rdg-border-color: #ffffff;
+  --rdg-border-color: #FFFFFF;
   --rdg-summary-border-color: #aaa;
   --rdg-background-color: hsl(0deg 0% 100%);
   --rdg-header-background-color: #16365D;
-  --rdg-header-row-color:#FFFFFF;
+  --rdg-header-row-color: #FFFFFF;
   --rdg-row-hover-background-color: #D7E3BC;
   --rdg-row-selected-background-color: hsl(207deg 76% 92%);
   --rdg-row-selected-hover-background-color: hsl(207deg 76% 88%);
@@ -21,7 +21,7 @@ const lightTheme = `
 
 const darkTheme = `
   --rdg-color: #ddd;
-  --rdg-border-color: #ffffff;
+  --rdg-border-color: #FFFFFF;
   --rdg-summary-border-color: #555;
   --rdg-background-color: hsl(0deg 0% 13%);
   --rdg-header-background-color: #16365D;
@@ -59,31 +59,33 @@ const root = css`
         box-sizing: inherit;
       }
     }
-    .rdg-row-even,	
-    .rdg-row-summary-row-even,	
-    .rdg-row-groupRow-even {	
-      background-color: #e5edf8;	
-    }	
-    .rdg-row-odd,	
-    .rdg-row-summary-row-odd,	
-    .rdg-row-groupRow-odd {	
-      background-color: #f3f8fc;	
+    .rdg-row-even,
+    .rdg-row-summary-row-even,
+    .rdg-row-groupRow-even {
+      background-color: #e5edf8;
+    }
+    .rdg-row-odd,
+    .rdg-row-summary-row-odd,
+    .rdg-row-groupRow-odd {
+      background-color: #f3f8fc;
     }
     @layer Root {
       ${lightTheme}
       --rdg-selection-color: #66afe9;
       --rdg-font-size: 11px;
-      --rdg-Row-Cell-Color:grey;
+
       display: grid;
 
       color-scheme: var(--rdg-color-scheme, light dark);
 
       /* https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index/The_stacking_context */
       /* We set a stacking context so internal elements don't render on top of external elements. */
-     
-     
+      contain: strict;
+      content-visibility: auto;
+      block-size: 350px;
+      border: 1px solid var(--rdg-border-color);
       box-sizing: border-box;
-      
+      overflow: auto;
       background-color: var(--rdg-background-color);
       color: var(--rdg-color);
       font-size: var(--rdg-font-size);
@@ -114,8 +116,6 @@ const root = css`
   }
 `;
 
-//Line No -62-70/75/89/77(removed)/                               //need to bechanged
-
 export const rootClassname = `rdg ${root}`;
 
 const viewportDragging = css`
@@ -138,7 +138,9 @@ export const focusSinkClassname = css`
     z-index: 3;
   }
 `;
+
 export const filterColumnClassName = 'filter-cell';
+
 export const filterContainerClassname = css`
   .${filterColumnClassName} {
     line-height: 35px;

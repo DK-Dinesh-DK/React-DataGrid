@@ -1,18 +1,18 @@
-import React from "react";
-import { memo } from "react";
-import clsx from "clsx";
-import { css } from "@linaria/core";
+import React from 'react';
+import { memo } from "react"
+import clsx from "clsx"
+import { css } from "@linaria/core"
 
 import {
   cell,
   cellFrozenLast,
   rowClassname,
-  rowSelectedClassname,
-} from "./style";
-import { SELECT_COLUMN_KEY } from "./Columns";
-import GroupCell from "./GroupCell";
-import { RowSelectionProvider } from "./hooks";
-import { getRowStyle } from "./utils";
+  rowSelectedClassname
+} from "./style"
+import { SELECT_COLUMN_KEY } from "./Columns"
+import GroupCell from "./GroupCell"
+import { RowSelectionProvider } from "./hooks"
+import { getRowStyle } from "./utils"
 
 const groupRow = css`
   @layer rdg.GroupedRow {
@@ -24,9 +24,9 @@ const groupRow = css`
       border-inline-end: none;
     }
   }
-`;
+`
 
-const groupRowClassname = `rdg-group-row ${groupRow}`;
+const groupRowClassname = `rdg-group-row ${groupRow}`
 
 function GroupedRow({
   id,
@@ -46,10 +46,10 @@ function GroupedRow({
   ...props
 }) {
   // Select is always the first column
-  const idx = viewportColumns[0].key === SELECT_COLUMN_KEY ? level + 1 : level;
+  const idx = viewportColumns[0].key === SELECT_COLUMN_KEY ? level + 1 : level
 
   function handleSelectGroup() {
-    selectGroup(rowIdx);
+    selectGroup(rowIdx)
   }
 
   return (
@@ -63,14 +63,14 @@ function GroupedRow({
           groupRowClassname,
           `rdg-row-groupRow-${rowIdx % 2 === 0 ? "even" : "odd"}`,
           {
-            [rowSelectedClassname]: selectedCellIdx === -1,
+            [rowSelectedClassname]: selectedCellIdx === -1
           }
         )}
         onClick={handleSelectGroup}
         style={getRowStyle(gridRowStart, height)}
         {...props}
       >
-        {viewportColumns.map((column) => (
+        {viewportColumns.map(column => (
           <GroupCell
             key={column.key}
             id={id}
@@ -86,7 +86,7 @@ function GroupedRow({
         ))}
       </div>
     </RowSelectionProvider>
-  );
+  )
 }
 
-export default memo(GroupedRow);
+export default memo(GroupedRow)

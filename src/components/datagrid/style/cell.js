@@ -17,6 +17,7 @@ export const cell = css`
     grid-row-start: var(--rdg-grid-row-start);
     background-color: inherit;
     text-align: center;
+
     white-space: nowrap;
     overflow: hidden;
     overflow: clip;
@@ -24,12 +25,13 @@ export const cell = css`
     outline: none;
 
     &[aria-selected="true"] {
-      outline: 2px solid var(--rdg-selection-color);
-      outline-offset: -2px;
+      outline: 1px solid var(--rdg-selection-color);
+      outline-offset: -1px;
     }
+
   }
 `;
-//Line No -14//need to bechanged
+
 export const cellClassname = `rdg-cell ${cell}`;
 
 export const cellFrozen = css`
@@ -38,6 +40,9 @@ export const cellFrozen = css`
     /* Should have a higher value than 0 to show up above unfrozen cells */
     z-index: 1;
   }
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 export const cellFrozenClassname = `rdg-cell-frozen ${cellFrozen}`;
@@ -45,7 +50,11 @@ export const cellFrozenClassname = `rdg-cell-frozen ${cellFrozen}`;
 export const cellFrozenLast = css`
   @layer rdg.Cell {
     box-shadow: calc(2px * var(--rdg-sign)) 0 5px -2px rgba(136, 136, 136, 0.3);
-  }
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+ }
 `;
 
 export const cellFrozenLastClassname = `rdg-cell-frozen-last ${cellFrozenLast}`;
@@ -56,5 +65,5 @@ export const cellEditorClassname = css`
     align-items: center;
     justify-content: center;
     height: 100%;
-  }
+ }
 `;

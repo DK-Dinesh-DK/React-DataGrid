@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import DataGrid from '../components/datagrid/DataGrid';
+import DataGrid from './components/datagrid/DataGrid';
 
 const columns= [
   { key: 'id', name: 'ID' },

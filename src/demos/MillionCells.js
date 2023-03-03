@@ -15,28 +15,29 @@ export default function MillionCells({ direction }) {
   const columns = useMemo(() => {
     const columns = [];
 
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 50; i++) {
       const key = String(i);
       columns.push({
         field: key,
         headerName: key,
-        frozen: i < 5,
+        // width: 80,
+        haveChildren: false,
+        // resizable: true,
         valueFormatter: cellFormatter,
       });
     }
 
     return columns;
   }, []);
-
+  console.log("roewss", rows, columns);
   return (
     <DataGrid
       columnData={columns}
       rowData={rows}
-      rowHeight={30}
+      rowHeight={22}
       headerRowHeight={24}
-      summaryRowHeight={24}
-      className="fill-grid"
-      direction={direction}
+      // className="fill-grid"
+      // direction={direction}
     />
   );
 }

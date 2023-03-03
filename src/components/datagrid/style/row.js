@@ -1,5 +1,5 @@
-import React from 'react';
-import { css } from "@linaria/core"
+import React from "react";
+import { css } from "@linaria/core";
 
 export const row = css`
   @layer rdg.Row {
@@ -19,18 +19,18 @@ export const row = css`
       }
     }
   }
-`
+`;
 
-export const rowClassname = `rdg-row ${row}`
+export const rowClassname = `rdg-row ${row}`;
 
 export const rowSelected = css`
   @layer rdg.FocusSink {
     outline: 2px solid var(--rdg-selection-color);
     outline-offset: -2px;
   }
-`
+`;
 
-export const rowSelectedClassname = "rdg-row-selected"
+export const rowSelectedClassname = "rdg-row-selected";
 
 export const rowSelectedWithFrozenCell = css`
   @layer rdg.FocusSink {
@@ -43,6 +43,4 @@ export const rowSelectedWithFrozenCell = css`
       border-inline-start: 2px solid var(--rdg-selection-color);
     }
   }
-`
-
-
+`;

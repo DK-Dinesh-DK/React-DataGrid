@@ -1,11 +1,10 @@
 import React from "react";
 import { css } from "@linaria/core";
-// import { Input } from "arms_v2.8_webui";
+// import { Input } from "lai_webui";
 
 const textEditorInternalClassname = css`
   @layer rdg.TextEditor {
     appearance: none;
-
     box-sizing: border-box;
     inline-size: 100%;
     block-size: 100%;
@@ -32,6 +31,7 @@ const textEditorInternalClassname = css`
 
 export const textEditorClassname = `rdg-text-editor ${textEditorInternalClassname}`;
 
+
 export default function textEditor({
   row,
   column,
@@ -53,10 +53,9 @@ export default function textEditor({
       disabled={column.editable ? column.editable : false}
       value={row[column.key]}
       {...column.inputProps}
-      onChange={(event) => {
-        console.log(row, "---");
-        onRowChange({ ...row, [column.key]: event.target.value });
-      }}
+      onChange={(event) =>
+        onRowChange({ ...row, [column.key]: event.target.value })
+      }
       onBlur={() => onClose(true)}
     />
   );
