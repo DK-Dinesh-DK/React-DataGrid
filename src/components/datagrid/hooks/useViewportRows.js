@@ -72,7 +72,8 @@ export function useViewportRows({
         // TODO: should users have control over the generated key?
         const id =
           parentId !== undefined ? `${parentId}__${groupKey}` : groupKey;
-        const isExpanded = expandAll!= null ? expandAll : expandedGroupIds?.has(id) ?? false;
+        const isExpanded =
+          expandAll != null ? expandAll : expandedGroupIds?.has(id) ?? false;
         const { childRows, childGroups, startRowIndex } = rows[groupKey];
 
         const groupRow = {

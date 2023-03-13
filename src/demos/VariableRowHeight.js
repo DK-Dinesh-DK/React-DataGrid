@@ -43,7 +43,8 @@ export default function VariableRowHeight({ direction }) {
   );
 }
 
-function rowHeight() {
+function rowHeight(data) {
+  console.log("dataaa-rowHeight",data);
   // should be based on the content of the row
   return 25 + Math.round(Math.random() * 75);
 }

@@ -4,7 +4,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-export async function exportToCsv(fileData, columns, fileName) {
+export function CSVContent(fileData, columns) {
   const field = columns?.map((ele) => ele.field);
   const header = columns?.map((ele) => ele.headerName);
 
@@ -26,9 +26,14 @@ export async function exportToCsv(fileData, columns, fileName) {
     .map((cells) => cells.map(serialiseCellValue).join(","))
     .join("\n");
 
+  return content;
+}
+export async function exportToCsv(fileData, columns, fileName) {
   downloadFile(
     fileName,
-    new Blob([content], { type: "text/csv;charset=utf-8;" })
+    new Blob([CSVContent(fileData, columns)], {
+      type: "text/csv;charset=utf-8;",
+    })
   );
 }
 

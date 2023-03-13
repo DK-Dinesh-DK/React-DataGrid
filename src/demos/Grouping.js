@@ -119,7 +119,7 @@ function rowKeyGetter(row) {
 
 function createRows() {
   const rows = [];
-  for (let i = 1; i < 1000; i++) {
+  for (let i = 1; i < 10; i++) {
     rows.push({
       id: i,
       year: 2015 + faker.datatype.number(3),
@@ -196,12 +196,21 @@ export default function Grouping({ direction }) {
       </button>
       <button
         onClick={() => {
-          var node = dataGridRef.current.api.getRowNodes(2);
-          console.log(node.isExpandable());
+          var node = dataGridRef.current.api.getRowNodes(4);
+          console.log("dfvdfvd", node.isExpandable());
         }}
       >
         isExpandable
       </button>
+      <button
+        onClick={() => {
+          var node = dataGridRef.current.api.getRowNodes(4);
+          node.setExpanded(true);
+        }}
+      >
+        setExpanded
+      </button>
+
       <DataGrid
         columnData={columns}
         rowData={rows}
@@ -215,6 +224,9 @@ export default function Grouping({ direction }) {
         defaultColumnOptions={{ resizable: true }}
         direction={direction}
         ref={dataGridRef}
+        onGridReady={(params) => {
+          console.log("paramssss", params);
+        }}
       />
     </div>
   );

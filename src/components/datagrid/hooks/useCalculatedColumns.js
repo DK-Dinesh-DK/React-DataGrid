@@ -50,7 +50,7 @@ export function useCalculatedColumns({
           ...rawColumn,
           colId: rawColumn.field,
           key: rawColumn.field,
-          userProvidedColDef:rawColumn,
+          userProvidedColDef: rawColumn,
           idx: 0,
           frozen,
           isLastFrozenColumn: false,
@@ -60,18 +60,19 @@ export function useCalculatedColumns({
           maxWidth: rawColumn.maxWidth ?? defaultMaxWidth,
           sortable: rawColumn.sortable ?? defaultSortable,
           resizable: rawColumn.resizable ?? defaultResizable,
-          formatter: rawColumn.cellRenderer
-            ? rawColumn.cellRenderer
-            : rawColumn.valueFormatter ?? defaultFormatter,
+          formatter:
+            rawColumn.valueGetter ??
+            rawColumn.valueFormatter ??
+            defaultFormatter,
 
           cellRenderer:
             frameworkComponents?.[customComponentName] ??
             rawColumn.cellRenderer ??
             rawColumn.valueFormatter ??
+            rawColumn.valueGetter ??
             defaultFormatter,
 
           filter: rawColumn.filter ?? defaultFilter,
-  
         };
 
         if (rowGroup) {

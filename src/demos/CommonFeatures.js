@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
@@ -8,7 +8,6 @@ import textEditor from "../components/datagrid/editors/textEditor";
 import { SelectCellFormatter } from "../components/datagrid/formatters/SelectCellFormatter";
 import DataGrid from "../components/datagrid/DataGrid";
 
-import { exportToCsv, exportToXlsx, exportToPdf } from "../components/exportUtils";
 import textEditorClassname from "../components/datagrid/editors/textEditor";
 
 const toolbarClassname = css`
@@ -105,7 +104,8 @@ function getColumns(countries, direction) {
           style={{ width: "100%" }}
           onChange={(e) =>
             p.onRowChange({ ...p.row, country: e.target.value }, true)
-          }>
+          }
+        >
           {countries.map((country) => (
             <option key={country}>{country}</option>
           ))}
@@ -149,7 +149,8 @@ function getColumns(countries, direction) {
               if (event.key === "Escape") {
                 onClose();
               }
-            }}>
+            }}
+          >
             <dialog open>
               <input
                 type="range"
@@ -241,7 +242,7 @@ function createRows() {
   const now = Date.now();
   const rows = [];
 
-  for (let i = 0; i < 1000; i++) {
+  for (let i = 0; i < 100; i++) {
     rows.push({
       id: i,
       title: `Task #${i + 1}`,
@@ -335,56 +336,118 @@ export default function CommonFeatures({ direction }) {
     });
   }, [rows, sortColumns]);
 
- 
+  const dataGridRef = useRef(null);
 
   return (
     <>
-      <div className={toolbarClassname}>
-        <ExportButton
-          onExport={() => exportToCsv(sortedRows, columns, "CommonFeatures.csv")}
-        >
-          Export to CSV
-        </ExportButton>
-        <ExportButton
-          onExport={() => exportToXlsx(sortedRows, columns, "CommonFeatures.xlsx")}
-        >
-          Export to XSLX
-        </ExportButton>
-        <ExportButton
-          onExport={() => exportToPdf(sortedRows, columns, "CommonFeatures.pdf")}
-        >
-          Export to PDF
-        </ExportButton>
-      </div>
+      <button
+        onClick={() => {
+          var node = dataGridRef.current.api.getRowNodes(5);
+          console.log(node);
+          node.setSelected();
+        }}
+      >
+        isExpandable
+      </button>
+      <button
+        onClick={() => {
+          var node = dataGridRef.current.api.getRowNodes(5);
+
+          node.setRowHeight(30);
+        }}
+      >
+        setRowHeight
+      </button>
+      <button
+        onClick={() => {
+          dataGridRef.current.api.forEachNode((node) => {
+            console.log("node", node);
+          });
+        }}
+      >
+        foreach
+      </button>
+      <button
+        onClick={() => {
+          console.log(dataGridRef.current.api.getPinnedTopRowCount());
+        }}
+      >
+        getPinnedTopRowCount
+      </button>
+      <button
+        onClick={() => {
+          console.log(dataGridRef.current.api.getPinnedBottomRowCount());
+        }}
+      >
+        getPinnedBottomRowCount
+      </button>
+      <button
+        onClick={() => {
+          dataGridRef.current.api.setPinnedTopRowData([
+            {
+              id: "total_0",
+              totalCount: `${rows.length}Topp`,
+              client: "Topppp",
+              yesCount: rows.filter((r) => r.available).length,
+            },
+          ]);
+        }}
+      >
+        setPinnedTopRowData
+      </button>
+      <button
+        onClick={() => {
+          dataGridRef.current.api.setPinnedBottomRowData([
+            {
+              id: "total_0",
+              totalCount: `${rows.length}Botttttom`,
+              client: "Botttttom",
+              yesCount: rows.filter((r) => r.available).length,
+            },
+          ]);
+        }}
+      >
+        setPinnedBottomRowData
+      </button>
+      <button
+        onClick={() => {
+          console.log(dataGridRef.current.api.getPinnedTopRow(0));
+        }}
+      >
+        getPinnedTopRow
+      </button>
+
       <DataGrid
-      rowKeyGetter={rowKeyGetter}
-      columnData={columns}
-      restriction={{
-        copy: true,
-        paste: true,
-      }}
-      rowData={sortedRows}
-      // defaultColumnOptions={{
-      //   sortable: true,
-      //   resizable: true
-      // }}
-      // onRowClicked={(e) => {
-      //   console.log("Row Clicked", e);
-      // }}
-      // selectedRows={selectedRows}
-      // onSelectedRowsChange={setSelectedRows}
-      onRowsChange={setRows}
-      // sortColumns={sortColumns}
-      // onSortColumnsChange={setSortColumns}
-      selectedRows={selectedRows}
-      onSelectedRowsChange={setSelectedRows}
-      topSummaryRows={summaryRows}
-      bottomSummaryRows={summaryRows}
-      showSelectedRows={true}
-      className="fill-grid"
-      direction={direction}
-      selection={true}
-    />
+        ref={dataGridRef}
+        rowKeyGetter={rowKeyGetter}
+        columnData={columns}
+        restriction={{
+          copy: true,
+          paste: true,
+        }}
+        rowData={sortedRows}
+        // defaultColumnOptions={{
+        //   sortable: true,
+        //   resizable: true
+        // }}
+        // onRowClicked={(e) => {
+        //   console.log("Row Clicked", e);
+        // }}
+        // selectedRows={selectedRows}
+        // onSelectedRowsChange={setSelectedRows}
+        onRowsChange={setRows}
+        // sortColumns={sortColumns}
+        // onSortColumnsChange={setSortColumns}
+        selectedRows={selectedRows}
+        onSelectedRowsChange={setSelectedRows}
+        topSummaryRows={summaryRows}
+        bottomSummaryRows={summaryRows}
+        showSelectedRows={true}
+        className="fill-grid"
+        direction={direction}
+        selection={true}
+        pagination={true}
+      />
     </>
   );
 }
@@ -398,7 +461,8 @@ function ExportButton({ onExport, children }) {
         setExporting(true);
         await onExport();
         setExporting(false);
-      }}>
+      }}
+    >
       {exporting ? "Exporting" : children}
     </button>
   );

@@ -26,7 +26,6 @@ const columns = [
     headerName: "ID",
     width: 80,
     cellRenderer: (props) => {
-      console.log("props", props);
       return textEditor(props);
     },
   },
@@ -34,11 +33,12 @@ const columns = [
     field: "title",
     headerName: "Title",
     editable: true,
-    filter:true
+    filter: true,
   },
   {
     field: "firstName",
     headerName: "First Name",
+    filter: true,
     cellRenderer: (props) => {
       return textEditor(props);
     },
@@ -46,6 +46,7 @@ const columns = [
   {
     field: "lastName",
     headerName: "Last Name",
+    valueGetter: ({ row, column }) => `Last Name: ${row[column.key]}`,
   },
   {
     field: "email",
@@ -95,7 +96,7 @@ function loadMoreRows(newRowsCount, length) {
 }
 
 export default function InfiniteScrolling({ direction }) {
-  const [rows, setRows] = useState(() => createRows(100));
+  const [rows, setRows] = useState(() => createRows(10));
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleScroll(event) {
@@ -172,11 +173,35 @@ export default function InfiniteScrolling({ direction }) {
       </button>
       <button
         onClick={() => {
-          console.log(dataGridRef.current.api);
           dataGridRef.current.api.tabToPreviousCell();
         }}
       >
         tabToPreviousCell
+      </button>
+      <button
+        onClick={() => {
+          console.log(
+            dataGridRef.current.api.forEachNode((node) => {
+              console.log("node", node);
+            })
+          );
+        }}
+      >
+        tabToPreviousCell
+      </button>
+      <button
+        onClick={() => {
+          dataGridRef.current.api.destroyFilter("title");
+        }}
+      >
+        destroyFilter
+      </button>
+      <button
+        onClick={() => {
+          console.log(dataGridRef.current.api.getDataAsCsv());
+        }}
+      >
+        getDataAsCsv
       </button>
 
       <DataGrid
@@ -189,6 +214,7 @@ export default function InfiniteScrolling({ direction }) {
         // userRef={dataGridRef}
         ref={dataGridRef}
         direction={direction}
+        selection={true}
       />
       {isLoading && (
         <div className={loadMoreRowsClassname}>Loading more rows...</div>

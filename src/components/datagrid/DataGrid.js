@@ -63,7 +63,12 @@ import {
 } from "./utils";
 import FilterContext from "./filterContext";
 import { SelectColumn, SerialNumberColumn } from "./Columns";
-import { exportToCsv, exportToPdf, exportToXlsx } from "../exportUtils";
+import {
+  CSVContent,
+  exportToCsv,
+  exportToPdf,
+  exportToXlsx,
+} from "../exportUtils";
 import { ExportButton } from "./ExportData";
 import Pagination from "rc-pagination";
 import "./pagination.css";
@@ -86,8 +91,8 @@ function DataGrid(props, ref) {
     // Grid and data Props
     columnData: raawColumns,
     rowData: raawRows,
-    topSummaryRows,
-    bottomSummaryRows,
+    topSummaryRows: rawTopSummaryRows,
+    bottomSummaryRows: rawBottomSummaryRows,
     rowKeyGetter,
     onRowsChange,
     // Dimensions props
@@ -134,6 +139,7 @@ function DataGrid(props, ref) {
     suppressPaginationPanel,
     paginationAutoPageSize,
     defaultPage,
+    onGridReady,
     // paginationNumberFormatter,
     // paginateChildRows,
     frameworkComponents,
@@ -226,6 +232,9 @@ function DataGrid(props, ref) {
   const [rawColumns, setRawColumns] = useState(
     serialNumber ? [SerialNumberColumn, ...raawColumns] : raawColumns
   );
+  const [topSummaryRows, setTopSummaryRows] = useState(rawTopSummaryRows);
+  const [bottomSummaryRows, setBottomSummaryRows] =
+    useState(rawBottomSummaryRows);
   const [headerHeightFromRef, setHeaderHeightFromRef] = useState();
 
   const [pagination, setPagination] = useState(tablePagination);
@@ -559,7 +568,6 @@ function DataGrid(props, ref) {
 
   function selectRow({ row, checked, isShiftClick }) {
     if (!onSelectedRowsChange1) return;
-
     assertIsValidKeyGetter(rowKeyGetter);
     const newSelectedRows = new Set(selectedRows1);
     const newSelectedRows1 = selectedRows;
@@ -602,6 +610,7 @@ function DataGrid(props, ref) {
     }
 
     onSelectedRowsChange1(newSelectedRows);
+
     onSelectedRowsChange(newSelectedRows1);
   }
 
@@ -1349,7 +1358,7 @@ function DataGrid(props, ref) {
     return newRowNode;
   }
   function getSelectedRows() {
-    return selectedRows;
+    return selectedRows1;
   }
 
   function selectAll(filteredRows) {
@@ -1416,7 +1425,6 @@ function DataGrid(props, ref) {
     if (pagination) {
       current - 1 > 0 ? setCurrent(current - 1) : null;
     }
-  
   }
   function getFocusedCell() {
     return selectedPosition.rowIdx >= 0
@@ -1488,6 +1496,7 @@ function DataGrid(props, ref) {
     });
     return filterPresent;
   }
+  var topSummaryRowNodes = [];
   var apiObject = {
     getColumnDefs: () => rawColumns,
     setColumnDefs: (columns) => setRawColumns(columns),
@@ -1554,10 +1563,30 @@ function DataGrid(props, ref) {
     collapseAll: () => setExpandAll(false),
     getFilterModel: () => filters,
     setFilterModel: (value) => setFilters({ ...filters, ...value }),
-  };
+    destroyFilter: (key) => {
+      const sample = filters;
 
+      // Reflect.deleteProperty(sample, key);
+      console.log("sample", sample, key);
+      setFilters(sample);
+    },
+    getDataAsCsv: () => {
+      return CSVContent(rawRows, rawColumns);
+    },
+    getPinnedTopRowCount: () => topSummaryRows.length,
+    getPinnedBottomRowCount: () => bottomSummaryRows.length,
+    setPinnedTopRowData: (rows) => setTopSummaryRows(rows),
+    setPinnedBottomRowData: (rows) => setBottomSummaryRows(rows),
+    getPinnedTopRow: (key) => topSummaryRowNodes[key],
+  };
+  if (onGridReady) {
+    onGridReady({ api: apiObject, type: "gridReady" });
+  }
   ///////////                              start
-  var RowNodes = getViewportRowsSample(raawRows);
+  const [RowNodes, setRowNodes] = useState();
+  useEffect(() => {
+    setRowNodes(getViewportRowsSample(raawRows));
+  }, [expandedGroupIds, expandAll]);
   function getViewportRowsSample(rowArray) {
     let rowElementsSample = [];
     let listOfRows = rowArray;
@@ -1623,6 +1652,7 @@ function DataGrid(props, ref) {
         firstChild: rowIdx === 0,
         id: row?.id ?? String(rowIdx),
         selected: selectedRowIdx === rowIdx,
+        expanded: rows[rowIdx]?.isExpanded,
         setDataValue,
         setData,
         parent: {
@@ -1631,7 +1661,28 @@ function DataGrid(props, ref) {
           childrenAfterSort: afterFilter,
         },
         updateData: setData,
-        isSelected: () => isRowSelected,
+        isSelected: () => selectedRowIdx === rowIdx,
+        setSelected: () => {
+          selectRow({
+            row,
+            checked: !selectedRows.includes(rowKeyGetter(row)),
+            isShiftClick: false,
+          });
+        },
+        isExpandable: () => {
+          return rows[rowIdx]?.isExpanded;
+        },
+        setExpanded: (value) => {
+          var expandIds = new Set(expandedGroupIds);
+          let rowKey = rowKeyGetter(rows[rowIdx]);
+
+          if (value) {
+            expandIds.add(rowKey);
+          } else {
+            expandIds.delete(rowKey);
+          }
+          onExpandedGroupIdsChange(expandIds);
+        },
       };
       rowElementsSample.push(node);
     }
@@ -1642,7 +1693,7 @@ function DataGrid(props, ref) {
   /////
   var renderedRowNodes = [];
   function getViewportRows() {
-    let node;
+    // let node;
     const rowElements = [];
     let startRowIndex = 0;
 
@@ -1689,7 +1740,6 @@ function DataGrid(props, ref) {
         const isGroupRowSelected =
           isSelectable &&
           row.childRows.every((cr) => selectedRows1?.has(rowKeyGetter(cr)));
-
         rowElements.push(
           <GroupRowRenderer
             // aria-level is 1-based
@@ -1758,6 +1808,7 @@ function DataGrid(props, ref) {
         firstChild: rowIdx === 0,
         id: row?.id ?? String(rowIdx),
         selected: selectedRowIdx === rowIdx,
+        expanded: row.isExpanded,
         setDataValue,
         setData,
         parent: {
@@ -1766,7 +1817,15 @@ function DataGrid(props, ref) {
           childrenAfterSort: afterFilter,
         },
         updateData: setData,
-        isSelected: () => isRowSelected,
+        isSelected: () => selectedRowIdx === rowIdx,
+        setSelected: () => {
+          selectRow({
+            row,
+            checked: !selectedRows.includes(rowKeyGetter(row)),
+            isShiftClick: false,
+          });
+        },
+        isExpandable: () => rows[rowIdx]?.isExpanded,
       };
       renderedRowNodes.push(node);
       rowElements.push(
@@ -1842,6 +1901,7 @@ function DataGrid(props, ref) {
         setSize(40);
       }
     }
+    setRowNodes(getViewportRowsSample(raawRows));
     const target = document.getElementById("DataGrid");
     if (props.restriction?.copy) {
       target.addEventListener("copy", (event) => {
@@ -1988,7 +2048,13 @@ function DataGrid(props, ref) {
                   const isSummaryRowSelected =
                     selectedPosition.rowIdx === summaryRowIdx;
                   const top = headerRowHeight + summaryRowHeight * rowIdx;
-
+                  const node = {
+                    data: row,
+                    rowTop: rowHeight * rowIdx,
+                    rowPinned: "top",
+                    rowIndex:rowIdx
+                  };
+                  topSummaryRowNodes.push(node);
                   return (
                     <SummaryRow
                       aria-rowindex={gridRowStart}
@@ -2092,41 +2158,43 @@ function DataGrid(props, ref) {
           document.body
         )}
       </div>
-      {showSelectedRows ? (
-        <div
-          class="footer-bottom"
-          style={{
-            width: gridWidth,
-            height: 25,
-            backgroundColor: "#f8f8f8",
-            color: "black",
-            fontSize: 12,
-            paddingRight: 15,
-            fontWeight: "bold",
-            display: "flex",
-            justifyContent: "flex-start",
-            alignItems: "center",
-          }}
-        >
-          {`Selected : ${selectedRows.length}`}
+      {(pagination || showSelectedRows) && (
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          {showSelectedRows ? (
+            <div
+              class="footer-bottom"
+              style={{
+                width: "25%",
+                height: 25,
+                backgroundColor: "#f8f8f8",
+                color: "black",
+                fontSize: 12,
+                paddingRight: 15,
+                fontWeight: "bold",
+                display: "flex",
+                justifyContent: "flex-start",
+                alignItems: "center",
+              }}
+            >
+              {`Selected : ${selectedRows.length}`}
+            </div>
+          ) : undefined}
+          {pagination && !suppressPagination && (
+            <Pagination
+              className="pagination-data"
+              showTotal={(total, range) =>
+                `Showing ${range[0]}-${range[1]} of ${total}`
+              }
+              onChange={PaginationChange}
+              total={rawRows.length}
+              current={current}
+              pageSize={size}
+              showSizeChanger={false}
+              itemRender={PrevNextArrow}
+              onShowSizeChange={PerPageChange}
+            />
+          )}
         </div>
-      ) : undefined}
-      {pagination && !suppressPagination && (
-        <>
-          <Pagination
-            className="pagination-data"
-            showTotal={(total, range) =>
-              `Showing ${range[0]}-${range[1]} of ${total}`
-            }
-            onChange={PaginationChange}
-            total={rawRows.length}
-            current={current}
-            pageSize={size}
-            showSizeChanger={false}
-            itemRender={PrevNextArrow}
-            onShowSizeChange={PerPageChange}
-          />
-        </>
       )}
     </>
   );
