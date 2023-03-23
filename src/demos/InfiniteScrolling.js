@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
 import textEditor from "../components/datagrid/editors/textEditor";
@@ -111,110 +111,34 @@ export default function InfiniteScrolling({ direction }) {
   }
   const dataGridRef = useRef(null);
   const [selectedRows, setSelectedRows] = useState([]);
+
+  console.log("VChangeeeeee0", rows[9]);
+
   return (
     <>
       <button
         onClick={() => {
-          console.log("dataGridRef", dataGridRef.current.api.getFocusedCell());
+          console.log("dataGridRef", dataGridRef.current.api.getRowNode(2));
         }}
-        style={{ color: "white", backgroundColor: "red" }}
       >
         getFocusedCell
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.setFocusedCell(1, "lastName");
-        }}
-      >
-        setFocusedCell
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.clearFocusedCell();
-        }}
-      >
-        clearFocusedCell
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.tabToNextCell();
-        }}
-      >
-        tabToNextCell
-      </button>
-      <button
-        onClick={() => {
-          console.log(dataGridRef.current.api);
-          dataGridRef.current.api.tabToPreviousCell();
-        }}
-      >
-        tabToPreviousCell
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.exportDataAsCsv();
-        }}
-      >
-        exportDataAsCsv
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.exportDataAsExcel();
-        }}
-      >
-        exportDataAsExcel
-      </button>
-      <button
-        onClick={() => {
-          console.log(dataGridRef.current.api.isAnyFilterPresent());
-        }}
-      >
-        isAnyFilterPresent
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.tabToPreviousCell();
-        }}
-      >
-        tabToPreviousCell
-      </button>
-      <button
-        onClick={() => {
-          console.log(
-            dataGridRef.current.api.forEachNode((node) => {
-              console.log("node", node);
-            })
-          );
-        }}
-      >
-        tabToPreviousCell
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.destroyFilter("title");
-        }}
-      >
-        destroyFilter
-      </button>
-      <button
-        onClick={() => {
-          console.log(dataGridRef.current.api.getDataAsCsv());
-        }}
-      >
-        getDataAsCsv
       </button>
 
       <DataGrid
         columnData={columns}
         rowData={rows}
         rowKeyGetter={rowKeyGetter}
-        onRowsChange={setRows}
+        onRowsChange={(data) => {
+          console.log("Data", data);
+          // setRows(data);
+        }}
         rowHeight={25}
         className="fill-grid"
         // userRef={dataGridRef}
         ref={dataGridRef}
         direction={direction}
         selection={true}
+        valueChangedCellStyle={{ backgroundColor: "Blue", color: "White" }}
       />
       {isLoading && (
         <div className={loadMoreRowsClassname}>Loading more rows...</div>

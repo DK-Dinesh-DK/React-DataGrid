@@ -33,7 +33,6 @@ export default function HeaderFilters({ direction }) {
         field: "task",
         headerName: "Title",
         cellRenderer: (props) => {
-          console.log("props", props);
           return textEditor(props);
         },
         sortable: true,
@@ -115,77 +114,19 @@ export default function HeaderFilters({ direction }) {
       </button>
       <button
         onClick={() => {
-          console.log(dataGridRef.current.api.deselectAllFiltered());
+          dataGridRef.current.api.destroyFilter("priority");
         }}
-        style={{ color: "black", backgroundColor: "lightslategrey" }}
       >
-        Deselect All Filtered Rows
+        destroyFilter
       </button>
       <button
         onClick={() => {
-          console.log(dataGridRef.current.api.selectAll());
+          console.log(dataGridRef.current.api.isColumnFilterPresent());
         }}
-        style={{ color: "black", backgroundColor: "lightblue" }}
       >
-        Select All Rows
+        isColumnFilterPresent
       </button>
-      <button
-        onClick={() => {
-          console.log(dataGridRef.current.api.deselectAll());
-        }}
-        style={{ color: "white", backgroundColor: "lightseagreen" }}
-      >
-        Deselect All Rows
-      </button>
-      <button
-        onClick={updateData}
-        style={{ color: "black", backgroundColor: "lightskyblue" }}
-      >
-        Update Data
-      </button>
-      <button
-        onClick={() => {
-          console.log(dataGridRef);
-          console.log(dataGridRef.current.api.applyTransaction(myTransaction));
 
-          // console.log(dataGridRef.current.api.getSelectedNodes());
-          // var rowNode = dataGridRef.current.api.getRowNodes(2);
-          // rowNode.setDataValue("task", "dineshkumar@gmail.com");
-        }}
-        style={{ color: "white", backgroundColor: "red" }}
-      >
-        ADD
-      </button>
-      <button
-        onClick={() => {
-          console.log(
-            dataGridRef.current.api.forEachLeafNode((node) => {
-              console.log("Node", node);
-            })
-          );
-          // console.log(
-          //   dataGridRef.current.api.forEachLeafNodeAfterFilter((node) => {
-          //     node.data.priority = "Imaginary";
-          //   })
-          // );
-        }}
-        style={{ color: "black", backgroundColor: "lightsteelblue" }}
-      >
-        For Each Leaf Node After Filter
-      </button>
-      <button
-        onClick={() => {
-          console.log(dataGridRef);
-          console.log(
-            dataGridRef.current.api.forEachLeafNode((node) => {
-              node.data.priority = "Imaginary";
-            })
-          );
-        }}
-        style={{ color: "black", backgroundColor: "lightyellow" }}
-      >
-        For Each Leaf Node After Filter and Sort
-      </button>
       <DataGrid
         rowKeyGetter={rowKeyGetter}
         columnData={columns}

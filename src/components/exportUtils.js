@@ -10,7 +10,7 @@ export function CSVContent(fileData, columns) {
 
   const data = fileData.map((f) => {
     let sample = [];
-    field.map((d) => {
+    field.forEach((d) => {
       if (d != undefined) {
         sample.push(f[d]);
       } else {
@@ -39,7 +39,7 @@ export async function exportToCsv(fileData, columns, fileName) {
 
 export async function exportToPdf(fileData, columns, fileName) {
   var field = [];
-  columns?.map((ele) => {
+  columns?.forEach((ele) => {
     if (ele.field) {
       field.push({ dataKey: ele.field, header: ele.headerName });
     }

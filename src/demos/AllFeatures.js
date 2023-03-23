@@ -65,6 +65,7 @@ const columns = [
     width: 200,
     resizable: true,
     frozen: true,
+    cellEditor: textEditor,
     // cellRenderer: (props) => {
     //   console.log("props,", props);
     //   return textEditor(props);
@@ -94,8 +95,8 @@ const columns = [
     field: "money",
     cellEditor: textEditor,
     frozen: true,
-    alignment:true,
-    width:100,
+    alignment: true,
+    width: 100,
     validation: {
       style: { backgroundColor: "red", color: "blue" },
       method: (value) => value.slice(1) >= 100,
@@ -186,7 +187,7 @@ function createRows() {
       companyName: faker.company.name(),
       words: faker.lorem.words(),
       sentence: faker.lorem.sentence(),
-      money:'₹101'
+      money: "₹101",
     });
   }
 
@@ -236,6 +237,7 @@ export default function AllFeatures({ direction }) {
       rowData={rows}
       rowKeyGetter={rowKeyGetter}
       onRowsChange={setRows}
+      valueChangedCellStyle={{ backgroundColor: "Blue", color: "White" }}
       onFill={true}
       onCopy={handleCopy}
       onPaste={handlePaste}

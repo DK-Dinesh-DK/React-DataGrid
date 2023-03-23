@@ -132,6 +132,9 @@ export default function Nav({ direction, onDirectionChange }) {
       <NavLink to="/export" end className={getActiveClassname}>
         21. Export
       </NavLink>
+      <NavLink to="/alignment" end className={getActiveClassname}>
+        22. Alignment Data Types
+      </NavLink>
 
       <h2>Direction</h2>
       <label className={rtlCheckboxClassname}>

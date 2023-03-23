@@ -36,6 +36,7 @@ function Row(
     selectCell,
     totalColumns,
     handleReorderRow,
+    previousData,
     ...props
   },
   ref
@@ -101,6 +102,8 @@ function Row(
           onRowDoubleClick={onRowDoubleClick}
           onRowChange={handleRowChange}
           selectCell={selectCell}
+          valueChangedCellStyle={props.valueChangedCellStyle}
+          previousData={previousData}
         />
       );
     }

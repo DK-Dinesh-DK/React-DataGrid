@@ -99,7 +99,15 @@ export function useCalculatedColumns({
         if (frozen) {
           lastFrozenColumnIndex++;
         }
-
+        if (column.alignment) {
+          if (
+            column.alignment.type?.toLowerCase() == "date" ||
+            column.alignment.type?.toLowerCase() == "datetime" ||
+            column.alignment.type?.toLowerCase() == "time"
+          ) {
+            column.width = rawColumn.width ??"max-content";
+          }
+        }
         return column;
       });
 

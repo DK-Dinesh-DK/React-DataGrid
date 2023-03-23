@@ -31,7 +31,6 @@ const textEditorInternalClassname = css`
 
 export const textEditorClassname = `rdg-text-editor ${textEditorInternalClassname}`;
 
-
 export default function textEditor({
   row,
   column,
@@ -50,6 +49,7 @@ export default function textEditor({
       spellCheck="false"
       className={textEditorClassname}
       type={type}
+      style={{ ...props.style}}
       disabled={column.editable ? column.editable : false}
       value={row[column.key]}
       {...column.inputProps}

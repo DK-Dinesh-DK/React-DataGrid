@@ -1,4 +1,4 @@
-import {  useState } from "react";
+import { useRef, useState } from "react";
 // import { DndProvider } from "react-dnd";
 // import { HTML5Backend } from "react-dnd-html5-backend";
 // import { SelectColumn } from "../components/datagrid/Columns";
@@ -45,24 +45,28 @@ const columns = [
     field: "id",
     headerName: "ID",
     width: 80,
-    rowDrag:true,
+    rowDrag: true,
   },
   {
     field: "task",
     headerName: "Title",
+    width: 200,
     editor: textEditor,
   },
   {
     field: "priority",
     headerName: "Priority",
+    width: 200,
   },
   {
     field: "issueType",
     headerName: "Issue Type",
+    width: 200,
   },
   {
     field: "complete",
     headerName: "% Complete",
+    width: 200,
   },
 ];
 function rowKeyGetter(row) {
@@ -72,18 +76,42 @@ function rowKeyGetter(row) {
 export default function RowsReordering({ direction }) {
   const [rows, setRows] = useState(createRows);
   const [selectedRows, setSelectedRows] = useState([]);
-
+  const gridRef = useRef(null);
   return (
-    <DataGrid
-      columnData={columns}
-      rowData={rows}
-      rowKeyGetter={rowKeyGetter}
-      selectedRows={selectedRows}
-      onSelectedRowsChange={setSelectedRows}
-      serialNumber={true}
-      onRowsChange={setRows}
-      direction={direction}
-      frameworkComponents={frameworkComponents}
-    />
+    <>
+      <button
+        onClick={() => {
+          gridRef.current.api.setSuppressRowDrag(true);
+        }}
+      >
+        setSuppressRowDrag
+      </button>
+      <button
+        onClick={() => {
+          console.log(gridRef.current.api.getVerticalPixelRange());
+        }}
+      >
+        getVerticalPixelRange
+      </button>
+      <button
+        onClick={() => {
+          console.log(gridRef.current.api.getHorizontalPixelRange());
+        }}
+      >
+        getHorizontalPixelRange
+      </button>
+      <DataGrid
+        columnData={columns}
+        rowData={rows}
+        ref={gridRef}
+        rowKeyGetter={rowKeyGetter}
+        selectedRows={selectedRows}
+        onSelectedRowsChange={setSelectedRows}
+        serialNumber={true}
+        onRowsChange={setRows}
+        direction={direction}
+        frameworkComponents={frameworkComponents}
+      />
+    </>
   );
 }

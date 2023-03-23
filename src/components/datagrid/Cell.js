@@ -139,53 +139,83 @@ function Cell({
       var symbol = ["£", "$", "₹", "€", "¥", "₣", "¢"];
 
       if (
+        column.alignment.type?.toLowerCase() === "date" ||
         moment(row[column.key], "YYYY-MM-DD", true).isValid() ||
         moment(row[column.key], "YYYY/MM/DD", true).isValid() ||
         moment(row[column.key], "YYYY-DD-MM", true).isValid() ||
         moment(row[column.key], "YYYY/DD/MM", true).isValid() ||
         moment(row[column.key], "MM-DD-YYYY", true).isValid() ||
-        moment(row[column.key], "MM/DD-YYYY", true).isValid() ||
+        moment(row[column.key], "MM/DD/YYYY", true).isValid() ||
+        moment(row[column.key], "MM-YYYY-DD", true).isValid() ||
+        moment(row[column.key], "MM/YYYY/DD", true).isValid() ||
         moment(row[column.key], "DD-MM-YYYY", true).isValid() ||
         moment(row[column.key], "DD/MM/YYYY", true).isValid() ||
+        moment(row[column.key], "DD-YYYY-MM", true).isValid() ||
+        moment(row[column.key], "DD/YYYY/MM", true).isValid() ||
         moment(row[column.key], "DD-MMM-YYYY", true).isValid() ||
         moment(row[column.key], "DD/MMM/YYYY", true).isValid() ||
+        moment(row[column.key], "DD-YYYY-MMM", true).isValid() ||
+        moment(row[column.key], "DD/YYYY/MMM", true).isValid() ||
         moment(row[column.key], "MMM-DD-YYYY", true).isValid() ||
         moment(row[column.key], "MMM/DD/YYYY", true).isValid() ||
+        moment(row[column.key], "MMM-YYYY-DD", true).isValid() ||
+        moment(row[column.key], "MMM/YYYY/DD", true).isValid() ||
         moment(row[column.key], "YYYY-MMM-DD", true).isValid() ||
         moment(row[column.key], "YYYY/MMM/DD", true).isValid() ||
         moment(row[column.key], "YYYY-DD-MMM", true).isValid() ||
         moment(row[column.key], "YYYY/DD/MMM", true).isValid() ||
-        (column.alignment.type &&
-          column.alignment.type.toLowerCase() === "date")
+        JSON.stringify(row[column.key]).split("/").length === 3 ||
+        JSON.stringify(row[column.key]).split("-").length === 3
       ) {
         const alignmentStyle = column.alignment.align
           ? { textAlign: column.alignment.align }
-          : { textAlign: "left" };
+          : {
+              textAlign: "end",
+              paddingRight: "6px",
+              paddingLeft: "6px",
+            };
         styles = {
           ...styles,
           ...alignmentStyle,
         };
         return styles;
       } else if (
+        column.alignment.type?.toLowerCase() === "time" ||
         moment(row[column.key], "hh:mm", true).isValid() ||
         moment(row[column.key], "hh:mm:ss", true).isValid() ||
         moment(row[column.key], "hh:mm:ss a", true).isValid() ||
-        (column.alignment.type &&
-          column.alignment.type.toLowerCase() === "time")
+        moment(row[column.key], "hh:mm a", true).isValid() ||
+        JSON.stringify(row[column.key]).split(":").length > 1
       ) {
         const alignment = column.alignment.align
           ? { textAlign: column.alignment.align }
-          : { textAlign: "left" };
+          : { textAlign: "end", paddingRight: "6px", paddingLeft: "6px" };
         styles = {
           ...styles,
           ...alignment,
         };
         return styles;
       } else if (
+        column.alignment.type?.toLowerCase() === "datetime" ||
+        (JSON.stringify(row[column.key]).split(":").length > 1 &&
+          (JSON.stringify(row[column.key]).split("/").length === 3 ||
+            JSON.stringify(row[column.key]).split("-").length === 3))
+      ) {
+        const alignment = column.alignment.align
+          ? {
+              textAlign: column.alignment.align,
+              paddingRight: "6px",
+              paddingLeft: "6px",
+            }
+          : { textAlign: "end", paddingRight: "6px", paddingLeft: "6px" };
+        styles = {
+          ...styles,
+          ...alignment,
+        };
+      } else if (
+        column.alignment.type?.toLowerCase() === "number" ||
         (typeof row[column.key] === "number" &&
-          column.alignment.type !== "currency") ||
-        (column.alignment.type &&
-          column.alignment.type.toLowerCase() === "number")
+          column.alignment.type !== "currency")
       ) {
         const alignment = column.alignment.align
           ? { textAlign: column.alignment.align }
@@ -196,12 +226,9 @@ function Cell({
         };
         return styles;
       } else if (
+        column.alignment.type?.toLowerCase() === "currency" ||
         symbol.includes(JSON.stringify(row[column.key])[1]) ||
-        symbol.includes(
-          JSON.stringify(row[column.key])[row[column.key].length]
-        ) ||
-        (column.alignment.type &&
-          column.alignment.type.toLowerCase() === "currency")
+        symbol.includes(JSON.stringify(row[column.key])[row[column.key].length])
       ) {
         const alignment = column.alignment.align
           ? { textAlign: column.alignment.align }
@@ -212,15 +239,13 @@ function Cell({
         };
         return styles;
       } else if (
-        (column.alignment.type &&
-          column.alignment.type.toLowerCase() === "string") ||
-        (column.alignment.type &&
-          column.alignment.type.toLowerCase() === "text") ||
+        column.alignment.type?.toLowerCase() === "string" ||
+        column.alignment.type?.toLowerCase() === "text" ||
         typeof row[column.ley] === "string"
       ) {
         const alignment = column.alignment.align
           ? { textAlign: column.alignment.align }
-          : { textAlign: "left" };
+          : { textAlign: "start" };
         styles = {
           ...styles,
           ...alignment,
@@ -242,6 +267,16 @@ function Cell({
   }
   /// -----------------------
 
+  if (props.valueChangedCellStyle) {
+    if (props.previousData[rowIndex]?.includes(column.key)) {
+      style = {
+        ...style,
+        backgroundColor:
+          props.valueChangedCellStyle.backgroundColor ?? style.backgroundColor,
+        color: props.valueChangedCellStyle.color ?? style.color,
+      };
+    }
+  }
   const [{ isDragging }, drag] = useDrag({
     type: "ROW_DRAG",
     item: { index: rowIndex },
@@ -277,6 +312,7 @@ function Cell({
     value: row[column.key],
     isCellSelected,
     onRowChange: handleRowChange,
+    style
   };
   return (
     <div
@@ -295,7 +331,7 @@ function Cell({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       onFocus={onFocus}
-      title={row[column.key]}
+      title={row[column.key]?.toString()}
       {...props}
     >
       {!column.rowGroup && (

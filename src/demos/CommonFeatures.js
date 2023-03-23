@@ -99,7 +99,7 @@ function getColumns(countries, direction) {
       width: 180,
       cellRenderer: (p) => (
         <select
-          className={textEditorClassname}
+          // className={textEditorClassname}
           value={p.row.country}
           style={{ width: "100%" }}
           onChange={(e) =>
@@ -342,79 +342,10 @@ export default function CommonFeatures({ direction }) {
     <>
       <button
         onClick={() => {
-          var node = dataGridRef.current.api.getRowNodes(5);
-          console.log(node);
-          node.setSelected();
+          console.log(dataGridRef.current.api.getEditingCells());
         }}
       >
-        isExpandable
-      </button>
-      <button
-        onClick={() => {
-          var node = dataGridRef.current.api.getRowNodes(5);
-
-          node.setRowHeight(30);
-        }}
-      >
-        setRowHeight
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.forEachNode((node) => {
-            console.log("node", node);
-          });
-        }}
-      >
-        foreach
-      </button>
-      <button
-        onClick={() => {
-          console.log(dataGridRef.current.api.getPinnedTopRowCount());
-        }}
-      >
-        getPinnedTopRowCount
-      </button>
-      <button
-        onClick={() => {
-          console.log(dataGridRef.current.api.getPinnedBottomRowCount());
-        }}
-      >
-        getPinnedBottomRowCount
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.setPinnedTopRowData([
-            {
-              id: "total_0",
-              totalCount: `${rows.length}Topp`,
-              client: "Topppp",
-              yesCount: rows.filter((r) => r.available).length,
-            },
-          ]);
-        }}
-      >
-        setPinnedTopRowData
-      </button>
-      <button
-        onClick={() => {
-          dataGridRef.current.api.setPinnedBottomRowData([
-            {
-              id: "total_0",
-              totalCount: `${rows.length}Botttttom`,
-              client: "Botttttom",
-              yesCount: rows.filter((r) => r.available).length,
-            },
-          ]);
-        }}
-      >
-        setPinnedBottomRowData
-      </button>
-      <button
-        onClick={() => {
-          console.log(dataGridRef.current.api.getPinnedTopRow(0));
-        }}
-      >
-        getPinnedTopRow
+        getEditingCells
       </button>
 
       <DataGrid
@@ -426,18 +357,8 @@ export default function CommonFeatures({ direction }) {
           paste: true,
         }}
         rowData={sortedRows}
-        // defaultColumnOptions={{
-        //   sortable: true,
-        //   resizable: true
-        // }}
-        // onRowClicked={(e) => {
-        //   console.log("Row Clicked", e);
-        // }}
-        // selectedRows={selectedRows}
-        // onSelectedRowsChange={setSelectedRows}
         onRowsChange={setRows}
-        // sortColumns={sortColumns}
-        // onSortColumnsChange={setSortColumns}
+        
         selectedRows={selectedRows}
         onSelectedRowsChange={setSelectedRows}
         topSummaryRows={summaryRows}
@@ -452,18 +373,4 @@ export default function CommonFeatures({ direction }) {
   );
 }
 
-function ExportButton({ onExport, children }) {
-  const [exporting, setExporting] = useState(false);
-  return (
-    <button
-      disabled={exporting}
-      onClick={async () => {
-        setExporting(true);
-        await onExport();
-        setExporting(false);
-      }}
-    >
-      {exporting ? "Exporting" : children}
-    </button>
-  );
-}
+

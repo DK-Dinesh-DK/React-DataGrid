@@ -143,6 +143,7 @@ function DataGrid(props, ref) {
     // paginationNumberFormatter,
     // paginateChildRows,
     frameworkComponents,
+    valueChangedCellStyle,
     ...rest
   } = props;
 
@@ -248,6 +249,9 @@ function DataGrid(props, ref) {
     setCurrent(page);
     setSize(pageSize);
   };
+  const [suppressRowClickSelection, setSuppressRowClickSelection] =
+    useState(false);
+
   const PrevNextArrow = (current, type, originalElement) => {
     if (type === "prev") {
       return (
@@ -582,8 +586,8 @@ function DataGrid(props, ref) {
           newSelectedRows1.splice(newSelectedRows1.indexOf(row), 1);
         }
       }
-      onSelectedRowsChange1(newSelectedRows);
-      onSelectedRowsChange(newSelectedRows1);
+      !suppressRowClickSelection && onSelectedRowsChange1(newSelectedRows);
+      !suppressRowClickSelection && onSelectedRowsChange(newSelectedRows1);
       return;
     }
 
@@ -609,9 +613,9 @@ function DataGrid(props, ref) {
       lastSelectedRowIdx.current = -1;
     }
 
-    onSelectedRowsChange1(newSelectedRows);
+    !suppressRowClickSelection && onSelectedRowsChange1(newSelectedRows);
 
-    onSelectedRowsChange(newSelectedRows1);
+    !suppressRowClickSelection && onSelectedRowsChange(newSelectedRows1);
   }
 
   function selectAllRows(checked) {
@@ -629,8 +633,8 @@ function DataGrid(props, ref) {
         newSelectedRows1.splice(newSelectedRows1.indexOf(row), 1);
       }
     }
-    onSelectedRowsChange(newSelectedRows1);
-    onSelectedRowsChange1(newSelectedRows);
+    !suppressRowClickSelection && onSelectedRowsChange(newSelectedRows1);
+    !suppressRowClickSelection && onSelectedRowsChange1(newSelectedRows);
   }
 
   function toggleGroup(expandedGroupId) {
@@ -726,7 +730,40 @@ function DataGrid(props, ref) {
     return hasGroups ? rawRows.indexOf(rows[rowIdx]) : rowIdx;
   }
 
+  function findCahngedKey(newObj, oldObj) {
+    if (Object.keys(oldObj)?.length == 0 && Object.keys(newObj)?.length > 0)
+      return newObj;
+
+    let diff = {};
+    for (const key in oldObj) {
+      if (newObj[key] && oldObj[key] != newObj[key]) {
+        diff[key] = newObj[key];
+      }
+    }
+
+    if (Object.keys(diff).length > 0) return Object.keys(diff);
+
+    return [];
+  }
+
+  const [changedList, setChangedList] = useState([]);
+  const [sample, setSample] = useState([]);
+
+  useEffect(() => {
+    setSample([...raawRows]);
+  }, [raawRows]);
+  useEffect(() => {
+    setSample([...raawRows]);
+  }, []);
+
   function updateRow(column, rowIdx, row) {
+    let sampleData = raawRows;
+
+    let sampleChanged = changedList;
+    sampleChanged[rowIdx] = findCahngedKey(row, sample[rowIdx]);
+    setChangedList(sampleChanged);
+    sampleData[rowIdx] = row;
+    setRawRows([...sampleData]);
     if (typeof onRowsChange !== "function") return;
     const rawRowIdx = getRawRowIdx(rowIdx);
     if (row === rawRows[rawRowIdx]) return;
@@ -1164,7 +1201,7 @@ function DataGrid(props, ref) {
   }
   function isRowPresent(object1) {
     let result = false;
-    RowNodes.map((obj) => {
+    RowNodes.forEach((obj) => {
       if (_.isEqual(object1, obj)) {
         result = true;
       }
@@ -1176,12 +1213,12 @@ function DataGrid(props, ref) {
     let secondIndex;
     let startIndex;
     let endIndex;
-    RowNodes.map((obj, idx) => {
+    RowNodes.forEach((obj, idx) => {
       if (_.isEqual(obj1, obj)) {
         firstIndex = idx;
       }
     });
-    RowNodes.map((obj, idx) => {
+    RowNodes.forEach((obj, idx) => {
       if (_.isEqual(obj2, obj)) {
         secondIndex = idx;
       }
@@ -1374,7 +1411,7 @@ function DataGrid(props, ref) {
       if (!newSelectedRows1.includes(row)) newSelectedRows1.push(row);
     }
 
-    onSelectedRowsChange1(newSelectedRows);
+    !suppressRowClickSelection && onSelectedRowsChange1(newSelectedRows);
   }
   function deselectAll(filteredRows) {
     if (!onSelectedRowsChange) return;
@@ -1388,7 +1425,7 @@ function DataGrid(props, ref) {
       newSelectedRows.delete(rowKey);
       newSelectedRows1.splice(newSelectedRows1.indexOf(row), 1);
     }
-    onSelectedRowsChange1(newSelectedRows);
+    !suppressRowClickSelection && onSelectedRowsChange1(newSelectedRows);
   }
   function getSelectedNodes() {
     let selectedNodes = new Set();
@@ -1417,13 +1454,13 @@ function DataGrid(props, ref) {
     }
   }
   function paginationGoToNextPage() {
-    if (pagination) {
-      current + 1 <= totalPages ? setCurrent(current + 1) : null;
+    if (pagination && current + 1 <= totalPages) {
+      setCurrent(current + 1);
     }
   }
   function paginationGoToPreviousPage() {
-    if (pagination) {
-      current - 1 > 0 ? setCurrent(current - 1) : null;
+    if (pagination && current - 1 > 0) {
+      setCurrent(current - 1);
     }
   }
   function getFocusedCell() {
@@ -1436,7 +1473,7 @@ function DataGrid(props, ref) {
   }
   function setFocusedCell(idx, key) {
     let index;
-    columns.map((obj, position) => {
+    columns.forEach((obj, position) => {
       if (obj.key == key) {
         index = position;
       }
@@ -1491,17 +1528,71 @@ function DataGrid(props, ref) {
   }
   function isAnyFilterPresent() {
     let filterPresent = false;
-    viewportColumns.map((obj) => {
+    viewportColumns.forEach((obj) => {
       if (obj?.filter) filterPresent = true;
     });
     return filterPresent;
   }
+
+  function setSuppressRowDrag(value) {
+    if (value) {
+      let sampleColumn = raawColumns.map((obj) => {
+        if (obj?.rowDrag) {
+          return { ...obj, rowDrag: false };
+        } else {
+          return obj;
+        }
+      });
+
+      setRawColumns(sampleColumn);
+    }
+  }
+  function getVerticalPixelRange() {
+    return {
+      top: scrollTop,
+      bottom: scrollTop + document.getElementById("DataGrid").offsetHeight,
+    };
+  }
+  function getHorizontalPixelRange() {
+    return {
+      left: scrollLeft,
+      right: scrollLeft + document.getElementById("DataGrid").offsetWidth,
+    };
+  }
+  function isColumnFilterPresent() {
+    var sampleKeys = Object.keys(filters);
+    var result = false;
+    sampleKeys.forEach((value) => {
+      if (value === "undefined" || value === "enabled") {
+      } else {
+        if (filters[value] != "") {
+          result = true;
+        }
+      }
+    });
+
+    return result;
+  }
+
+  const [selectedData, setSelectedData] = useState(null);
+  useEffect(() => {
+    if (selectedPosition.mode === "EDIT") {
+      if (columns[selectedPosition.idx].cellEditor) {
+        setSelectedData(selectedPosition);
+      }
+    }
+  }, [selectedPosition]);
+
+  function getEditingCells() {
+    return { rowIndex: selectedData.rowIdx, column: columns[selectedData.idx] };
+  }
+
   var topSummaryRowNodes = [];
   var apiObject = {
     getColumnDefs: () => rawColumns,
     setColumnDefs: (columns) => setRawColumns(columns),
     setRowData: setRowData,
-    getRowNodes: (value) => RowNodes[value],
+    getRowNode: (value) => RowNodes[value],
     setHeaderHeight: (height) => setHeaderHeightFromRef(height),
     getDisplayedRowCount: () => rawRows.length,
     getDisplayedRowAtIndex: (index) => rawRows[index],
@@ -1563,13 +1654,7 @@ function DataGrid(props, ref) {
     collapseAll: () => setExpandAll(false),
     getFilterModel: () => filters,
     setFilterModel: (value) => setFilters({ ...filters, ...value }),
-    destroyFilter: (key) => {
-      const sample = filters;
 
-      // Reflect.deleteProperty(sample, key);
-      console.log("sample", sample, key);
-      setFilters(sample);
-    },
     getDataAsCsv: () => {
       return CSVContent(rawRows, rawColumns);
     },
@@ -1578,15 +1663,31 @@ function DataGrid(props, ref) {
     setPinnedTopRowData: (rows) => setTopSummaryRows(rows),
     setPinnedBottomRowData: (rows) => setBottomSummaryRows(rows),
     getPinnedTopRow: (key) => topSummaryRowNodes[key],
+    destroyFilter: (key) => {
+      const sample = filters;
+
+      // Reflect.deleteProperty(sample, key);
+      console.log("sample", sample, key);
+      delete sample[key];
+      setFilters({ ...sample });
+    },
+    setSuppressRowDrag,
+    getVerticalPixelRange,
+    getHorizontalPixelRange,
+    isColumnFilterPresent,
+    setSuppressRowClickSelection: (value) =>
+      setSuppressRowClickSelection(value),
+    getEditingCells,
   };
   if (onGridReady) {
     onGridReady({ api: apiObject, type: "gridReady" });
   }
   ///////////                              start
-  const [RowNodes, setRowNodes] = useState();
+  const [RowNodes, setRowNodes] = useState(getViewportRowsSample(raawRows));
   useEffect(() => {
     setRowNodes(getViewportRowsSample(raawRows));
   }, [expandedGroupIds, expandAll]);
+
   function getViewportRowsSample(rowArray) {
     let rowElementsSample = [];
     let listOfRows = rowArray;
@@ -1656,6 +1757,7 @@ function DataGrid(props, ref) {
         setDataValue,
         setData,
         parent: {
+          allChildrenCount: raawRows.length,
           allLeafChildren: RowNodes,
           childrenAfterFilter: afterFilter,
           childrenAfterSort: afterFilter,
@@ -1812,9 +1914,9 @@ function DataGrid(props, ref) {
         setDataValue,
         setData,
         parent: {
-          allLeafChildren: RowNodes,
-          childrenAfterFilter: afterFilter,
-          childrenAfterSort: afterFilter,
+          allLeafChildren: getViewportRowsSample(raawRows),
+          childrenAfterFilter: getViewportRowsSample(rows),
+          childrenAfterSort: getViewportRowsSample(rows),
         },
         updateData: setData,
         isSelected: () => selectedRowIdx === rowIdx,
@@ -1865,6 +1967,8 @@ function DataGrid(props, ref) {
           selectedCellDragHandle: getDragHandle(rowIdx),
           selectedCellEditor: getCellEditor(rowIdx),
           handleReorderRow: handleReorderRow,
+          valueChangedCellStyle,
+          previousData: changedList,
         })
       );
     }
@@ -2052,7 +2156,7 @@ function DataGrid(props, ref) {
                     data: row,
                     rowTop: rowHeight * rowIdx,
                     rowPinned: "top",
-                    rowIndex:rowIdx
+                    rowIndex: rowIdx,
                   };
                   topSummaryRowNodes.push(node);
                   return (
@@ -2142,15 +2246,17 @@ function DataGrid(props, ref) {
             <ContextMenu id="grid-context-menu" rtl={direction === "rtl"}>
               {contextMenuItems.map((item) =>
                 item.subMenu?.length > 0 ? (
-                  <SubMenu title={item.name}>
+                  <SubMenu key={item.name} title={item.name}>
                     {item.subMenu.map((subItem) => (
-                      <MenuItem onClick={subItem.action}>
+                      <MenuItem key={subItem.name} onClick={subItem.action}>
                         {subItem.name}
                       </MenuItem>
                     ))}
                   </SubMenu>
                 ) : (
-                  <MenuItem onClick={item.action}>{item.name}</MenuItem>
+                  <MenuItem key={item.name} onClick={item.action}>
+                    {item.name}
+                  </MenuItem>
                 )
               )}
             </ContextMenu>
@@ -2162,7 +2268,7 @@ function DataGrid(props, ref) {
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           {showSelectedRows ? (
             <div
-              class="footer-bottom"
+              className="footer-bottom"
               style={{
                 width: "25%",
                 height: 25,
