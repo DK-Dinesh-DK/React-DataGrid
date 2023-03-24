@@ -40,8 +40,7 @@ function SummaryCell({ column, colSpan, row, isCellSelected, selectCell }) {
       className={className}
       style={getCellStyle(column, colSpan)}
       onClick={onClick}
-      onFocus={onFocus}
-    >
+      onFocus={onFocus}>
       {column.summaryFormatter?.({ column, row, isCellSelected })}
     </div>
   );

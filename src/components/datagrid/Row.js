@@ -5,6 +5,8 @@ import Cell from "./Cell";
 import { RowSelectionProvider, useLatestFunc } from "./hooks";
 import { getColSpan, getRowStyle } from "./utils";
 import { rowClassname, rowSelectedClassname } from "./style";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 function Row(
   {
@@ -17,8 +19,11 @@ function Row(
     copiedCellIdx,
     draggedOverCellIdx,
     lastFrozenColumnIndex,
+    api,
     row,
+    selectedCellRowStyle,
     rows,
+    node,
     viewportColumns,
     selectedCellEditor,
     selectedCellDragHandle,
@@ -29,6 +34,12 @@ function Row(
     onMouseEnter,
     onRowChange,
     selectCell,
+    totalColumns,
+    handleReorderRow,
+    onCellClick,
+    onCellDoubleClick,
+    onCellContextMenu,
+    columnApi,
     ...props
   },
   ref
@@ -46,7 +57,7 @@ function Row(
     rowClassname,
     `rdg-row-${rowIdx % 2 === 0 ? "even" : "odd"}`,
     {
-      [rowSelectedClassname]: selectedCellIdx === -1,
+      [rowSelectedClassname]: isRowSelected,
     },
     rowClass?.(row),
     className
@@ -54,8 +65,10 @@ function Row(
 
   const cells = [];
 
+  var selectedCellRowIndex;
+
   for (let index = 0; index < viewportColumns.length; index++) {
-    const column = viewportColumns[index];
+    const column = { ...viewportColumns[index], rowIndex: rowIdx };
     const { idx } = column;
     const colSpan = getColSpan(column, lastFrozenColumnIndex, {
       type: "ROW",
@@ -64,20 +77,26 @@ function Row(
     if (colSpan !== undefined) {
       index += colSpan - 1;
     }
-
     const isCellSelected = selectedCellIdx === idx;
-
+    if (isCellSelected) {
+      selectedCellRowIndex = rowIdx;
+    }
     if (isCellSelected && selectedCellEditor) {
       cells.push(selectedCellEditor);
     } else {
       cells.push(
         <Cell
-          key={column.key}
+          key={`${column.key}`}
           column={column}
           colSpan={colSpan}
+          api={api}
           row={row}
+          handleReorderRow={handleReorderRow}
+          isRowSelected={isRowSelected}
           allrow={rows}
           rowIndex={rowIdx}
+          totalColumns={totalColumns}
+          node={node}
           isCopied={copiedCellIdx === idx}
           isDraggedOver={draggedOverCellIdx === idx}
           isCellSelected={isCellSelected}
@@ -86,24 +105,37 @@ function Row(
           onRowDoubleClick={onRowDoubleClick}
           onRowChange={handleRowChange}
           selectCell={selectCell}
+          onCellClick={onCellClick}
+          onCellDoubleClick={onCellDoubleClick}
+          onCellContextMenu={onCellContextMenu}
+          columnApi={columnApi}
+          valueChangedCellStyle={props.valueChangedCellStyle}
+          previousData={props.previousData}
         />
       );
     }
   }
+  var style = getRowStyle(gridRowStart, height);
+  if (rowIdx === selectedCellRowIndex) {
+    style = { ...style, ...selectedCellRowStyle };
+  }
 
   return (
-    <RowSelectionProvider value={isRowSelected}>
-      <div
-        role="row"
-        ref={ref}
-        className={className}
-        onMouseEnter={handleDragEnter}
-        style={getRowStyle(gridRowStart, height)}
-        {...props}
-      >
-        {cells}
-      </div>
-    </RowSelectionProvider>
+    <DndProvider backend={HTML5Backend}>
+      <RowSelectionProvider value={isRowSelected}>
+        <div
+          role="row"
+          ref={ref}
+          id={row?.id ?? rowIdx}
+          className={className}
+          onMouseEnter={handleDragEnter}
+          style={style}
+          {...props}
+        >
+          {cells}
+        </div>
+      </RowSelectionProvider>
+    </DndProvider>
   );
 }
 

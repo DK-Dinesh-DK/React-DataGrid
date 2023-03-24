@@ -6,7 +6,7 @@ const titles = ["Dr.", "Mr.", "Mrs.", "Miss", "Ms."]
 export default function dropDownEditor({ row, onRowChange }) {
   return (
     <select
-      className={textEditorClassname}
+      // className={textEditorClassname}
       value={row.title}
       onChange={event =>
         onRowChange({ ...row, title: event.target.value }, true)

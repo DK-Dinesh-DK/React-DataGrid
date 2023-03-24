@@ -1,13 +1,11 @@
-import { useState } from 'react';
-import { groupBy as rowGrouper } from 'lodash';
-import { css } from '@linaria/core';
-import { faker } from '@faker-js/faker';
+import { useState, useRef } from "react";
+import { groupBy as rowGrouper } from "lodash";
+import { css } from "@linaria/core";
+import { faker } from "@faker-js/faker";
 
-import { SelectColumn } from '../components/datagrid/Columns';
+import { SelectColumn } from "../components/datagrid/Columns";
 
-
-import DataGrid from '../components/datagrid/DataGrid';
-
+import DataGrid from "../components/datagrid/DataGrid";
 
 const groupingClassname = css`
   display: flex;
@@ -26,88 +24,93 @@ const optionsClassname = css`
   text-transform: capitalize;
 `;
 
-
-
 const sports = [
-  'Swimming',
-  'Gymnastics',
-  'Speed Skating',
-  'Cross Country Skiing',
-  'Short-Track Speed Skating',
-  'Diving',
-  'Cycling',
-  'Biathlon',
-  'Alpine Skiing',
-  'Ski Jumping',
-  'Nordic Combined',
-  'Athletics',
-  'Table Tennis',
-  'Tennis',
-  'Synchronized Swimming',
-  'Shooting',
-  'Rowing',
-  'Fencing',
-  'Equestrian',
-  'Canoeing',
-  'Bobsleigh',
-  'Badminton',
-  'Archery',
-  'Wrestling',
-  'Weightlifting',
-  'Waterpolo',
-  'Wrestling',
-  'Weightlifting'
+  "Swimming",
+  "Gymnastics",
+  "Speed Skating",
+  "Cross Country Skiing",
+  "Short-Track Speed Skating",
+  "Diving",
+  "Cycling",
+  "Biathlon",
+  "Alpine Skiing",
+  "Ski Jumping",
+  "Nordic Combined",
+  "Athletics",
+  "Table Tennis",
+  "Tennis",
+  "Synchronized Swimming",
+  "Shooting",
+  "Rowing",
+  "Fencing",
+  "Equestrian",
+  "Canoeing",
+  "Bobsleigh",
+  "Badminton",
+  "Archery",
+  "Wrestling",
+  "Weightlifting",
+  "Waterpolo",
+  "Wrestling",
+  "Weightlifting",
 ];
 
 const columns = [
   SelectColumn,
   {
-    field: 'country',
-    headerName: 'Country'
+    field: "country",
+    headerName: "Country",
   },
   {
-    field: 'year',
-    headerName: 'Year'
+    field: "year",
+    headerName: "Year",
   },
   {
-    field: 'sport',
-    headerName: 'Sport'
+    field: "sport",
+    headerName: "Sport",
   },
   {
-    field: 'athlete',
-    headerName: 'Athlete'
+    field: "athlete",
+    headerName: "Athlete",
   },
   {
-    field: 'gold',
-    headerName: 'Gold',
+    field: "gold",
+    headerName: "Gold",
     groupFormatter({ childRows }) {
       return <>{childRows.reduce((prev, { gold }) => prev + gold, 0)}</>;
-    }
+    },
   },
   {
-    field: 'silver',
-    headerName: 'Silver',
+    field: "silver",
+    headerName: "Silver",
     groupFormatter({ childRows }) {
       return <>{childRows.reduce((prev, { silver }) => prev + silver, 0)}</>;
-    }
+    },
   },
   {
-    field: 'bronze',
-    headerName: 'Bronze',
+    field: "bronze",
+    headerName: "Bronze",
     groupFormatter({ childRows }) {
       return <>{childRows.reduce((prev, { silver }) => prev + silver, 0)}</>;
-    }
+    },
   },
   {
-    field: 'total',
-    headerName: 'Total',
+    field: "total",
+    headerName: "Total",
     formatter({ row }) {
       return <>{row.gold + row.silver + row.bronze}</>;
     },
     groupFormatter({ childRows }) {
-      return <>{childRows.reduce((prev, row) => prev + row.gold + row.silver + row.bronze, 0)}</>;
-    }
-  }
+      return (
+        <>
+          {childRows.reduce(
+            (prev, row) => prev + row.gold + row.silver + row.bronze,
+            0
+          )}
+        </>
+      );
+    },
+  },
 ];
 
 function rowKeyGetter(row) {
@@ -116,7 +119,7 @@ function rowKeyGetter(row) {
 
 function createRows() {
   const rows = [];
-  for (let i = 1; i < 10000; i++) {
+  for (let i = 1; i < 1000; i++) {
     rows.push({
       id: i,
       year: 2015 + faker.datatype.number(3),
@@ -125,25 +128,23 @@ function createRows() {
       athlete: faker.name.fullName(),
       gold: faker.datatype.number(5),
       silver: faker.datatype.number(5),
-      bronze: faker.datatype.number(5)
+      bronze: faker.datatype.number(5),
     });
   }
 
   return rows.sort((r1, r2) => r2.country.localeCompare(r1.country));
 }
 
-const options = ['country', 'year', 'sport', 'athlete'];
+const options = ["country", "year", "sport", "athlete"];
 
 export default function Grouping({ direction }) {
   const [rows] = useState(createRows);
-  const [selectedRows, setSelectedRows] = useState(() => new Set());
+  const [selectedRows, setSelectedRows] = useState();
   const [selectedOptions, setSelectedOptions] = useState([
     options[0],
-    options[1]
+    options[1],
   ]);
-  const [expandedGroupIds, setExpandedGroupIds] = useState(
-    () => new Set(['United States of America', 'United States of America__2015'])
-  );
+  const [expandedGroupIds, setExpandedGroupIds] = useState(() => new Set([]));
 
   function toggleOption(option, enabled) {
     const index = selectedOptions.indexOf(option);
@@ -160,6 +161,7 @@ export default function Grouping({ direction }) {
     }
     setExpandedGroupIds(new Set());
   }
+  const dataGridRef = useRef(null);
 
   return (
     <div className={groupingClassname}>
@@ -171,12 +173,35 @@ export default function Grouping({ direction }) {
               type="checkbox"
               checked={selectedOptions.includes(option)}
               onChange={(event) => toggleOption(option, event.target.checked)}
-            />{' '}
+            />{" "}
             {option}
           </label>
         ))}
       </div>
-
+      <button
+        onClick={() => {
+          dataGridRef.current.api.collapseAll();
+        }}
+        style={{ color: "white", backgroundColor: "red" }}
+      >
+        collapseAll
+      </button>
+      <button
+        onClick={() => {
+          dataGridRef.current.api.expandAll();
+        }}
+        style={{ color: "white", backgroundColor: "red" }}
+      >
+        expandAll
+      </button>
+      <button
+        onClick={() => {
+          var node = dataGridRef.current.api.getRowNodes(2);
+          console.log(node.isExpandable());
+        }}
+      >
+        isExpandable
+      </button>
       <DataGrid
         columnData={columns}
         rowData={rows}
@@ -189,6 +214,7 @@ export default function Grouping({ direction }) {
         onExpandedGroupIdsChange={setExpandedGroupIds}
         defaultColumnOptions={{ resizable: true }}
         direction={direction}
+        ref={dataGridRef}
       />
     </div>
   );

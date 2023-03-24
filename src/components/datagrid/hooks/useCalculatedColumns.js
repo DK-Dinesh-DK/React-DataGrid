@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { valueFormatter, toggleGroupFormatter } from "../formatters";
 import { SELECT_COLUMN_KEY } from "../Columns";
 import { clampColumnWidth, max, min } from "../utils";
-
+import { textEditorClassname } from "../editors/textEditor";
 const DEFAULT_COLUMN_WIDTH = "auto";
 const DEFAULT_COLUMN_MIN_WIDTH = 40;
 
@@ -16,6 +16,7 @@ export function useCalculatedColumns({
   defaultColumnOptions,
   rawGroupBy,
   enableVirtualization,
+  frameworkComponents,
 }) {
   const defaultWidth = defaultColumnOptions?.width ?? DEFAULT_COLUMN_WIDTH;
   const defaultMinWidth =
@@ -36,9 +37,20 @@ export function useCalculatedColumns({
         const rowGroup = rawGroupBy?.includes(rawColumn.field) ?? false;
         const frozen = rowGroup || rawColumn.frozen;
 
+        const cellRendererValue = rawColumn.cellRenderer;
+        const components = frameworkComponents
+          ? Object.keys(frameworkComponents)
+          : null;
+
+        const indexOfComponent = components?.indexOf(cellRendererValue);
+        const customComponentName =
+          indexOfComponent > -1 ? components[indexOfComponent] : null;
+
         const column = {
           ...rawColumn,
+          colId: rawColumn.field,
           key: rawColumn.field,
+          userProvidedColDef: rawColumn,
           idx: 0,
           frozen,
           isLastFrozenColumn: false,
@@ -51,17 +63,49 @@ export function useCalculatedColumns({
           formatter: rawColumn.cellRenderer
             ? rawColumn.cellRenderer
             : rawColumn.valueFormatter ?? defaultFormatter,
+
+          cellRenderer:
+            frameworkComponents?.[customComponentName] ??
+            rawColumn.cellRenderer ??
+            rawColumn.valueFormatter ??
+            defaultFormatter,
+
           filter: rawColumn.filter ?? defaultFilter,
         };
 
         if (rowGroup) {
           column.groupFormatter ??= toggleGroupFormatter;
         }
-
+        if (rawColumn.editable) {
+          column.cellEditor = column.cellEditor
+            ? column.cellEditor
+            : (props) => {
+                return (
+                  <input
+                    className={textEditorClassname}
+                    value={props.row[props.column.key]}
+                    onChange={(event) =>
+                      props.onRowChange({
+                        ...props.row,
+                        [props.column.key]: event.target.value,
+                      })
+                    }
+                  />
+                );
+              };
+        }
         if (frozen) {
           lastFrozenColumnIndex++;
         }
-
+        if (column.alignment) {
+          if (
+            column.alignment.type?.toLowerCase() === "date" ||
+            column.alignment.type?.toLowerCase() === "datetime" ||
+            column.alignment.type?.toLowerCase() === "time"
+          ) {
+            column.width = rawColumn.width ?? "max-content";
+          }
+        }
         return column;
       });
 

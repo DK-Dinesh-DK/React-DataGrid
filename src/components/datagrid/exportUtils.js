@@ -7,11 +7,10 @@ import autoTable from "jspdf-autotable";
 export function CSVContent(fileData, columns) {
   const field = columns?.map((ele) => ele.field);
   const header = columns?.map((ele) => ele.headerName);
-
   const data = fileData.map((f) => {
     let sample = [];
-    field.forEach((d) => {
-      if (d != undefined) {
+    field.map((d) => {
+      if (d !== undefined) {
         sample.push(f[d]);
       } else {
         sample.push("");
@@ -21,11 +20,9 @@ export function CSVContent(fileData, columns) {
       return sample;
     }
   });
-
   const content = [header, ...data]
     .map((cells) => cells.map(serialiseCellValue).join(","))
     .join("\n");
-
   return content;
 }
 export async function exportToCsv(fileData, columns, fileName) {
@@ -39,7 +36,7 @@ export async function exportToCsv(fileData, columns, fileName) {
 
 export async function exportToPdf(fileData, columns, fileName) {
   var field = [];
-  columns?.forEach((ele) => {
+  columns?.map((ele) => {
     if (ele.field) {
       field.push({ dataKey: ele.field, header: ele.headerName });
     }

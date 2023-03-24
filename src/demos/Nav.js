@@ -69,73 +69,86 @@ export default function Nav({ direction, onDirectionChange }) {
       <h1>react-data-grid</h1>
 
       <h2>Demos</h2>
-      <NavLink to="/common-features" end className={getActiveClassname}>
-        Common Features
-      </NavLink>
       <NavLink to="/all-features" end className={getActiveClassname}>
-        All Features
+        1.Cell-wise background, Forecolor
+      </NavLink>
+      <NavLink to="/common-features" end className={getActiveClassname}>
+        2. Common features
       </NavLink>
       <NavLink to="/cell-navigation" end className={getActiveClassname}>
-        Cell Navigation
+        3. Cell Navigation
       </NavLink>
       <NavLink to="/column-spanning" end className={getActiveClassname}>
-        Column Spanning
+        4. Column Spanning
       </NavLink>
       <NavLink to="/columns-reordering" end className={getActiveClassname}>
-        Columns Reordering
+        5. Columns Reordering
       </NavLink>
       <NavLink to="/context-menu" end className={getActiveClassname}>
-        Context Menu
+        6.Context Menu
       </NavLink>
       <NavLink to="/customizable-components" end className={getActiveClassname}>
-        Customizable Components
+        7. Customizable Components
       </NavLink>
       <NavLink to="/grouping" end className={getActiveClassname}>
-        Grouping
+        8. Grouping
       </NavLink>
       <NavLink to="/header-filters" end className={getActiveClassname}>
-        Header Filters
+        9. Header Filters
       </NavLink>
       <NavLink to="/infinite-scrolling" end className={getActiveClassname}>
-        Infinite Scrolling
+        10. Infinite Scrolling
       </NavLink>
       <NavLink to="/master-detail" end className={getActiveClassname}>
-        Master Detail
+        11. Master Detail
       </NavLink>
       <NavLink to="/million-cells" end className={getActiveClassname}>
-        A Million Cells
+        12. A Million Cells
       </NavLink>
       <NavLink to="/no-rows" end className={getActiveClassname}>
-        No Rows
+        13 Serial Number
       </NavLink>
       <NavLink to="/resizable-grid" end className={getActiveClassname}>
-        Resizable Grid
+        14 Resizable Grid
       </NavLink>
       <NavLink to="/rows-reordering" end className={getActiveClassname}>
-        Rows Reordering
+        15 Rows Reordering
       </NavLink>
       <NavLink to="/scroll-to-row" end className={getActiveClassname}>
-        Scroll To Row
+        16 Scroll To Row
       </NavLink>
       <NavLink to="/tree-view" end className={getActiveClassname}>
-        Tree View
+        17 Tree View
       </NavLink>
       <NavLink to="/variable-row-height" end className={getActiveClassname}>
-        Variable Row Height
+        18. Variable Row Height
       </NavLink>
-      {/* <NavLink to="/animation" end className={getActiveClassname}>
-        Animation
-      </NavLink> */}
-
-      {/* <h2>Direction</h2>
+      <NavLink to="/chnageinheight" end className={getActiveClassname}>
+        19. Change In Table
+      </NavLink>
+      <NavLink to="/pagination-table" end className={getActiveClassname}>
+        20. Table Pagination
+      </NavLink>
+      <NavLink to="/export" end className={getActiveClassname}>
+        21. Export
+      </NavLink>
+      <NavLink to="/demo" end className={getActiveClassname}>
+        22. Demo
+      </NavLink>
+      <NavLink to="/alingment" end className={getActiveClassname}>
+        23. AlignmentDataTypes
+      </NavLink>
+      <h2>Direction</h2>
       <label className={rtlCheckboxClassname}>
         <input
           type="checkbox"
-          checked={direction === 'rtl'}
-          onChange={() => onDirectionChange(direction === 'rtl' ? 'ltr' : 'rtl')}
+          checked={direction === "rtl"}
+          onChange={() =>
+            onDirectionChange(direction === "rtl" ? "ltr" : "rtl")
+          }
         />
         Right to left
-      </label> */}
+      </label>
     </nav>
   );
 }

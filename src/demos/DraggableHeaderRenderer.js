@@ -1,5 +1,5 @@
 import { useDrag, useDrop } from 'react-dnd';
-import headerRenderer from '../components/datagrid/headerRenderer';
+import HeaderRenderer from '../components/datagrid/HeaderRenderer';
 
 
 
@@ -41,7 +41,7 @@ export default function DraggableHeaderRenderer({
         cursor: 'move'
       }}
     >
-      {headerRenderer({ column, ...props })}
+      {HeaderRenderer({ column, ...props })}
     </div>
   );
 }

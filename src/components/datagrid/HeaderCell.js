@@ -4,8 +4,8 @@ import { css } from "@linaria/core";
 import defaultHeaderRenderer from "./headerRenderer";
 import { getCellStyle, getCellClassname } from "./utils";
 import { useRovingCellRef } from "./hooks";
-import { filterColumnClassName } from './style'
-
+import { filterColumnClassName } from "./style";
+import { useDrag, useDrop } from "react-dnd";
 const cellResizable = css`
   @layer rdg.HeaderCell {
     touch-action: none;
@@ -26,6 +26,7 @@ const cellResizableClassname = `rdg-cell-resizable ${cellResizable}`;
 
 export default function HeaderCell({
   column,
+  columns,
   rows,
   colSpan,
   isCellSelected,
@@ -39,7 +40,8 @@ export default function HeaderCell({
   selectedPosition,
   selectedCellHeaderStyle,
   direction,
-  setFilters
+  setFilters,
+  handleReorderColumn,
 }) {
   const isRtl = direction === "rtl";
   const { ref, tabIndex, onFocus } = useRovingCellRef(isCellSelected);
@@ -180,6 +182,34 @@ export default function HeaderCell({
     }
   }
 
+  function handleColumnsReorder(sourceKey, targetKey) {
+    //console.log("sourceKey", sourceKey, " targetKey", targetKey);
+    const sourceColumnIndex = columns.findIndex((c) => c.field === sourceKey);
+    const targetColumnIndex = columns.findIndex((c) => c.field === targetKey);
+    const reorderedColumns = [...columns];
+    //console.log("reorderedColumns", reorderedColumns);
+    reorderedColumns.splice(
+      targetColumnIndex,
+      0,
+      reorderedColumns.splice(sourceColumnIndex, 1)[0]
+    );
+    handleReorderColumn([...reorderedColumns]);
+  }
+  const [{ isDragging }, drag] = useDrag({
+    type: "COLUMN_DRAG",
+    item: { key: column.key },
+    collect: (monitor) => ({ isDragging: monitor.isDragging() }),
+  });
+  const [{ isOver }, drop] = useDrop({
+    accept: "COLUMN_DRAG",
+    drop({ key }) {
+      handleColumnsReorder(key, column.key);
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  });
   return (
     // rome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
     <div
@@ -188,7 +218,10 @@ export default function HeaderCell({
       aria-selected={isCellSelected}
       aria-sort={ariaSort}
       aria-colspan={colSpan}
-      ref={ref}
+      ref={(ele) => {
+        drag(ele);
+        drop(ele);
+      }}
       // set the tabIndex to 0 when there is no selected cell so grid can receive focus
       tabIndex={shouldFocusGrid ? 0 : tabIndex}
       className={className}
@@ -196,8 +229,7 @@ export default function HeaderCell({
       onFocus={handleFocus}
       onClick={onClick}
       onDoubleClick={column.resizable ? onDoubleClick : undefined}
-      onPointerDown={column.resizable ? onPointerDown : undefined}
-    >
+      onPointerDown={column.resizable ? onPointerDown : undefined}>
       {headerRenderer({
         column,
         rows,
@@ -207,7 +239,7 @@ export default function HeaderCell({
         allRowsSelected,
         onAllRowsSelectionChange,
         isCellSelected,
-        setFilters
+        setFilters,
       })}
     </div>
   );

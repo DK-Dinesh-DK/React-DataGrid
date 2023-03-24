@@ -1,7 +1,7 @@
 import AllFeatures from "./demos/AllFeatures";
 import CommonFeatures from "./demos/CommonFeatures";
 import { css } from "@linaria/core";
-import React, { StrictMode, useState } from "react";
+import React, {  useState } from "react";
 import {
   HashRouter as Router,
   Routes,
@@ -25,7 +25,11 @@ import RowsReordering from "./demos/RowsReordering";
 import ScrollToRow from "./demos/ScrollToRow";
 import TreeView from "./demos/TreeView";
 import VariableRowHeight from "./demos/VariableRowHeight";
-
+import Animation from "./demos/Animation"
+import Pagination from "./demos/Pagination";
+import ExportFile from "./demos/ExportFile"
+// import Demos from "./demos/demo";
+import AlignmentDataTypes from "./demos/AlignmentDataTypes";
 css`
   @at-root {
     :root,
@@ -68,7 +72,7 @@ function App() {
   return (
     <Router>
       <Nav direction={direction} onDirectionChange={setDirection} />
-      <main className="aaaa" dir={direction}>
+      <main className="view-container" dir={direction}>
         <Routes>
           <Route index element={<Navigate to="common-features" replace />} />
           <Route
@@ -126,6 +130,10 @@ function App() {
             element={<RowsReordering direction={direction} />}
           />
           <Route
+            path="pagination-table"
+            element={<Pagination direction={direction} />}
+          />
+          <Route
             path="scroll-to-row"
             element={<ScrollToRow direction={direction} />}
           />
@@ -133,11 +141,22 @@ function App() {
             path="tree-view"
             element={<TreeView direction={direction} />}
           />
+            <Route
+            path="export"
+            element={<ExportFile direction={direction} />}
+          />
           <Route
             path="variable-row-height"
             element={<VariableRowHeight direction={direction} />}
           />
-          {/* <Route path="animation" element={<Animation direction={direction} />} /> */}
+            {/* <Route
+            path="demo"
+            element={<Demos direction={direction} />}
+          /> */}
+          <Route path="chnageinheight" element={<Animation direction={direction} />} />
+
+          <Route path="alingment" element={<AlignmentDataTypes direction={direction} />} />
+
           <Route path="*" element="Nothing to see here" />
         </Routes>
       </main>

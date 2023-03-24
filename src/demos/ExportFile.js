@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
 import textEditor from "../components/datagrid/editors/textEditor";
@@ -25,20 +25,18 @@ const columns = [
     field: "id",
     headerName: "ID",
     width: 80,
-    cellRenderer: (props) => {
-      return textEditor(props);
-    },
+    // cellRenderer: (props) => {
+    //   return textEditor(props);
+    // },
   },
   {
     field: "title",
     headerName: "Title",
     editable: true,
-    filter: true,
   },
   {
     field: "firstName",
     headerName: "First Name",
-    filter: true,
     cellRenderer: (props) => {
       return textEditor(props);
     },
@@ -46,7 +44,6 @@ const columns = [
   {
     field: "lastName",
     headerName: "Last Name",
-    valueGetter: ({ row, column }) => `Last Name: ${row[column.key]}`,
   },
   {
     field: "email",
@@ -95,8 +92,8 @@ function loadMoreRows(newRowsCount, length) {
   });
 }
 
-export default function InfiniteScrolling({ direction }) {
-  const [rows, setRows] = useState(() => createRows(10));
+export default function ExportFile({ direction }) {
+  const [rows, setRows] = useState(() => createRows(100));
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleScroll(event) {
@@ -111,34 +108,23 @@ export default function InfiniteScrolling({ direction }) {
   }
   const dataGridRef = useRef(null);
   const [selectedRows, setSelectedRows] = useState([]);
-
-  console.log("VChangeeeeee0", rows[9]);
-
   return (
     <>
-      <button
-        onClick={() => {
-          console.log("dataGridRef", dataGridRef.current.api.getRowNode(2));
-        }}
-      >
-        getFocusedCell
-      </button>
-
       <DataGrid
         columnData={columns}
         rowData={rows}
         rowKeyGetter={rowKeyGetter}
-        onRowsChange={(data) => {
-          console.log("Data", data);
-          // setRows(data);
-        }}
+        onRowsChange={setRows}
         rowHeight={25}
         className="fill-grid"
         // userRef={dataGridRef}
         ref={dataGridRef}
         direction={direction}
-        selection={true}
-        valueChangedCellStyle={{ backgroundColor: "Blue", color: "White" }}
+        export={{
+          pdfFileName: "TableData",
+          csvFileName: "TableData",
+          excelFileName: "TableData",
+        }}
       />
       {isLoading && (
         <div className={loadMoreRowsClassname}>Loading more rows...</div>

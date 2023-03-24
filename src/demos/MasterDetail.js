@@ -1,14 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React,{ useEffect, useMemo, useRef, useState } from 'react';
 import { css } from '@linaria/core';
 import { faker } from '@faker-js/faker';
 
 import DataGrid from '../components/datagrid/DataGrid';
 import { CellExpanderFormatter } from './CellExpanderFormatter';
-
-
-
-
-
 
 function createDepartments() {
   const departments= [];
@@ -147,8 +142,8 @@ function ProductGrid({
     <div onKeyDown={onKeyDown}>
       <DataGrid
         ref={gridRef}
-        rows={products}
-        columns={productColumns}
+        rowData={products}
+        columnData={productColumns}
         rowKeyGetter={rowKeyGetter}
         style={{ blockSize: 250 }}
         direction={direction}

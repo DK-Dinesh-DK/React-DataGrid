@@ -1,20 +1,25 @@
 import { createContext, useContext, useMemo, useState } from "react";
 
-import { SelectColumn } from "../components/datagrid/Columns";
+// import { SelectColumn } from "../components/datagrid/Columns";
 
 import DataGrid from "../components/datagrid/DataGrid";
 import { useFocusRef } from "../components/datagrid/hooks";
 import { css } from "@linaria/core";
+import { SerialNumberColumn } from "../components/datagrid/Columns";
 
 function EmptyRowsRenderer() {
   return (
     <div style={{ textAlign: "center", gridColumn: "1/-1" }}>
-      Nothing to show{" "}
+      Nothing to show
       <span lang="ja" title="ショボーン">
         (´・ω・`)
       </span>
     </div>
   );
+}
+
+const frameworkComponents ={
+CheckBox:(props) => <button style={{width:"100%"}}>Save</button>,
 }
 
 const FilterContext = createContext(undefined);
@@ -33,7 +38,7 @@ export default function NoRows({ direction }) {
 
   const columns = useMemo(() => {
     return [
-      SelectColumn,
+    SerialNumberColumn,
       {
         field: "id",
         headerName: "ID",
@@ -49,6 +54,8 @@ export default function NoRows({ direction }) {
         haveChildren: false,
         topHeader: "rdrd",
         cellWidth: 60,
+        cellRenderer:"CheckBox",
+     
       },
 
       {
@@ -792,6 +799,7 @@ export default function NoRows({ direction }) {
         renderers={{ noRowsFallback: <EmptyRowsRenderer /> }}
         selectedRows={selectedRows}
         onSelectedRowsChange={onSelectedRowsChange}
+        frameworkComponents={frameworkComponents}
         headerRowHeight={24}
         rowKeyGetter={rowKeyGetter}
         className="fill-grid"

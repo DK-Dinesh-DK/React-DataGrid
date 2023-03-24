@@ -1,8 +1,18 @@
 import React from "react";
+import { css } from "@linaria/core";
 import { SelectCellFormatter } from "./formatters";
 import { useRowSelection } from "./hooks";
-
+export const SERIAL_NUMBER_COLUMN_KEY = "serial-number";
 export const SELECT_COLUMN_KEY = "select-row";
+
+const headerCellClassName = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #16365d;
+  color: white;
+  font-weight: bold;
+`;
 
 function SelectFormatter(props) {
   const [isRowSelected, onRowSelectionChange] = useRowSelection();
@@ -60,5 +70,21 @@ export const SelectColumn = {
   },
   groupFormatter(props) {
     return <SelectGroupFormatter {...props} />;
+  },
+};
+export const SerialNumberColumn = {
+  key: SERIAL_NUMBER_COLUMN_KEY,
+  name: "Sr. No.",
+  width: 45,
+  resizable: false,
+  sortable: false,
+  frozen: true,
+  filter: false,
+  headerRenderer: () => {
+    return <div>{SerialNumberColumn.name}</div>;
+  },
+  cellClass: headerCellClassName,
+  cellRenderer: (props) => {
+    return <>{props.column.rowIndex + 1} </>;
   },
 };
