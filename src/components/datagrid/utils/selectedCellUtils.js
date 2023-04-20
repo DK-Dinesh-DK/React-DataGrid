@@ -3,11 +3,11 @@ import { getColSpan } from "./colSpanUtils"
 
 export function isSelectedCellEditable({
   selectedPosition,
-  columns,
+  columns4,
   rows,
   isGroupRow
 }) {
-  const column = columns[selectedPosition.idx]
+  const column = columns4[selectedPosition.idx]
   const row = rows[selectedPosition.rowIdx]
   return !isGroupRow(row) && isCellEditable(column, row)
 }

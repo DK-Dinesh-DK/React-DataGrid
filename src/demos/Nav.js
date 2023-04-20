@@ -138,6 +138,9 @@ export default function Nav({ direction, onDirectionChange }) {
       <NavLink to="/alingment" end className={getActiveClassname}>
         23. AlignmentDataTypes
       </NavLink>
+      <NavLink to="/multilineheader" end className={getActiveClassname}>
+        24. MultilineHeader
+      </NavLink>
       <h2>Direction</h2>
       <label className={rtlCheckboxClassname}>
         <input

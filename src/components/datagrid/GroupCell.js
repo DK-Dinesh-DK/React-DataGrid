@@ -1,8 +1,8 @@
-import React from 'react';
-import { memo } from "react"
+import React, {memo} from 'react';
+
 
 import { getCellStyle, getCellClassname } from "./utils"
-import { useRovingCellRef } from "./hooks"
+import { useRovingCellRef } from "./hooks/useRovingCellRef"
 
 function GroupCell({
   id,

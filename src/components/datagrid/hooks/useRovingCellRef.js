@@ -1,5 +1,5 @@
-import React from 'react';
-import { useCallback, useState } from "react"
+
+import React, { useCallback, useState } from "react"
 import { scrollIntoView } from "../utils"
 
 // https://www.w3.org/TR/wai-aria-practices-1.1/#kbd_roving_tabindex

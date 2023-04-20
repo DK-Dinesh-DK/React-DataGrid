@@ -2,7 +2,8 @@ import React from 'react'
 
 const FiltersDropdown = ({options, filters, setFilters, column}) => {
   return (
-    <select onChange={(e) =>
+    <select style={{width:"100%"}}
+      onChange={(e) =>
       setFilters({
         ...filters,
         [column.key]: e.target.value

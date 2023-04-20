@@ -1,33 +1,54 @@
-import { RadioButton } from "arms_v2.8_webui";
+import { css } from "@linaria/core";
 
 export default function radioButtonEditor({ row, column, onRowChange }) {
   const options = column.options ? column.options : column.buttons;
-  const label = column.inputProps?.label ? column.inputProps.label : "";
-  const orientation = column.inputProps?.orientation
-    ? column.inputProps.orientation
-    : "row";
-  const radiotheme = column.inputProps?.radiotheme
-    ? column.inputProps.radiotheme
-    : "Midblue";
-  const selection = column.inputProps?.selection
-    ? column.inputProps.selection
-    : "active";
 
+  const radioButtonContainer = css`
+    display: flex;
+    font-size: var(--rdg-font-size);
+    font-family: var(--rdg-font-family);
+    flex-direction: row;
+    & > div {
+      display: flex;
+      align-items: center;
+    }
+  `;
+  const radioButton = css`
+    width: 12px;
+    height: 12px;
+    /* UI Properties */
+    background: #ffffff;
+    border: 0.9998000264167786px solid #95b3d7;
+    border-radius: 50%;
+    padding: 2px;
+    &:checked {
+      background-clip: content-box;
+      background-color: #366092;
+    }
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  `;
   return (
-    <>
-      <RadioButton
-        label={label}
-        {...column.inputProps}
-        orientation={orientation}
-        disabled={column.editable ? column.editable : false}
-        radiotheme={radiotheme}
-        selection={selection}
-        onChange={(event) => {
-          onRowChange({ ...row, [column.key]: event.target.value }, true);
-        }}
-        options={options}
-        defaultValue={row[column.key] ? row[column.key] : null}
-      />
-    </>
+    <div className={`rdg-radio-container${radioButtonContainer}`}>
+      {options.map((option, index) => {
+        return (
+          <div key={index}>
+            <input
+              type={"radio"}
+              value={option.value}
+              className={`rdg-radiobutton ${radioButton}`}
+              key={index}
+              name={`options${column.rowIndex}`}
+              checked={row[column.key] === option?.value}
+              onChange={(event) => {
+                onRowChange({ ...row, [column.key]: event.target.value });
+              }}
+            />
+            <label>{option.label}</label>
+          </div>
+        );
+      })}
+    </div>
   );
 }

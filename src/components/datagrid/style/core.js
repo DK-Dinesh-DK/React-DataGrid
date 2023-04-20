@@ -152,11 +152,9 @@ export const filterContainerClassname = css`
 
     > div {
       padding-block: 0;
-      padding-inline: 8px;
+      
 
-      &:last-child {
-        border-block-start: 1px solid var(--rdg-border-color);
-      }
+     
     }
   }
 `;

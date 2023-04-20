@@ -196,8 +196,7 @@ export default function Grouping({ direction }) {
       </button>
       <button
         onClick={() => {
-          var node = dataGridRef.current.api.getRowNodes(2);
-          console.log(node.isExpandable());
+          let node = dataGridRef.current.api.getRowNodes(2);
         }}
       >
         isExpandable
@@ -207,6 +206,7 @@ export default function Grouping({ direction }) {
         rowData={rows}
         rowKeyGetter={rowKeyGetter}
         selectedRows={selectedRows}
+        headerRowHeight={24}
         onSelectedRowsChange={setSelectedRows}
         groupBy={selectedOptions}
         rowGrouper={rowGrouper}

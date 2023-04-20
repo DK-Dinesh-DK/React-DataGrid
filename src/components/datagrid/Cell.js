@@ -1,9 +1,8 @@
-import React from "react";
-import { memo } from "react";
+import React, { memo } from "react";
 import { css } from "@linaria/core";
 
 import { getCellStyle, getCellClassname, isCellEditable } from "./utils";
-import { useRovingCellRef } from "./hooks";
+import { useRovingCellRef } from "./hooks/useRovingCellRef";
 import { useDrag, useDrop } from "react-dnd";
 import moment from "moment";
 import {
@@ -33,8 +32,13 @@ const cellDraggedOverClassname = `rdg-cell-dragged-over ${cellDraggedOver}`;
 
 function Cell({
   column,
+  rowArray,
+  colData,
+  viewportColumns,
   colSpan,
   isCellSelected,
+  selectedCellIdx,
+  selectedCellEditor,
   isCopied,
   api,
   isDraggedOver,
@@ -49,11 +53,14 @@ function Cell({
   selectCell,
   node,
   handleReorderRow,
+  subColumn,
   totalColumns,
   onCellClick,
   onCellDoubleClick,
   onCellContextMenu,
   columnApi,
+  valueChangedCellStyle,
+  previousData,
   ...props
 }) {
   const { ref, tabIndex, onFocus } = useRovingCellRef(isCellSelected);
@@ -76,12 +83,8 @@ function Cell({
     typeof cellClass === "function" ? cellClass(row) : cellClass
   );
 
-  function selectCellWrapper(openEditor) {
-    selectCell(row, column, openEditor);
-  }
-
   function handleClick(e) {
-    selectCellWrapper(column.editorOptions?.editOnClick);
+    // selectCellWrapper(column.editorOptions?.editOnClick);
     onRowClick?.({
       api: api,
       data: row,
@@ -164,7 +167,11 @@ function Cell({
 
   // -----------
 
-  var style = getCellStyle(column, colSpan);
+  let style = getCellStyle(column, colSpan);
+  style =
+    column.haveChildren === true
+      ? { ...style, ...{ borderInlineEnd: "none" } }
+      : { ...style };
   style =
     column.idx === 0 && isRowSelected
       ? { ...style, ...{ borderInlineStart: "1px solid #9bbb59" } }
@@ -179,18 +186,18 @@ function Cell({
     const validationStyle = column.validation.style
       ? column.validation.style
       : { backgroundColor: "red" };
-      if( column.validation.method(row[column.key])){
-       (style = {
-          ...style,
-          ...validationStyle,
-        });
-      }
+    if (column.validation.method(row[column.key])) {
+      style = {
+        ...style,
+        ...validationStyle,
+      };
+    }
   }
 
   if (column.alignment) {
     function alignmentUtils() {
-      var styles = style;
-      var symbol = ["£", "$", "₹", "€", "¥", "₣", "¢"];
+      let styles = style;
+      let symbol = ["£", "$", "₹", "€", "¥", "₣", "¢"];
       if (
         column.alignment.type?.toLowerCase() === "date" ||
         moment(row[column.key], "YYYY-MM-DD", true).isValid() ||
@@ -250,7 +257,8 @@ function Cell({
         return styles;
       } else if (
         column.alignment.type?.toLowerCase() === "datetime" ||
-        (JSON.stringify(row[column.key]).split(":").length > 1 &&          (JSON.stringify(row[column.key]).split("/").length === 3 ||
+        (JSON.stringify(row[column.key]).split(":").length > 1 &&
+          (JSON.stringify(row[column.key]).split("/").length === 3 ||
             JSON.stringify(row[column.key]).split("-").length === 3))
       ) {
         const alignment = column.alignment.align
@@ -266,7 +274,8 @@ function Cell({
         };
       } else if (
         column.alignment.type?.toLowerCase() === "number" ||
-        (typeof row[column.key] === "number" &&          column.alignment.type !== "currency")
+        (typeof row[column.key] === "number" &&
+          column.alignment.type !== "currency")
       ) {
         const alignment = column.alignment.align
           ? { textAlign: column.alignment.align }
@@ -315,13 +324,13 @@ function Cell({
       : alignmentUtils({ column, row, style });
   }
   /// -----------------------
-  if (props.valueChangedCellStyle) {
-    if (props.previousData[rowIndex]?.includes(column.key)) {
+  if (valueChangedCellStyle) {
+    if (previousData[rowIndex]?.includes(column.key)) {
       style = {
         ...style,
         backgroundColor:
-          props.valueChangedCellStyle.backgroundColor ?? style.backgroundColor,
-        color: props.valueChangedCellStyle.color ?? style.color,
+          valueChangedCellStyle.backgroundColor ?? style.backgroundColor,
+        color: valueChangedCellStyle.color ?? style.color,
       };
     }
   }
@@ -348,7 +357,7 @@ function Cell({
       canDrop: monitor.canDrop(),
     }),
   });
-  var renderObject = {
+  let renderObject = {
     column,
     colDef: column,
     row,
@@ -376,12 +385,11 @@ function Cell({
       className={className}
       style={style}
       onClick={handleClick}
-      onDoubleClick={handleDoubleClick}
-      onContextMenu={handleContextMenu}
+      // onDoubleClick={handleDoubleClick}
+      // onContextMenu={handleContextMenu}
       onFocus={onFocus}
       // title={`${row[column.key]}`}
-      {...props}
-    >
+      {...props}>
       {!column.rowGroup && (
         <>
           {column.rowDrag && (
@@ -389,15 +397,60 @@ function Cell({
               ref={(ele) => {
                 drag(ele);
                 drop(ele);
-              }}
-            >
+              }}>
               <span style={{ marginRight: "10px", cursor: "grab" }}>
                 &#9674;
               </span>
-              {column.cellRenderer(renderObject)}
+              {column.cellRenderer({
+                column,
+                colDef: column,
+                selectedCellIdx,
+                selectedCellEditor,
+                row,
+                rowArray,
+                colData,
+                data: row,
+
+                allrow,
+                className,
+                api,
+                node,
+                viewportColumns,
+                rowIndex,
+                value: row[column.key],
+                isCellSelected,
+                onRowChange: handleRowChange,
+                onRowClick,
+                selectCell,
+                onRowDoubleClick,
+                subColumn,
+              })}
             </div>
           )}
-          {!column.rowDrag && column.cellRenderer(renderObject)}
+          {!column.rowDrag &&
+            column.cellRenderer({
+              column,
+              colDef: column,
+              row,
+              colData,
+              viewportColumns,
+              data: row,
+
+              rowArray,
+              allrow,
+              selectedCellIdx,
+              selectedCellEditor,
+              api,
+              node,
+              rowIndex,
+              value: row[column.key],
+              isCellSelected,
+              selectCell,
+              onRowChange: handleRowChange,
+              onRowClick,
+              onRowDoubleClick,
+              subColumn,
+            })}
           {dragHandle}
         </>
       )}

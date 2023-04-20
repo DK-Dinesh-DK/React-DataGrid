@@ -1,18 +1,18 @@
-import React,{ useEffect, useMemo, useRef, useState } from 'react';
-import { css } from '@linaria/core';
-import { faker } from '@faker-js/faker';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { css } from "@linaria/core";
+import { faker } from "@faker-js/faker";
 
-import DataGrid from '../components/datagrid/DataGrid';
-import { CellExpanderFormatter } from './CellExpanderFormatter';
+import DataGrid from "../components/datagrid/DataGrid";
+import { CellExpanderFormatter } from "./CellExpanderFormatter";
 
 function createDepartments() {
-  const departments= [];
+  const departments = [];
   for (let i = 1; i < 30; i++) {
     departments.push({
-      type: 'MASTER',
+      type: "MASTER",
       id: i,
       department: faker.commerce.department(),
-      expanded: false
+      expanded: false,
     });
   }
   return departments;
@@ -27,7 +27,7 @@ function getProducts(parentId) {
       id: i,
       product: faker.commerce.productName(),
       description: faker.commerce.productDescription(),
-      price: faker.commerce.price()
+      price: faker.commerce.price(),
     });
   }
   productsMap.set(parentId, products);
@@ -35,32 +35,34 @@ function getProducts(parentId) {
 }
 
 const productColumns = [
-  { field: 'id', headerName: 'ID', width: 35 },
-  { field: 'product', headerName: 'Product' },
-  { field: 'description', headerName: 'Description' },
-  { field: 'price', headerName: 'Price' }
+  { field: "id", headerName: "ID", width: 35 },
+  { field: "product", headerName: "Product" },
+  { field: "description", headerName: "Description" },
+  { field: "price", headerName: "Price" },
 ];
 
 export default function MasterDetail({ direction }) {
   const columns = useMemo(() => {
     return [
       {
-        field: 'expanded',
-        headerName: '',
+        field: "expanded",
+        headerName: "",
         minWidth: 30,
         width: 30,
         colSpan(args) {
-          return args.type === 'ROW' && args.row.type === 'DETAIL' ? 3 : undefined;
+          return args.type === "ROW" && args.row.type === "DETAIL"
+            ? 3
+            : undefined;
         },
         cellClass(row) {
-          return row.type === 'DETAIL'
+          return row.type === "DETAIL"
             ? css`
                 padding: 24px;
               `
             : undefined;
         },
         valueFormatter({ row, isCellSelected, onRowChange }) {
-          if (row.type === 'DETAIL') {
+          if (row.type === "DETAIL") {
             return (
               <ProductGrid
                 isCellSelected={isCellSelected}
@@ -79,24 +81,24 @@ export default function MasterDetail({ direction }) {
               }}
             />
           );
-        }
+        },
       },
-      { field: 'id', headerName: 'ID', width: 35 },
-      { field: 'department', headerName: 'Department' }
+      { field: "id", headerName: "ID", width: 35 },
+      { field: "department", headerName: "Department" },
     ];
   }, [direction]);
   const [rows, setRows] = useState(createDepartments);
 
   function onRowsChange(rows, { indexes }) {
     const row = rows[indexes[0]];
-    if (row.type === 'MASTER') {
+    if (row.type === "MASTER") {
       if (!row.expanded) {
         rows.splice(indexes[0] + 1, 1);
       } else {
         rows.splice(indexes[0] + 1, 0, {
-          type: 'DETAIL',
+          type: "DETAIL",
           id: row.id + 100,
-          parentId: row.id
+          parentId: row.id,
         });
       }
       setRows(rows);
@@ -110,7 +112,9 @@ export default function MasterDetail({ direction }) {
       rowData={rows}
       onRowsChange={onRowsChange}
       headerRowHeight={45}
-      rowHeight={(args) => (args.type === 'ROW' && args.row.type === 'DETAIL' ? 300 : 45)}
+      rowHeight={(args) =>
+        args.type === "ROW" && args.row.type === "DETAIL" ? 300 : 45
+      }
       className="fill-grid"
       enableVirtualization={false}
       direction={direction}
@@ -118,16 +122,12 @@ export default function MasterDetail({ direction }) {
   );
 }
 
-function ProductGrid({
-  parentId,
-  isCellSelected,
-  direction
-}) {
+function ProductGrid({ parentId, isCellSelected, direction }) {
   const gridRef = useRef(null);
   useEffect(() => {
     if (!isCellSelected) return;
-    gridRef
-      .current.element.querySelector('[tabindex="0"]')
+    gridRef.current.element
+      .querySelector('[tabindex="0"]')
       .focus({ preventScroll: true });
   }, [isCellSelected]);
   const products = getProducts(parentId);
@@ -145,6 +145,7 @@ function ProductGrid({
         rowData={products}
         columnData={productColumns}
         rowKeyGetter={rowKeyGetter}
+        rowSelection={"single"}
         style={{ blockSize: 250 }}
         direction={direction}
       />

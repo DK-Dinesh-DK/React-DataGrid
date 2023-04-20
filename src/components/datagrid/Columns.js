@@ -1,7 +1,7 @@
 import React from "react";
 import { css } from "@linaria/core";
 import { SelectCellFormatter } from "./formatters";
-import { useRowSelection } from "./hooks";
+import { useRowSelection } from "./hooks/useRowSelection";
 export const SERIAL_NUMBER_COLUMN_KEY = "serial-number";
 export const SELECT_COLUMN_KEY = "select-row";
 
@@ -55,6 +55,7 @@ export const SelectColumn = {
   sortable: false,
   frozen: true,
   filter: false,
+  haveChildren: false,
   headerRenderer(props) {
     return (
       <SelectCellFormatter
@@ -73,13 +74,14 @@ export const SelectColumn = {
   },
 };
 export const SerialNumberColumn = {
-  key: SERIAL_NUMBER_COLUMN_KEY,
+  key: `${SERIAL_NUMBER_COLUMN_KEY}`,
   name: "Sr. No.",
   width: 45,
   resizable: false,
   sortable: false,
   frozen: true,
   filter: false,
+  haveChildren: false,
   headerRenderer: () => {
     return <div>{SerialNumberColumn.name}</div>;
   },

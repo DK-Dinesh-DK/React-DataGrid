@@ -1,4 +1,4 @@
-// import React from "react";
+import React from "react";
 import * as FileSaver from "file-saver";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -35,14 +35,14 @@ export async function exportToCsv(fileData, columns, fileName) {
 }
 
 export async function exportToPdf(fileData, columns, fileName) {
-  var field = [];
+  let field = [];
   columns?.map((ele) => {
     if (ele.field) {
       field.push({ dataKey: ele.field, header: ele.headerName });
     }
   });
 
-  var doc = new jsPDF("p", "pt", "letter");
+  let doc = new jsPDF("p", "pt", "letter");
   autoTable(doc, { html: "#my-table" });
   autoTable(doc, {
     margin: { top: 10 },

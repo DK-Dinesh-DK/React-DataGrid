@@ -56,7 +56,6 @@ const columns = [
     field: "task",
     headerName: "Title",
     cellEditor: (props) => {
-      console.log(props);
       return textEditor(props);
     },
     sortable: true,
@@ -81,7 +80,7 @@ const columns = [
 export default function Pagination({ direction }) {
   const [rows, setRows] = useState(createRows);
   const [sortColumns, setSortColumns] = useState([]);
-  const [selectedRows, setSelectedRows] = useState(() => new Set());
+  const [selectedRows, setSelectedRows] = useState([]);
 
   const sortedRows = useMemo(() => {
     if (sortColumns.length === 0) return rows;
@@ -113,6 +112,8 @@ export default function Pagination({ direction }) {
       direction={direction}
       pagination={true}
       defaultPage={3}
+      rowSelection={"single"}
+
       // paginationAutoPageSize={true}
       // paginationPageSize={39}
       // suppressPaginationPanel={true}

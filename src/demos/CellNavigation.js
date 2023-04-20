@@ -5,32 +5,32 @@ import DataGrid from "../components/datagrid/DataGrid";
 const columns = [
   {
     field: "id",
-    headerName: "ID",
+    headerName: "ID",topHeader:"task",haveChildren:false,
     width: 80,
   },
   {
     field: "task",
-    headerName: "Title",
+    headerName: "Title",topHeader:"task",haveChildren:false,
   },
   {
     field: "priority",
-    headerName: "Priority",
+    headerName: "Priority",topHeader:"priority",haveChildren:false,
   },
   {
     field: "issueType",
-    headerName: "Issue Type",
+    headerName: "Issue Type",topHeader:"issueType",haveChildren:false,
   },
   {
     field: "complete",
-    headerName: "% Complete",
+    headerName: "% Complete",topHeader:"complete",haveChildren:false,
   },
   {
     field: "startDate",
-    headerName: "Start Date",
+    headerName: "Start Date",topHeader:"startDate",haveChildren:false,
   },
   {
     field: "completeDate",
-    headerName: "Expected Complete",
+    headerName: "Expected Complete",topHeader:"completeDate",haveChildren:false,
     width: 200,
   },
 ];
@@ -105,6 +105,8 @@ export default function CellNavigation({ direction }) {
         cellNavigationMode={cellNavigationMode}
         direction={direction}
         ref={dataGridRef}
+        headerRowHeight={24}
+        classheaderName="fill-grid"
       />
     </>
   );

@@ -1,201 +1,803 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { css } from "@linaria/core"
+import React, { useEffect, useState } from "react";
+import { css } from "@linaria/core";
+// import {Input} from "lai_webui";
 
-import { useFocusRef } from "./hooks"
-import { useDefaultComponents } from "./DataGridDefaultComponentsProvider"
-import FilterContext from './filterContext';
-import FiltersDropdown from './FiltersDropdown'
+import { useRovingCellRef } from "./hooks";
+import FilterRenderer from "./FilterRenderer";
+import SortableHeaderCell from "./SortableHeaderCell";
+import FilterIcon from "./records_filter.svg";
+import { Popover, Typography } from "@mui/material";
 
-const headerSortCell = css`
-  @layer rdg.SortableHeaderCell {
-    cursor: pointer;
-    display: flex;
-
-    &:focus {
-      outline: none;
-    }
-  }
-`
-
-const headerSortCellClassname = `rdg-header-sort-cell ${headerSortCell}`
-
-const headerSortName = css`
-  @layer rdg.SortableHeaderCellName {
-    flex-grow: 1;
-    overflow: hidden;
-    overflow: clip;
-    text-overflow: ellipsis;
-  }
-`
-
-const headerSortNameClassname = `rdg-header-sort-name ${headerSortName}`
+var filterIcon = <FilterIcon />;
 
 const filterClassname = css`
-margin-top: -35px;
-  display: grid;
+  display: flex;
   grid-gap: 10px;
+  grid-template-columns: auto auto;
   padding: 4px;
-  font-size: 14px;
+  font-size: 18px;
   inline-size: 100%;
+  cursor: pointer;
 `;
 
-export default function HeaderRenderer({
+const headerWrapperWithChild = css`
+  border-block-end: 1px solid var(--rdg-border-color);
+  height: ${24}px;
+`;
+
+const headerWrapperWithChildData = css`
+  display: flex;
+  align-items: center;
+  height: inherit;
+  justify-content: center;
+  border-inline-end: 1px solid var(--rdg-border-color);
+`;
+
+const headerWrapperWithcellData = css`
+  display: flex;
+  box-sizing: border-box;
+`;
+export default function headerRenderer({
   column,
   rows,
   sortDirection,
   priority,
+  selectCell,
   onSort,
   isCellSelected,
-  setFilters,...rest
+  shouldFocusGrid,
+  setFilters,
+  setFilterType,
+  cellHeight,
+  selectedPosition,
+  selectedCellHeaderStyle,
+  headerRowHeight,
+  selectedCellIdx,
+  arrayDepth,
+  ChildColumnSetup,
 }) {
-  // const unique = [...new Set(rows?.map(item => item?.[column.field]))]
-  // const [options, setOptions] = useState([])
-  // useEffect(() => {
-  //   let dummy = []
-  //   unique.forEach(x => {
-  //     dummy.push({
-  //       key: column.field,
-  //       listname: x,
-  //       value: x
-  //     })
-  //   })
-  //   setOptions(dummy)
-  // }, [column])
+  const { onFocus } = useRovingCellRef(isCellSelected);
+  // console.log("cellHeight", cellHeight, headerRowHeight);
+  // console.log("3456", selectedCellIdx);
+  if (column.haveChildren === true) {
+    return (
+      <div>
+        <div className={headerWrapperWithChild}>
+          <div className={headerWrapperWithChildData}>{column.headerName}</div>
+        </div>
 
-  // const [open, setOpen] = useState(false)
+        <div className={headerWrapperWithcellData}>
+          {column.children !== undefined &&
+            column.children.map((info, index) => {
+              return (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
 
-  const alterHeaderName =
-  column.field ? column.field.charAt(0).toUpperCase() + column.field.slice(1) : column.headerName.charAt(0).toUpperCase() + column.headerName.slice(1);
-  if (!(column.sortable || column.filter)) return <>{column.headerName ?? alterHeaderName}</>
-  if (column.sortable && !column.filter)
-    return (
-      <SortableHeaderCell
-        onSort={onSort}
-        sortDirection={sortDirection}
-        priority={priority}
-        isCellSelected={isCellSelected}
-        column={column}
-      >
-        {column.headerName  ?? alterHeaderName} 
-      </SortableHeaderCell>
-    )
-  if (column.filter && !column.sortable)
-    return (
-      <>
-        <FilterRenderer column={column} isCellSelected={isCellSelected} alterHeaderName={alterHeaderName}>
-          {({ filters, ...rest }) => (
-            <div className={filterClassname}>
-              <input
-                {...rest}
-                value={filters?.[column.field]}
-                onChange={(e) =>
-                  setFilters({
-                    ...filters,
-                    [column.field]: e.target.value
-                  })
-                }
-                onKeyDown={inputStopPropagation}
-              />
-              {/* <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" onClick={() => setOpen(true)}>
-                <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2h-11z" />
-              </svg>
-              {open && <FiltersDropdown options={options} setFilters={setFilters} filters={filters} column={column} />} */}
-            </div>
-          )}
-        </FilterRenderer>
-      </>
-    )
-  if (column.filter && column.sortable)
-    return (
-      <>
-        <SortableHeaderCell
-          onSort={onSort}
-          sortDirection={sortDirection}
-          priority={priority}
-          isCellSelected={isCellSelected}
+                    justifyContent: "center",
+                  }}>
+                  {RecursiveScan(
+                    column.children,
+                    info,
+                    cellHeight,
+                    index,
+                    headerRowHeight,
+                    selectedPosition,
+                    selectedCellHeaderStyle,
+                    column,
+                    selectCell,
+                    shouldFocusGrid,
+                    isCellSelected,
+                    onSort,
+                    sortDirection,
+                    priority,
+                    setFilters,
+                    arrayDepth,
+                    ChildColumnSetup,
+                    selectedCellIdx,
+                    filterIcon,
+                    setFilterType
+                  )}
+                </div>
+              );
+            })}
+        </div>
+      </div>
+    );
+  } else {
+    ChildColumnSetup(column);
+    var style = {
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "inherit",
+      width: column.width,
+    };
+    selectedCellHeaderStyle && selectedPosition.idx === column.idx
+      ? (style = { ...style, ...selectedCellHeaderStyle })
+      : style;
+    function onClick() {
+      selectCell(column.idx);
+    }
+    function onDoubleClick(event) {
+      const { right, left } = event.currentTarget.getBoundingClientRect();
+      const offset = isRtl ? event.clientX - left : right - event.clientX;
+
+      if (offset > 11) {
+        // +1px to account for the border size
+        return;
+      }
+
+      onColumnResize(column, "max-content");
+    }
+
+    function handleFocus(event) {
+      onFocus?.(event);
+      if (shouldFocusGrid) {
+        // Select the first header cell if there is no selected cell
+        selectCell(0);
+      }
+    }
+
+    const [anchorEl, setAnchorEl] = useState(null);
+
+    const handleClick = (event) => {
+      setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
+
+    const open = Boolean(anchorEl);
+    const id = open ? "simple-popover" : undefined;
+
+    if (!column.sortable && !column.filter) {
+      return (
+        // rome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+
+        <div
+          key={column.idx}
+          style={{
+            height: `${cellHeight}px`,
+            display: "flex",
+            justifyContent: "center",
+            width: "100%",
+          }}
+          onFocus={handleFocus}
+          onClick={onClick}
+          onDoubleClick={column.resizable ? onDoubleClick : undefined}
+          // onPointerDown={column.resizable ? onPointerDown : undefined}
         >
-          {column.headerName  ?? alterHeaderName}
-        </SortableHeaderCell> 
-        <FilterRenderer column={column} isCellSelected={isCellSelected} alterHeaderName={alterHeaderName} >
-          {({ filters, ...rest }) => (
-            <div className={filterClassname}>
-              <input
-                {...rest}
-                value={filters?.[column.field]}
-                onChange={(e) =>
-                  setFilters({
-                    ...filters,
-                    [column.field]: e.target.value
-                  })
-                }
-                onKeyDown={inputStopPropagation}
-              />
-              {/* <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" onClick={() => setOpen(true)}>
-                <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2h-11z" />
-              </svg>
-              {open && <FiltersDropdown options={options} setFilters={setFilters} filters={filters} column={column} />} */}
-            </div>
-          )}
-        </FilterRenderer>
-      </>
-    )
-}
+          <div style={{ ...style }}>{column.headerName}</div>
+        </div>
+      );
+    }
+    if (column.sortable && !column.filter) {
+      return (
+        <div
+          key={column.idx}
+          style={{
+            height: `${cellHeight}px`,
+            display: "flex",
+            justifyContent: "center",
+            width: "100%",
+          }}
+          onFocus={handleFocus}
+          onClick={onClick}
+          onDoubleClick={column.resizable ? onDoubleClick : undefined}>
+          <div style={{ ...style }}>
+            <SortableHeaderCell
+              onSort={onSort}
+              sortDirection={sortDirection}
+              priority={priority}
+              isCellSelected={isCellSelected}
+              column={column}
+              borderBottom={"none"}>
+              {column.headerName}
+            </SortableHeaderCell>
+          </div>
+        </div>
+      );
+    }
+    if (column.filter && !column.sortable) {
+      let style11 = {
+        display: "flex",
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "space-between",
+        height: "100%",
+      };
+      selectedCellHeaderStyle && selectedPosition.idx === column.idx
+        ? (style11 = { ...style11, ...selectedCellHeaderStyle })
+        : style11;
 
-function SortableHeaderCell({
+      const [iValue, setIvalue] = useState("");
+
+      const getFilterValue = (event) => {
+        const value = event.target.value;
+        setFilterType(value);
+      };
+
+      const getInputValue = (event, filters) => {
+        event.preventDefault();
+        const value = event.target.value;
+        //console.log("Ivalie", value);
+        setFilters({
+          ...filters,
+          [column.field]: value,
+        });
+      };
+
+      return (
+        <div style={{ ...style11 }} key={column.idx} onClick={onClick}>
+          <FilterRenderer
+            selectedCellHeaderStyle={selectedCellHeaderStyle}
+            selectedPosition={selectedCellHeaderStyle}
+            onFocus={handleFocus}
+            onClick={onClick}
+            column={column}
+            onDoubleClick={column.resizable ? onDoubleClick : undefined}
+            isCellSelected={isCellSelected}>
+            {({ filters, ...rest }) => (
+              <div className={filterClassname}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="10px"
+                  height="10px"
+                  version="1.1"
+                  // style="shapeRendering:geometricPrecision; textRendering:geometricPrecision; imageRendering:optimizeQuality; fillRule:evenodd; clipRule:evenodd"
+                  viewBox="0 0 507 511.644"
+                  onClick={handleClick}
+                  fill="white">
+                  <g id="Layer_x0020_1">
+                    <metadata id="CorelCorpID_0Corel-Layer" />
+                    <path
+                      class="fil0"
+                      d="M192.557 241.772c5.368,5.842 8.316,13.476 8.316,21.371l0 232.663c0,14.002 16.897,21.109 26.898,11.265l64.905 -74.378c8.684,-10.422 13.475,-15.581 13.475,-25.901l0 -143.597c0,-7.897 3.001,-15.529 8.318,-21.373l186.236 -202.081c13.947,-15.159 3.21,-39.741 -17.424,-39.741l-459.536 0c-14.188,0 -23.722,11.594 -23.745,23.784 -0.01,5.541 1.945,11.204 6.321,15.957l186.236 202.031 0 0z"
+                    />
+                  </g>
+                </svg>
+
+                <Popover
+                  id={id}
+                  open={open}
+                  anchorEl={anchorEl}
+                  onClose={handleClose}
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "left",
+                  }}>
+                  <Typography sx={{ p: 2 }}>
+                    <select style={{ width: "100%" }} onChange={getFilterValue}>
+                      <option>Contain</option>
+                      <option>Starts With...</option>
+                      <option>Ends With...</option>
+                      <option>Equals</option>
+                      <option>Not Equals</option>
+                    </select>
+
+                    <div>
+                      <input
+                        {...rest}
+                        value={filters?.[column.field]}
+                        placeholder="Search..."
+                        onChange={(e) => getInputValue(e, filters)}
+                        onKeyDown={inputStopPropagation}
+                      />
+                      {
+                        //console.log("babul", filters)
+                      }
+                    </div>
+                  </Typography>
+                </Popover>
+
+                {/* {open && <FiltersDropdown options={options} setFilters={setFilters} filters={filters} column={column} />} */}
+              </div>
+            )}
+          </FilterRenderer>
+        </div>
+      );
+    }
+    if (column.filter && column.sortable) {
+      var styleSF = {
+        display: "flex",
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "space-between",
+        height: "100%",
+      };
+      selectedCellHeaderStyle && selectedPosition.idx === column.idx
+        ? (styleSF = { ...styleSF, ...selectedCellHeaderStyle })
+        : styleSF;
+
+      const getFilterValue = (event) => {
+        const value = event.target.value;
+        setFilterType(value);
+      };
+
+      const getInputValue = (event, filters) => {
+        const value = event.target.value;
+
+        setFilters({
+          ...filters,
+          [column.field]: value,
+        });
+      };
+
+      return (
+        <div
+          key={column.idx}
+          onFocus={handleFocus}
+          onClick={onClick}
+          onDoubleClick={column.resizable ? onDoubleClick : undefined}
+          style={{ ...styleSF }}>
+          <SortableHeaderCell
+            onSort={onSort}
+            sortDirection={sortDirection}
+            priority={priority}
+            isCellSelected={isCellSelected}>
+            {column.headerName}
+          </SortableHeaderCell>
+          <FilterRenderer column={column} isCellSelected={isCellSelected}>
+            {({ filters, ...rest }) => (
+              <div className={filterClassname}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="10px"
+                  height="10px"
+                  version="1.1"
+                  // style="shapeRendering:geometricPrecision; textRendering:geometricPrecision; imageRendering:optimizeQuality; fillRule:evenodd; clipRule:evenodd"
+                  viewBox="0 0 507 511.644"
+                  onClick={handleClick}
+                  fill="white">
+                  <g id="Layer_x0020_1">
+                    <metadata id="CorelCorpID_0Corel-Layer" />
+                    <path
+                      class="fil0"
+                      d="M192.557 241.772c5.368,5.842 8.316,13.476 8.316,21.371l0 232.663c0,14.002 16.897,21.109 26.898,11.265l64.905 -74.378c8.684,-10.422 13.475,-15.581 13.475,-25.901l0 -143.597c0,-7.897 3.001,-15.529 8.318,-21.373l186.236 -202.081c13.947,-15.159 3.21,-39.741 -17.424,-39.741l-459.536 0c-14.188,0 -23.722,11.594 -23.745,23.784 -0.01,5.541 1.945,11.204 6.321,15.957l186.236 202.031 0 0z"
+                    />
+                  </g>
+                </svg>
+
+                <Popover
+                  id={id}
+                  open={open}
+                  anchorEl={anchorEl}
+                  onClose={handleClose}
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "left",
+                  }}>
+                  <Typography sx={{ p: 2 }}>
+                    <select style={{ width: "100%" }} onChange={getFilterValue}>
+                      <option>Contain</option>
+                      <option>Starts With...</option>
+                      <option>Ends With...</option>
+                      <option>Equals</option>
+                      <option>Not Equals</option>
+                    </select>
+                    <div>
+                      <input
+                        {...rest}
+                        value={filters?.[column.field]}
+                        placeholder="Search..."
+                        onChange={(e) => getInputValue(e, filters)}
+                        onKeyDown={inputStopPropagation}
+                      />
+                    </div>
+                  </Typography>
+                </Popover>
+
+                {/* {open && <FiltersDropdown options={options} setFilters={setFilters} filters={filters} column={column} />} */}
+              </div>
+            )}
+          </FilterRenderer>
+        </div>
+      );
+    }
+  }
+}
+// useMemo(() => expensiveCalculation(count), [count]);
+
+var columnsList = [];
+
+const RecursiveScan = (
+  masterData,
+  subData,
+  cellHeight,
+  index,
+  headerRowHeight,
+  selectedPosition,
+  selectedCellHeaderStyle,
+  column,
+  selectCell,
+  shouldFocusGrid,
+  isCellSelected,
   onSort,
   sortDirection,
   priority,
-  children,
-  isCellSelected,
-  column
-}) {
-  const sortStatus = useDefaultComponents().sortStatus
-  const { ref, tabIndex } = useFocusRef(isCellSelected)
+  setFilters,
+  arrayDepth,
+  ChildColumnSetup,
+  selectedCellIdx,
+  filterIcon,
+  setFilterType
+) => {
+  var cellHeight = cellHeight - headerRowHeight;
+  // console.log("crty", headerRowHeight);
+  ChildColumnSetup(subData);
+  const { onFocus } = useRovingCellRef(isCellSelected);
+  if (subData.haveChildren === true) {
+    return (
+      <div style={{ textAlign: "center" }}>
+        {
+          <div className={headerWrapperWithChild}>
+            <div className={headerWrapperWithChildData}>
+              {subData.headerName}
+            </div>
+          </div>
+        }
+        <div className={headerWrapperWithcellData}>
+          {subData.children.map((subInfo, index) => {
+            var style = {
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxSizing: "border-box",
+            };
 
-  function handleKeyDown(event) {
-    if (event.key === " " || event.key === "Enter") {
-      // stop propagation to prevent scrolling
-      event.preventDefault()
-      onSort(event.ctrlKey || event.metaKey)
+            return (
+              <div style={{ ...style }}>
+                {RecursiveScan(
+                  subData.children,
+                  subInfo,
+                  cellHeight,
+                  index,
+                  headerRowHeight,
+                  selectedPosition,
+                  selectedCellHeaderStyle,
+                  column,
+                  selectCell,
+                  shouldFocusGrid,
+                  isCellSelected,
+                  onSort,
+                  sortDirection,
+                  priority,
+                  setFilters,
+                  arrayDepth,
+                  ChildColumnSetup,
+                  selectedCellIdx,
+                  filterIcon,
+                  setFilterType
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  } else {
+    columnsList.includes(subData.name) ? null : columnsList.push(subData.name);
+    //console.log("H1", headerRowHeight + cellHeight);
+    var style = {
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      borderInlineEnd: "1px solid var(--rdg-border-color)",
+      width: subData.width,
+      boxSizing: "border-box",
+      height: `${cellHeight}px`,
+      outline:
+        selectedCellIdx === subData.idx
+          ? "1px solid var(--rdg-selection-color)"
+          : "none",
+      outlineOffset: selectedCellIdx === subData.idx ? "-1px" : "0px",
+    };
+    //console.log("subdata", subData);
+    selectedCellHeaderStyle && selectedPosition.idx === subData.idx
+      ? (style = { ...style, ...selectedCellHeaderStyle })
+      : style;
+
+    function onClick() {
+      selectCell(subData.idx);
+    }
+    function onDoubleClick(event) {
+      const { right, left } = event.currentTarget.getBoundingClientRect();
+      const offset = isRtl ? event.clientX - left : right - event.clientX;
+
+      if (offset > 11) {
+        // +1px to account for the border size
+        return;
+      }
+
+      onColumnResize(subData, "max-content");
+    }
+
+    function handleFocus(event) {
+      onFocus?.(event);
+      if (shouldFocusGrid) {
+        // Select the first header cell if there is no selected cell
+        selectCell(0);
+      }
+    }
+    const [anchorEl, setAnchorEl] = useState(null);
+
+    const handleClick = (event) => {
+      setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
+
+    const open = Boolean(anchorEl);
+    const id = open ? "simple-popover" : undefined;
+
+    if (!subData.sortable && !subData.filter)
+      return (
+        // rome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+        <>
+          <div
+            key={`${subData.idx}`}
+            role="columnheader"
+            aria-colindex={`${column.index + 1}.${
+              columnsList.indexOf(subData.name) + 1
+            }`}
+            aria-selected={selectedCellIdx === subData.idx}
+            style={{ ...style }}
+            // onFocus={handleFocus}
+            onClick={onClick}
+            onDoubleClick={column.resizable ? onDoubleClick : undefined}
+            // onPointerDown={column.resizable ? onPointerDown : undefined}
+          >
+            {subData.headerName}
+          </div>
+        </>
+      );
+    if (subData.sortable && !subData.filter)
+      return (
+        // rome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+        <div
+          key={subData.idx}
+          style={{ ...style }}
+          // onFocus={handleFocus}
+          onClick={onClick}
+          onDoubleClick={subData.resizable ? onDoubleClick : undefined}
+          // onPointerDown={column.resizable ? onPointerDown : undefined}
+        >
+          <SortableHeaderCell
+            onSort={onSort}
+            selectedPositionIdx={selectedPosition.idx}
+            subCellIdx={subData.idx}
+            sortDirection={sortDirection}
+            priority={priority}
+            isCellSelected={isCellSelected}>
+            {subData.headerName}
+          </SortableHeaderCell>
+        </div>
+      );
+    if (subData.filter && !subData.sortable) {
+      var style1 = {
+        display: "flex",
+        justifyContent: "space-between",
+        borderRight: "1px solid var(--rdg-border-color)",
+        width: subData.width,
+        alignItems: "center",
+        height: `${cellHeight}px`,
+        boxSizing: "border-box",
+        outline:
+          selectedCellIdx === subData.idx
+            ? "1px solid var(--rdg-selection-color)"
+            : "none",
+        outlineOffset: selectedCellIdx === subData.idx ? "-1px" : "0px",
+      };
+
+      selectedCellHeaderStyle && selectedPosition.idx === subData.idx
+        ? (style1 = { ...style1, ...selectedCellHeaderStyle })
+        : style1;
+
+      function onClickFilter() {
+        selectCell(subData.idx);
+      }
+
+      const getFilterValue = (event) => {
+        const value = event.target.value;
+        setFilterType(value);
+      };
+
+      const getInputValue = (event, filters) => {
+        const value = event.target.value;
+
+        setFilters({
+          ...filters,
+          [subData.field]: value,
+        });
+      };
+
+      return (
+        <div
+          key={subData.idx}
+          onClick={onClickFilter}
+          onDoubleClick={subData.resizable ? onDoubleClick : undefined}
+          style={{ ...style1 }}>
+          <FilterRenderer column={subData} isCellSelected={isCellSelected}>
+            {({ filters, ...rest }) => (
+              <div className={filterClassname}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="10px"
+                  height="10px"
+                  version="1.1"
+                  // style="shapeRendering:geometricPrecision; textRendering:geometricPrecision; imageRendering:optimizeQuality; fillRule:evenodd; clipRule:evenodd"
+                  viewBox="0 0 507 511.644"
+                  onClick={handleClick}
+                  fill="white">
+                  <g id="Layer_x0020_1">
+                    <metadata id="CorelCorpID_0Corel-Layer" />
+                    <path
+                      class="fil0"
+                      d="M192.557 241.772c5.368,5.842 8.316,13.476 8.316,21.371l0 232.663c0,14.002 16.897,21.109 26.898,11.265l64.905 -74.378c8.684,-10.422 13.475,-15.581 13.475,-25.901l0 -143.597c0,-7.897 3.001,-15.529 8.318,-21.373l186.236 -202.081c13.947,-15.159 3.21,-39.741 -17.424,-39.741l-459.536 0c-14.188,0 -23.722,11.594 -23.745,23.784 -0.01,5.541 1.945,11.204 6.321,15.957l186.236 202.031 0 0z"
+                    />
+                  </g>
+                </svg>
+
+                <Popover
+                  id={id}
+                  open={open}
+                  anchorEl={anchorEl}
+                  onClose={handleClose}
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "left",
+                  }}>
+                  <Typography sx={{ p: 2 }}>
+                    <select style={{ width: "100%" }} onChange={getFilterValue}>
+                      <option>Contain</option>
+                      <option>Starts With...</option>
+                      <option>Ends With...</option>
+                      <option>Equals</option>
+                      <option>Not Equals</option>
+                    </select>
+                    <div>
+                      <input
+                        {...rest}
+                        value={filters?.[subData.field]}
+                        placeholder="Search..."
+                        onChange={(e) => getInputValue(e, filters)}
+                        onKeyDown={inputStopPropagation}
+                      />
+                    </div>
+                  </Typography>
+                </Popover>
+
+                {/* {open && <FiltersDropdown options={options} setFilters={setFilters} filters={filters} column={column} />} */}
+              </div>
+            )}
+          </FilterRenderer>
+        </div>
+      );
+    }
+    if (subData.filter && subData.sortable) {
+      var style1 = {
+        display: "flex",
+        justifyContent: "space-between",
+        borderRight: "1px solid var(--rdg-border-color)",
+        width: subData.width,
+        alignItems: "center",
+        height: `${cellHeight}px`,
+        boxSizing: "border-box",
+        outline:
+          selectedCellIdx === subData.idx
+            ? "1px solid var(--rdg-selection-color)"
+            : "none",
+        outlineOffset: selectedCellIdx === subData.idx ? "-1px" : "0px",
+      };
+
+      selectedCellHeaderStyle && selectedPosition.idx === subData.idx
+        ? (style1 = { ...style1, ...selectedCellHeaderStyle })
+        : style1;
+
+      function onClickFilter() {
+        selectCell(subData.idx);
+      }
+
+      const getFilterValue = (event) => {
+        const value = event.target.value;
+        setFilterType(value);
+      };
+
+      const getInputValue = (event, filters) => {
+        const value = event.target.value;
+
+        setFilters({
+          ...filters,
+          [subData.field]: value,
+        });
+      };
+
+      return (
+        // rome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+        <div
+          key={subData.idx}
+          style={{ ...style1 }}
+          // onFocus={handleFocus}
+          onClick={onClickFilter}
+          onDoubleClick={column.resizable ? onDoubleClick : undefined}
+          // onPointerDown={column.resizable ? onPointerDown : undefined}
+        >
+          <SortableHeaderCell
+            onSort={onSort}
+            selectedPositionIdx={selectedPosition.idx}
+            subCellIdx={subData.idx}
+            sortDirection={sortDirection}
+            priority={priority}
+            isCellSelected={isCellSelected}>
+            {subData.headerName}
+          </SortableHeaderCell>
+          <FilterRenderer column={subData} isCellSelected={isCellSelected}>
+            {({ filters, ...rest }) => (
+              <div className={filterClassname}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="10px"
+                  height="10px"
+                  version="1.1"
+                  // style="shapeRendering:geometricPrecision; textRendering:geometricPrecision; imageRendering:optimizeQuality; fillRule:evenodd; clipRule:evenodd"
+                  viewBox="0 0 507 511.644"
+                  onClick={handleClick}
+                  fill="white">
+                  <g id="Layer_x0020_1">
+                    <metadata id="CorelCorpID_0Corel-Layer" />
+                    <path
+                      class="fil0"
+                      d="M192.557 241.772c5.368,5.842 8.316,13.476 8.316,21.371l0 232.663c0,14.002 16.897,21.109 26.898,11.265l64.905 -74.378c8.684,-10.422 13.475,-15.581 13.475,-25.901l0 -143.597c0,-7.897 3.001,-15.529 8.318,-21.373l186.236 -202.081c13.947,-15.159 3.21,-39.741 -17.424,-39.741l-459.536 0c-14.188,0 -23.722,11.594 -23.745,23.784 -0.01,5.541 1.945,11.204 6.321,15.957l186.236 202.031 0 0z"
+                    />
+                  </g>
+                </svg>
+
+                <Popover
+                  id={id}
+                  open={open}
+                  anchorEl={anchorEl}
+                  onClose={handleClose}
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "left",
+                  }}>
+                  <Typography sx={{ p: 2 }}>
+                    <select style={{ width: "100%" }} onChange={getFilterValue}>
+                      <option>Contain</option>
+                      <option>Starts With...</option>
+                      <option>Ends With...</option>
+                      <option>Equals</option>
+                      <option>Not Equals</option>
+                    </select>
+                    <div>
+                      <input
+                        {...rest}
+                        value={filters?.[subData.field]}
+                        placeholder="Search..."
+                        onChange={(e) => getInputValue(e, filters)}
+                        onKeyDown={inputStopPropagation}
+                      />
+                    </div>
+                  </Typography>
+                </Popover>
+
+                {/* {open && <FiltersDropdown options={options} setFilters={setFilters} filters={filters} column={column} />} */}
+              </div>
+            )}
+          </FilterRenderer>
+        </div>
+      );
     }
   }
-
-  function handleClick(event) {
-    onSort(event.ctrlKey || event.metaKey)
-  }
-
-  return (
-    <span
-      ref={ref}
-      tabIndex={tabIndex}
-      className={headerSortCellClassname}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-    >
-      <span className={headerSortNameClassname}>{children}</span>
-      <span>{sortStatus({ sortDirection, priority })}</span>
-    </span>
-  )
-}
+};
 
 function inputStopPropagation(event) {
-  if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+  if (["ArrowLeft", "ArrowRight"].includes(event.key)) {
     event.stopPropagation();
   }
-}
-
-function FilterRenderer({
-  isCellSelected,
-  column,
-  children,
-  alterHeaderName,
-}) {
-  const filters = useContext(FilterContext);
-  const { ref, tabIndex } = useFocusRef(isCellSelected);
-  return (
-    <>
-      {!column.sortable && <span className={headerSortNameClassname}>{column.headerName ?? alterHeaderName}</span>}
-      {filters.enabled && <div>{children({ ref, tabIndex, filters })}</div>}
-    </>
-  );
 }

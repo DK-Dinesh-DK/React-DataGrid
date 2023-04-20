@@ -1,16 +1,20 @@
-import { CheckBox } from "arms_v2.8_webui";
-import { cellEditorClassname } from "../style";
-export default function checkboxEditor({ row, column, onRowChange }) {
+import { SelectCellFormatter } from "../formatters";
+
+export default function checkboxEditor({
+  row,
+  column,
+  onRowChange,
+  isCellSelected,
+}) {
   return (
-    <div className={cellEditorClassname}>
-      <CheckBox
-        checked={row[column.key]}
-        disabled={column.editable ? column.editable : false}
-        {...column.inputProps}
-        onClick={(event) =>
-          onRowChange({ ...row, [column.key]: event.target.checked })
-        }
+    <>
+      <SelectCellFormatter
+        value={row[column.key]}
+        onChange={() => {
+          onRowChange({ ...row, [column.key]: !row[column.key] });
+        }}
+        isCellSelected={isCellSelected}
       />
-    </div>
+    </>
   );
 }

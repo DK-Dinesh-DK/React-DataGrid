@@ -110,9 +110,9 @@ function createRows() {
 }
 
 const columns = [
-  { field: 'id', headerName: 'ID' },
-  { field: 'product', headerName: 'Product' },
-  { field: 'price', headerName: 'Price' }
+  { field: 'id', headerName: 'ID',topHeader:"id",haveChildren:false, },
+  { field: 'product', headerName: 'Product',topHeader:"product",haveChildren:false, },
+  { field: 'price', headerName: 'Price',topHeader:"price",haveChildren:false, }
 ];
 
 function rowKeyGetter(row) {
@@ -147,55 +147,55 @@ export default function ContextMenuDemo({ direction }) {
           {
             name: 'Niall',
             action: () => {
-              console.log('Niall was pressed');
+           
             },
           },
           {
             name: 'Sean',
             action: () => {
-              console.log('Sean was pressed');
+       
             },
           },
           {
             name: 'John',
             action: () => {
-              console.log('John was pressed');
+          
             },
           },
           {
             name: 'Alberto',
             action: () => {
-              console.log('Alberto was pressed');
+        
             },
           },
           {
             name: 'Tony',
             action: () => {
-              console.log('Tony was pressed');
+       
             },
           },
           {
             name: 'Andrew',
             action: () => {
-              console.log('Andrew was pressed');
+          
             },
           },
           {
             name: 'Kev',
             action: () => {
-              console.log('Kev was pressed');
+             
             },
           },
           {
             name: 'Will',
             action: () => {
-              console.log('Will was pressed');
+           
             },
           },
           {
             name: 'Armaan',
             action: () => {
-              console.log('Armaan was pressed');
+       
             },
           },
         ],
@@ -205,7 +205,7 @@ export default function ContextMenuDemo({ direction }) {
         name: 'Windows',
         shortcut: 'Alt + W',
         action: () => {
-          console.log('Windows Item Selected');
+      
         },
         icon:
           '<img src="https://www.ag-grid.com/example-assets/skills/windows.png" />',
@@ -215,7 +215,7 @@ export default function ContextMenuDemo({ direction }) {
         name: 'Mac',
         shortcut: 'Alt + M',
         action: () => {
-          console.log('Mac Item Selected');
+          
         },
         icon:
           '<img src="https://www.ag-grid.com/example-assets/skills/mac.png"/>',
@@ -225,7 +225,7 @@ export default function ContextMenuDemo({ direction }) {
         name: 'Checked',
         checked: true,
         action: () => {
-          console.log('Checked Selected');
+          
         },
         icon:
           '<img src="https://www.ag-grid.com/example-assets/skills/mac.png"/>',
@@ -243,6 +243,8 @@ export default function ContextMenuDemo({ direction }) {
         className="fill-grid"
         direction={direction}
         getContextMenuItems={getContextMenuItems}
+        headerRowHeight={24}
+        classheaderName="fill-grid"
       />
         );
 }

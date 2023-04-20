@@ -18,30 +18,30 @@ function createRows() {
   const columns = [
     {
       field: 'id',
-      headerName: 'ID',
+      headerName: 'ID',topHeader:"id",haveChildren:false,
       width: 80
     },
     {
       field: 'task',
       headerName: 'Title',
-      resizable: true,
+      resizable: true,topHeader:"task",haveChildren:false,
       sortable: true
     },
     {
       field: 'priority',
-      headerName: 'Priority',
+      headerName: 'Priority',topHeader:"priority",haveChildren:false,
       resizable: true,
       sortable: true
     },
     {
       field: 'issueType',
       headerName: 'Issue Type',
-      resizable: true,
+      resizable: true,topHeader:"issueType",haveChildren:false,
       sortable: true
     },
     {
       field: 'complete',
-      headerName: '% Complete',
+      headerName: '% Complete',topHeader:"complete",haveChildren:false,
       resizable: true,
       sortable: true
     }
@@ -58,6 +58,8 @@ export default function ColumnsReordering({ direction }) {
         columnReordering={true}
         direction={direction}
         defaultColumnOptions={{ width: '1fr' }}
+        headerRowHeight={24}
+        classheaderName="fill-grid"
       />
   );
 }

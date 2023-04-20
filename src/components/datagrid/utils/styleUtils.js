@@ -20,13 +20,14 @@ export function getRowStyle(rowIdx, height) {
 }
 export function getCellStyle(column, colSpan, rowSpan) {
   return {
-    gridColumnStart: column.idx + 1,
+    height:"100%",
+    gridColumnStart: column.index + 1,
     gridColumnEnd: colSpan !== undefined ? `span ${colSpan}` : undefined,
     gridRowEnd: rowSpan !== undefined ? `span ${rowSpan}` : undefined,
     insetInlineStart: column.frozen
-      ? `var(--rdg-frozen-left-${column.idx})`
-      : undefined,
-  };
+      ? `var(--rdg-frozen-left-${column.index})`
+      : undefined
+  }
 }
 
 export function getCellClassname(column, ...extraClasses) {

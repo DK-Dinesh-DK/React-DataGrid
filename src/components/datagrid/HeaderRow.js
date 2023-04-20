@@ -1,5 +1,4 @@
-import React from "react";
-import { memo } from "react";
+import React, { memo } from "react";
 import clsx from "clsx";
 import { css } from "@linaria/core";
 
@@ -37,7 +36,12 @@ const headerRowClassname = `rdg-header-row ${headerRow}`;
 function HeaderRow({
   columns,
   rows,
+  arrayDepth,
+  headerheight,
+  cellHeight,
+  headerData,
   allRowsSelected,
+  headerRowHeight,
   onAllRowsSelectionChange,
   onColumnResize,
   sortColumns,
@@ -50,11 +54,18 @@ function HeaderRow({
   shouldFocusGrid,
   direction,
   setFilters,
+  setFilterType,
   handleReorderColumn,
+  ...props
 }) {
+  // console.log("columnq",selectedCellIdx)
   const cells = [];
+  function ChildColumnSetup(data) {
+    props.ChildColumnSetup(data);
+  }
   for (let index = 0; index < columns.length; index++) {
     const column = columns[index];
+
     const colSpan = getColSpan(column, lastFrozenColumnIndex, {
       type: "HEADER",
     });
@@ -69,10 +80,15 @@ function HeaderRow({
         rows={rows}
         handleReorderColumn={handleReorderColumn}
         columns={columns}
+        cellHeight={cellHeight}
+        arrayDepth={arrayDepth}
+        headerRowHeight={headerRowHeight}
+        cellData={headerData}
         colSpan={colSpan}
         selectedPosition={selectedPosition}
         selectedCellHeaderStyle={selectedCellHeaderStyle}
         isCellSelected={selectedCellIdx === column.idx}
+        selectedCellIdx={selectedCellIdx}
         onColumnResize={onColumnResize}
         allRowsSelected={allRowsSelected}
         onAllRowsSelectionChange={onAllRowsSelectionChange}
@@ -82,6 +98,8 @@ function HeaderRow({
         shouldFocusGrid={shouldFocusGrid && index === 0}
         direction={direction}
         setFilters={setFilters}
+        setFilterType={setFilterType}
+        ChildColumnSetup={ChildColumnSetup}
       />
     );
   }

@@ -1,26 +1,34 @@
-import { Slider } from "arms_v2.8_webui";
 import React from "react";
-import { cellEditorClassname } from "../style";
+import { css } from "@linaria/core";
 
-export default function sliderEditor({ column, row, onRowChange }) {
-  const min = column.inputProps?.minValue ? column.inputProps?.minValue : 0;
-  const max = column.inputProps?.maxValue ? column.inputProps?.maxValue : 100;
-  const step = column.inputProps?.step ? column.inputProps?.step : 0.1;
+const sliderContainer = css`
+  display: flex;
+  align-items: center;
+`;
+const sliderEditorInternalClassname = css`
+  @layer rdg.SliderEditor {
+    cursor: pointer;
+    width: 85%;
+    font-size: var(--rdg-font-size);
+    font-family: var(--rdg-font-family);
+  }
+`;
+
+export const sliderEditorClassname = `rdg-slider-editor ${sliderEditorInternalClassname}`;
+export default function sliderEditor({ row, column, onRowChange }) {
   const value = row[column.key];
   return (
-    <div className={cellEditorClassname}>
-      <Slider
-        disabled={column.editable ? column.editable : false}
+    <div className={sliderContainer}>
+      <input
+        type={"range"}
         value={value}
-        handleChange={(event) =>
-          onRowChange({ ...row, [column.key]: event.target.value })
-        }
-        minValue={min}
-        maxValue={max}
-        step={step}
+        className={sliderEditorClassname}
         {...column.inputProps}
+        onChange={(e) => {
+          onRowChange({ ...row, [column.key]: e.target.value });
+        }}
       />
-      <span style={{ marginLeft: 10 }}> {Math.round(value)}</span>
+      {Math.round(value)}%
     </div>
   );
 }

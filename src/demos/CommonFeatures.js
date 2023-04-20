@@ -8,8 +8,12 @@ import textEditor from "../components/datagrid/editors/textEditor";
 import { SelectCellFormatter } from "../components/datagrid/formatters/SelectCellFormatter";
 import DataGrid from "../components/datagrid/DataGrid";
 
-import { exportToCsv, exportToXlsx, exportToPdf } from "../components/datagrid/exportUtils";
-import textEditorClassname from "../components/datagrid/editors/textEditor";
+import {
+  exportToCsv,
+  exportToXlsx,
+  exportToPdf,
+} from "../components/datagrid/exportUtils";
+// import textEditorClassname from "../components/datagrid/editors/textEditor";
 
 const toolbarClassname = css`
   display: flex;
@@ -66,6 +70,8 @@ function getColumns(countries, direction) {
       headerName: "ID",
       width: 60,
       frozen: true,
+      haveChildren: false,
+      topHeader: "id",
       resizable: false,
       summaryFormatter() {
         return <strong>Total</strong>;
@@ -74,7 +80,9 @@ function getColumns(countries, direction) {
     {
       field: "title",
       headerName: "Task",
+      topHeader: "title",
       width: 120,
+      haveChildren: false,
       frozen: true,
       cellEditor: textEditor,
       summaryFormatter({ row }) {
@@ -84,23 +92,29 @@ function getColumns(countries, direction) {
     {
       field: "client",
       headerName: "Client",
+      haveChildren: false,
+      topHeader: "client",
       width: "max-content",
       cellRenderer: textEditor,
     },
     {
       field: "area",
+      topHeader: "area",
       headerName: "Area",
+      haveChildren: false,
       width: 120,
 
       // cellRenderer: textEditor,
     },
     {
       field: "country",
+      topHeader: "country",
       headerName: "Country",
+      haveChildren: false,
       width: 180,
       cellRenderer: (p) => (
         <select
-        //  className={textEditorClassname}
+          //  className={textEditorClassname}
           value={p.row.country}
           style={{ width: "100%" }}
           onChange={(e) =>
@@ -117,20 +131,26 @@ function getColumns(countries, direction) {
     },
     {
       field: "contact",
+      topHeader: "contact",
       headerName: "Contact",
+      haveChildren: false,
       width: 160,
       // cellRenderer: textEditor,
     },
     {
       field: "assignee",
+      topHeader: "assignee",
       headerName: "Assignee",
       width: 150,
+      haveChildren: false,
       // cellRenderer: textEditor,
     },
     {
       field: "progress",
+      topHeader: "progress",
       headerName: "Completion",
       width: 110,
+      haveChildren: false,
       valueFormater(props) {
         const value = props.row.progress;
         return (
@@ -175,46 +195,60 @@ function getColumns(countries, direction) {
     },
     {
       field: "startTimestamp",
+      topHeader: "startTimestamp",
       headerName: "Start date",
       width: 100,
+      haveChildren: false,
       valueFormatter(props) {
         return <TimestampFormatter timestamp={props.row.startTimestamp} />;
       },
     },
     {
       field: "endTimestamp",
+      topHeader: "endTimestamp",
       headerName: "Deadline",
       width: 100,
+      haveChildren: false,
       valueFormatter(props) {
         return <TimestampFormatter timestamp={props.row.endTimestamp} />;
       },
     },
     {
       field: "budget",
+      topHeader: "budget",
       headerName: "Budget",
       width: 100,
+      haveChildren: false,
       valueFormatter(props) {
         return <CurrencyFormatter value={props.row.budget} />;
       },
     },
     {
       field: "transaction",
+      topHeader: "transaction",
       headerName: "Transaction type",
+      haveChildren: false,
     },
     {
       field: "account",
+      topHeader: "account",
       headerName: "Account",
+      haveChildren: false,
       width: 150,
     },
     {
       field: "version",
+      topHeader: "version",
       headerName: "Version",
+      haveChildren: false,
       // cellRenderer: textEditor,
     },
     {
       field: "available",
+      topHeader: "available",
       headerName: "Available",
       width: 80,
+      haveChildren: false,
       valueFormatter({ row, onRowChange, isCellSelected }) {
         return (
           <SelectCellFormatter
@@ -335,57 +369,48 @@ export default function CommonFeatures({ direction }) {
     });
   }, [rows, sortColumns]);
 
- 
-
   return (
     <>
       <div className={toolbarClassname}>
         <ExportButton
-          onExport={() => exportToCsv(sortedRows, columns, "CommonFeatures.csv")}
-        >
+          onExport={() =>
+            exportToCsv(sortedRows, columns, "CommonFeatures.csv")
+          }>
           Export to CSV
         </ExportButton>
         <ExportButton
-          onExport={() => exportToXlsx(sortedRows, columns, "CommonFeatures.xlsx")}
-        >
+          onExport={() =>
+            exportToXlsx(sortedRows, columns, "CommonFeatures.xlsx")
+          }>
           Export to XSLX
         </ExportButton>
         <ExportButton
-          onExport={() => exportToPdf(sortedRows, columns, "CommonFeatures.pdf")}
-        >
+          onExport={() =>
+            exportToPdf(sortedRows, columns, "CommonFeatures.pdf")
+          }>
           Export to PDF
         </ExportButton>
       </div>
       <DataGrid
-      rowKeyGetter={rowKeyGetter}
-      columnData={columns}
-      restriction={{
-        copy: true,
-        paste: true,
-      }}
-      rowData={sortedRows}
-      // defaultColumnOptions={{
-      //   sortable: true,
-      //   resizable: true
-      // }}
-      // onRowClicked={(e) => {
-      //   console.log("Row Clicked", e);
-      // }}
-      // selectedRows={selectedRows}
-      // onSelectedRowsChange={setSelectedRows}
-      onRowsChange={setRows}
-      // sortColumns={sortColumns}
-      // onSortColumnsChange={setSortColumns}
-      selectedRows={selectedRows}
-      onSelectedRowsChange={setSelectedRows}
-      topSummaryRows={summaryRows}
-      bottomSummaryRows={summaryRows}
-      showSelectedRows={true}
-      className="fill-grid"
-      direction={direction}
-      selection={true}
-      pagination={true}
-    />
+        rowKeyGetter={rowKeyGetter}
+        columnData={columns}
+        restriction={{
+          copy: true,
+          paste: true,
+        }}
+        rowData={sortedRows}
+        onRowsChange={setRows}
+        selectedRows={selectedRows}
+        onSelectedRowsChange={setSelectedRows}
+        topSummaryRows={summaryRows}
+        bottomSummaryRows={summaryRows}
+        // rowSelection={"multiple"}
+        showSelectedRows={true}
+        className="fill-grid"
+        direction={direction}
+        // selection={true}
+        pagination={true}
+      />
     </>
   );
 }

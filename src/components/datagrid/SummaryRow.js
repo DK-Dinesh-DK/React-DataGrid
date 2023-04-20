@@ -1,5 +1,5 @@
-import React from "react";
-import { memo } from "react";
+import React,{memo} from "react";
+
 import clsx from "clsx";
 import { css } from "@linaria/core";
 

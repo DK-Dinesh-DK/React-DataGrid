@@ -1,8 +1,7 @@
-import React from "react";
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { css } from "@linaria/core";
 import { useDrag, useDrop } from "react-dnd";
-import { useLatestFunc } from "./hooks";
+import { useLatestFunc } from "./hooks/useLatestFunc";
 import { getCellStyle, getCellClassname, onEditorNavigation } from "./utils";
 
 /*
@@ -39,6 +38,7 @@ export default function EditCell({
   closeEditor,
   handleReorderRow,
 }) {
+  // console.log("editcell",column)
   const frameRequestRef = useRef();
   const commitOnOutsideClick =
     column.editorOptions?.commitOnOutsideClick !== false;
@@ -114,7 +114,6 @@ export default function EditCell({
     }),
   });
   function onRowReorder(fromIndex, toIndex) {
-    console.log("fromIndex", fromIndex, "toIndex", toIndex);
     const newRows = [...allrow];
     newRows.splice(toIndex, 0, newRows.splice(fromIndex, 1)[0]);
     handleReorderRow(newRows);
@@ -129,6 +128,7 @@ export default function EditCell({
       canDrop: monitor.canDrop(),
     }),
   });
+  //console.log("columnse",column)
   return (
     <div
       role="gridcell"
@@ -139,15 +139,15 @@ export default function EditCell({
       className={className}
       style={getCellStyle(column, colSpan)}
       onKeyDown={onKeyDown}
-      onMouseDownCapture={commitOnOutsideClick ? cancelFrameRequest : undefined}
-    >
+      onMouseDownCapture={
+        commitOnOutsideClick ? cancelFrameRequest : undefined
+      }>
       {column.rowDrag && (
         <div
           ref={(ele) => {
             drag(ele);
             drop(ele);
-          }}
-        >
+          }}>
           <span style={{ marginRight: "10px", cursor: "grab" }}>&#9674;</span>
           {(column.cellEditor != null || column.editable === true) && (
             <>
@@ -178,7 +178,6 @@ export default function EditCell({
                   valueFormatted: column.valueFormatter,
                   onRowChange,
                   isCellSelected: true,
-                 
                 })}
               {column.editable &&
                 column.formatter({
@@ -227,7 +226,6 @@ export default function EditCell({
                 valueFormatted: column.valueFormatter,
                 onRowChange,
                 isCellSelected: true,
-               
               })}
             {column.editable &&
               column.formatter({

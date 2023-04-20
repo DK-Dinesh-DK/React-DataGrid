@@ -18,9 +18,6 @@ function EmptyRowsRenderer() {
   );
 }
 
-const frameworkComponents ={
-CheckBox:(props) => <button style={{width:"100%"}}>Save</button>,
-}
 
 const FilterContext = createContext(undefined);
 
@@ -29,6 +26,29 @@ function rowKeyGetter(row) {
 }
 
 export default function NoRows({ direction }) {
+
+  const [uploadfiles, setuploadFiles] = useState([]);
+  const [file, setFile] = useState([])
+console.log('uploadfiles', uploadfiles)
+  const handleDelete = (key) => {
+    console.log('uploadfiles', uploadfiles)
+    console.log('file', file)
+    uploadfiles.splice(key.rowIndex, 1);
+    file.splice(key.rowIndex, 1);
+    setuploadFiles([...uploadfiles]);
+    setFile([...file]);
+    console.log("delelte ", file);
+    console.log('key', key)
+  };
+  const frameworkComponents = {
+    CheckBox: (props) => (
+      <button style={{ width: "100%" }} onClick={()=>handleDelete(props)}>
+        Delete
+      </button>
+    ),
+  };
+
+
   const [selectedRows, onSelectedRowsChange] = useState(() => new Set());
   const [filters, setFilters] = useState({
     title: "",
@@ -38,7 +58,7 @@ export default function NoRows({ direction }) {
 
   const columns = useMemo(() => {
     return [
-    SerialNumberColumn,
+      SerialNumberColumn,
       {
         field: "id",
         headerName: "ID",
@@ -54,8 +74,7 @@ export default function NoRows({ direction }) {
         haveChildren: false,
         topHeader: "rdrd",
         cellWidth: 60,
-        cellRenderer:"CheckBox",
-     
+        cellRenderer: "CheckBox",
       },
 
       {
@@ -136,21 +155,22 @@ export default function NoRows({ direction }) {
                 haveChildren: true,
                 topHeader: "title",
                 cellWidth: 100,
-                children:[
+                children: [
                   {
                     field: "cvdcv",
                     headerName: "FGHT",
                     haveChildren: false,
                     topHeader: "title",
                     cellWidth: 60,
-                  },  {
+                  },
+                  {
                     field: "cvacv",
                     headerName: "FGHT",
                     haveChildren: false,
                     topHeader: "title",
                     cellWidth: 60,
                   },
-                ]
+                ],
               },
             ],
           },

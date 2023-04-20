@@ -11,7 +11,11 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 function Row(
   {
     className,
+    indexR,
+    styleR,
     rowIdx,
+    gridTemplateColumns,
+    rowArray,
     gridRowStart,
     height,
     selectedCellIdx,
@@ -35,15 +39,19 @@ function Row(
     onRowChange,
     selectCell,
     totalColumns,
+    subColumn,
     handleReorderRow,
     onCellClick,
     onCellDoubleClick,
     onCellContextMenu,
     columnApi,
+    valueChangedCellStyle,
+    previousData,
     ...props
   },
   ref
 ) {
+  //console.log("selectedCellEditor",selectedCellEditor)
   const handleRowChange = useLatestFunc((column, newRow) => {
     onRowChange(column, rowIdx, newRow);
   });
@@ -66,6 +74,7 @@ function Row(
   const cells = [];
 
   var selectedCellRowIndex;
+  // console.log("vvvvv",rowArray)
 
   for (let index = 0; index < viewportColumns.length; index++) {
     const column = { ...viewportColumns[index], rowIndex: rowIdx };
@@ -78,43 +87,49 @@ function Row(
       index += colSpan - 1;
     }
     const isCellSelected = selectedCellIdx === idx;
+    //console.log("isWEE",selectedCellIdx,idx)
     if (isCellSelected) {
       selectedCellRowIndex = rowIdx;
     }
-    if (isCellSelected && selectedCellEditor) {
-      cells.push(selectedCellEditor);
-    } else {
-      cells.push(
-        <Cell
-          key={`${column.key}`}
-          column={column}
-          colSpan={colSpan}
-          api={api}
-          row={row}
-          handleReorderRow={handleReorderRow}
-          isRowSelected={isRowSelected}
-          allrow={rows}
-          rowIndex={rowIdx}
-          totalColumns={totalColumns}
-          node={node}
-          isCopied={copiedCellIdx === idx}
-          isDraggedOver={draggedOverCellIdx === idx}
-          isCellSelected={isCellSelected}
-          dragHandle={isCellSelected ? selectedCellDragHandle : undefined}
-          onRowClick={onRowClick}
-          onRowDoubleClick={onRowDoubleClick}
-          onRowChange={handleRowChange}
-          selectCell={selectCell}
-          onCellClick={onCellClick}
-          onCellDoubleClick={onCellDoubleClick}
-          onCellContextMenu={onCellContextMenu}
-          columnApi={columnApi}
-          valueChangedCellStyle={props.valueChangedCellStyle}
-          previousData={props.previousData}
-        />
-      );
-    }
+    // if (isCellSelected && selectedCellEditor) {
+    //   cells.push(selectedCellEditor);
+    // } else {
+    cells.push(
+      <Cell
+        key={`${column.key}`}
+        selectedCellIdx={selectedCellIdx}
+        selectedCellEditor={selectedCellEditor}
+        column={column}
+        colSpan={colSpan}
+        api={api}
+        viewportColumns={viewportColumns}
+        rowArray={rowArray}
+        row={row}
+        handleReorderRow={handleReorderRow}
+        isRowSelected={isRowSelected}
+        allrow={rows}
+        rowIndex={rowIdx}
+        totalColumns={totalColumns}
+        node={node}
+        isCopied={copiedCellIdx === idx}
+        isDraggedOver={draggedOverCellIdx === idx}
+        isCellSelected={isCellSelected}
+        dragHandle={isCellSelected ? selectedCellDragHandle : undefined}
+        onRowClick={onRowClick}
+        onRowDoubleClick={onRowDoubleClick}
+        onRowChange={handleRowChange}
+        selectCell={selectCell}
+        subColumn={subColumn}
+        onCellClick={onCellClick}
+        onCellDoubleClick={onCellDoubleClick}
+        onCellContextMenu={onCellContextMenu}
+        columnApi={columnApi}
+        valueChangedCellStyle={valueChangedCellStyle}
+        previousData={previousData}
+      />
+    );
   }
+  // }
   var style = getRowStyle(gridRowStart, height);
   if (rowIdx === selectedCellRowIndex) {
     style = { ...style, ...selectedCellRowStyle };
@@ -130,8 +145,7 @@ function Row(
           className={className}
           onMouseEnter={handleDragEnter}
           style={style}
-          {...props}
-        >
+          {...props}>
           {cells}
         </div>
       </RowSelectionProvider>

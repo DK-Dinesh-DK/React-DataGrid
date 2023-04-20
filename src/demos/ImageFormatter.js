@@ -1,7 +1,7 @@
 import { css } from '@linaria/core';
 
 const wrapperClassname = css`
-  display: flex;
+  display: flex;width: 100%;
   justify-content: space-around;
 `;
 

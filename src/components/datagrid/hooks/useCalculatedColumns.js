@@ -1,5 +1,5 @@
-import React from "react";
-import { useMemo } from "react";
+import React,{useMemo} from "react";
+
 
 import { valueFormatter, toggleGroupFormatter } from "../formatters";
 import { SELECT_COLUMN_KEY } from "../Columns";
@@ -9,7 +9,7 @@ const DEFAULT_COLUMN_WIDTH = "auto";
 const DEFAULT_COLUMN_MIN_WIDTH = 40;
 
 export function useCalculatedColumns({
-  rawColumns,
+  newData,
   columnWidths,
   viewportWidth,
   scrollLeft,
@@ -33,7 +33,7 @@ export function useCalculatedColumns({
       const groupBy = [];
       let lastFrozenColumnIndex = -1;
 
-      const columns = rawColumns?.map((rawColumn) => {
+      const columns = newData?.map((rawColumn, pos) => {
         const rowGroup = rawGroupBy?.includes(rawColumn.field) ?? false;
         const frozen = rowGroup || rawColumn.frozen;
 
@@ -46,12 +46,41 @@ export function useCalculatedColumns({
         const customComponentName =
           indexOfComponent > -1 ? components[indexOfComponent] : null;
 
+        var recursiveChild = (subChild, rawColumn) => {
+          return (
+            subChild.haveChildren === true &&
+            subChild?.children.map((subChild2, index1) => {
+              const rawChild2 = {
+                ...subChild2,
+                parent: subChild.field,
+                formatter: subChild2.cellRenderer
+                ? subChild2.cellRenderer
+                : subChild2.valueFormatter ?? defaultFormatter,
+              filter: subChild2.filter ?? defaultFilter,
+              cellRenderer:
+                frameworkComponents?.[customComponentName] ??
+                subChild2.cellRenderer ??
+                subChild2.valueFormatter ??
+                defaultFormatter,
+
+                children: recursiveChild(subChild2, rawColumn),
+                // idx: index1,
+                key: subChild2.field,
+              };
+              return rawChild2;
+            })
+          );
+        };
+
         const column = {
           ...rawColumn,
-          colId: rawColumn.field,
+           colId: rawColumn.field,
           key: rawColumn.field,
           userProvidedColDef: rawColumn,
+          parent: null,
+        
           idx: 0,
+          index: pos,
           frozen,
           isLastFrozenColumn: false,
           rowGroup,
@@ -63,14 +92,55 @@ export function useCalculatedColumns({
           formatter: rawColumn.cellRenderer
             ? rawColumn.cellRenderer
             : rawColumn.valueFormatter ?? defaultFormatter,
-
+          filter: rawColumn.filter ?? defaultFilter,
           cellRenderer:
             frameworkComponents?.[customComponentName] ??
             rawColumn.cellRenderer ??
             rawColumn.valueFormatter ??
             defaultFormatter,
+          // topHeader: rawColumn.field,
+          children:
+            rawColumn.haveChildren === true &&
+            rawColumn?.children.map((child, index1) => {
+              const rawChild = {
+                ...child,
+                parent: rawColumn.field,
+                formatter: child.cellRenderer
+                  ? child.cellRenderer
+                  : child.valueFormatter ?? defaultFormatter,
+                filter: child.filter ?? defaultFilter,
+                cellRenderer:
+                  frameworkComponents?.[customComponentName] ??
+                  child.cellRenderer ??
+                  child.valueFormatter ??
+                  defaultFormatter,
 
-          filter: rawColumn.filter ?? defaultFilter,
+                children:
+                  child.haveChildren === true &&
+                  child?.children.map((subChild, index2) => {
+                    const rawChild1 = {
+                      ...subChild,
+                      // topHeader: rawColumn.field,
+                      parent: child.field,
+                      formatter: subChild.cellRenderer
+                        ? subChild.cellRenderer
+                        : subChild.valueFormatter ?? defaultFormatter,
+                      filter: subChild.filter ?? defaultFilter,
+                      cellRenderer:
+                        frameworkComponents?.[customComponentName] ??
+                        subChild.cellRenderer ??
+                        subChild.valueFormatter ??
+                        defaultFormatter,
+                      children: recursiveChild(subChild, rawColumn),
+                      // idx: index2,
+                      key: subChild.field,
+                    };
+                    return rawChild1;
+                  }),
+                // idx: index1,
+              };
+              return rawChild;
+            }),
         };
 
         if (rowGroup) {
@@ -160,7 +230,7 @@ export function useCalculatedColumns({
         groupBy,
       };
     }, [
-      rawColumns,
+      newData,
       defaultWidth,
       defaultMinWidth,
       defaultMaxWidth,
@@ -203,7 +273,6 @@ export function useCalculatedColumns({
     const layoutCssVars = {
       gridTemplateColumns: templateColumns.join(" "),
     };
-
     for (let i = 0; i <= lastFrozenColumnIndex; i++) {
       const column = columns[i];
       layoutCssVars[`--rdg-frozen-left-${column.idx}`] = `${

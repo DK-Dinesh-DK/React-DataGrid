@@ -1,6 +1,6 @@
 import React from "react";
 import { css } from "@linaria/core";
-// import { Input } from "lai_webui";
+
 
 const textEditorInternalClassname = css`
   @layer rdg.TextEditor {
@@ -8,9 +8,11 @@ const textEditorInternalClassname = css`
     box-sizing: border-box;
     inline-size: 100%;
     block-size: 100%;
+    height: 20px;
+    margin:2px 0 ;
     padding-block: 0;
     padding-inline: 6px;
-    border: 2px solid #ccc;
+    border: none;
     vertical-align: top;
     color: var(--rdg-color);
     background-color: var(--rdg-background-color);
@@ -31,7 +33,6 @@ const textEditorInternalClassname = css`
 
 export const textEditorClassname = `rdg-text-editor ${textEditorInternalClassname}`;
 
-
 export default function textEditor({
   row,
   column,
@@ -44,7 +45,7 @@ export default function textEditor({
     type.toLowerCase() === "masked" || type.toLowerCase() === "mask"
       ? "password"
       : type;
-
+ 
   return (
     <input
       spellCheck="true"
@@ -56,7 +57,7 @@ export default function textEditor({
       onChange={(event) =>
         onRowChange({ ...row, [column.key]: event.target.value })
       }
-      // onBlur={() => onClose(true)}
+
     />
   );
 }

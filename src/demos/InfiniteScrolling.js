@@ -112,13 +112,12 @@ export default function InfiniteScrolling({ direction }) {
   const dataGridRef = useRef(null);
   const [selectedRows, setSelectedRows] = useState([]);
 
-  console.log("VChangeeeeee0", rows[9]);
 
   return (
     <>
       <button
         onClick={() => {
-          console.log("dataGridRef", dataGridRef.current.api.getRowNode(2));
+          console.log("dataGridRef", dataGridRef.current);
         }}
       >
         getFocusedCell
@@ -130,11 +129,11 @@ export default function InfiniteScrolling({ direction }) {
         rowKeyGetter={rowKeyGetter}
         onRowsChange={(data) => {
           console.log("Data", data);
-          // setRows(data);
+        
         }}
         rowHeight={25}
         className="fill-grid"
-        // userRef={dataGridRef}
+       
         ref={dataGridRef}
         direction={direction}
         selection={true}

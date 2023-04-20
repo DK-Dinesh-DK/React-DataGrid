@@ -49,30 +49,40 @@ const columns = [
   },
   {
     field: "id",
+    haveChildren:false,
+    topHeader: "id",
     headerName: "ID",
     width: 80,
   },
   {
     field: "task",
+    haveChildren:false,
+    topHeader: "task",
     headerName: "Title",
     cellEditor: (props) => {
-      //console.log(props);
+   
       return textEditor(props);
     },
     sortable: true,
   },
   {
     field: "priority",
-    // headerName: "Priority",
+    haveChildren:false,
+    topHeader: "priority",
+    headerName: "Priority",
     sortable: true,
   },
   {
     field: "issueType",
+    haveChildren:false,
+    topHeader: "issueType",
     headerName: "Issue Type",
     sortable: true,
   },
   {
     field: "complete",
+    haveChildren:false,
+    topHeader: "complete",
     headerName: "% Complete",
     sortable: true,
   },
@@ -104,6 +114,7 @@ export default function CustomizableComponents({ direction }) {
       className="fill-grid"
       columnData={columns}
       rowData={sortedRows}
+      headerRowHeight={24}
       rowKeyGetter={rowKeyGetter}
       onRowsChange={setRows}
       sortColumns={sortColumns}
@@ -119,7 +130,7 @@ export default function CustomizableComponents({ direction }) {
 function checkboxFormatter({ onChange, ...props }, ref) {
   function handleChange(e) {
     onChange(e.target.checked, e.nativeEvent.shiftKey);
-    //console.log(props.selectedRows);
+
   }
 
   return <input type="checkbox" ref={ref} {...props} onChange={handleChange} />;

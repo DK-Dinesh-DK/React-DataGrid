@@ -31,23 +31,29 @@ const columns = [
   {
     field: "id",
     headerName: "ID",
+    
     width: 80,
     resizable: true,
+    cellEditor: textEditor,
+    // sortable:true,
     frozen: true,
   },
   {
     field: "avatar",
     headerName: "Avatar",
+    
     width: 40,
-    resizable: true,
+    resizable: true,frozen: true,
     headerRenderer: () => <ImageFormatter value={faker.image.cats()} />,
     valueFormatter: ({ row }) => <ImageFormatter value={row.avatar} />,
   },
   {
     field: "title",
     headerName: "Title",
+   
+    sortable:true,
     width: 200,
-    resizable: true,
+    resizable: true,frozen: true,
     formatter(props) {
       return <>{props.row.title}</>;
     },
@@ -62,22 +68,25 @@ const columns = [
   },
   {
     field: "firstName",
+    filter: true,
     headerName: "First Name",
+    
+    cellEditor: textEditor,
     width: 200,
     resizable: true,
-    frozen: true,
+    
     // cellRenderer: (props) => {
-    //   console.log("props,", props);
+
     //   return textEditor(props);
     // },
     // cellRenderer: (props) => {
-    //   console.log("propss", props);
+    
     //   // return <input value={props.row.firstName} onChange={(e)=> { ...props.row, [props.column.key]: e.target.value }} />
     //   return (
     //     <input
     //       value={props.row.firstName}
     //       onChange={(e) => {
-    //         console.log("e.target.value", e.target.value);
+    //    
     //         setRows([
     //           ...props.allrow,
     //           (props.allrow[props.rowIndex] = {
@@ -90,29 +99,33 @@ const columns = [
     //   );
     // },
   },
+  
+
   {
     headerName: "Money",
     field: "money",
     cellEditor: textEditor,
-    frozen: true,
-    alignment:true,
+    filter:true,
+    sortable:true,
+    // frozen: true,
+    // alignment:true,
     width:100,
-    validation: {
-      style: { backgroundColor: "red", color: "blue" },
-      method: (value) => value.slice(1) >= 100,
-    },
+   
   },
   {
     field: "lastName",
     headerName: "Last Name",
+    
     width: 200,
+    cellEditor: textEditor,
     resizable: true,
-    frozen: true,
+    
     // cellRenderer: textEditor,
   },
   {
     field: "email",
     headerName: "Email",
+    
     width: "max-content",
     resizable: true,
     // cellRenderer: textEditor,
@@ -120,6 +133,7 @@ const columns = [
   {
     field: "street",
     headerName: "Street",
+    
     width: 200,
     resizable: true,
     // cellRenderer: textEditor,
@@ -127,13 +141,15 @@ const columns = [
   {
     field: "zipCode",
     headerName: "ZipCode",
+    
     width: 200,
     resizable: true,
-    // cellRenderer: textEditor,
+    cellRenderer: textEditor,
   },
   {
     field: "date",
     headerName: "Date",
+    
     width: 200,
     resizable: true,
     // cellRenderer: textEditor,
@@ -141,6 +157,7 @@ const columns = [
   {
     field: "bs",
     headerName: "bs",
+    
     width: 200,
     resizable: true,
     // cellRenderer: textEditor,
@@ -148,6 +165,7 @@ const columns = [
   {
     field: "catchPhrase",
     headerName: "Catch Phrase",
+    
     width: "max-content",
     resizable: true,
     // cellRenderer: textEditor,
@@ -155,6 +173,7 @@ const columns = [
   {
     field: "companyName",
     headerName: "Company Name",
+    
     width: 200,
     resizable: true,
     // cellRenderer: textEditor,
@@ -162,6 +181,7 @@ const columns = [
   {
     field: "sentence",
     headerName: "Sentence",
+    
     width: "max-content",
     resizable: true,
     // cellRenderer: textEditor,
@@ -171,7 +191,7 @@ const columns = [
 function createRows() {
   const rows = [];
 
-  for (let i = 0; i < 2000; i++) {
+  for (let i = 0; i < 25000; i++) {
     rows.push({
       id: `id_${i}`,
       avatar: faker.image.avatar(),
@@ -187,7 +207,7 @@ function createRows() {
       companyName: faker.company.name(),
       words: faker.lorem.words(),
       sentence: faker.lorem.sentence(),
-      money:'₹101'
+      money:`₹${100+i}`
     });
   }
 
@@ -240,11 +260,16 @@ export default function AllFeatures({ direction }) {
       onFill={true}
       onCopy={handleCopy}
       onPaste={handlePaste}
-      rowHeight={30}
-      selectedCellHeaderStyle={selectedCellHeaderStyle}
-      selectedCellRowStyle={selectedCellRowStyle}
+      
+      // sortColumns={sortColumns}
+      // onSortColumnsChange={setSortColumns}
       selectedRows={selectedRows}
       onSelectedRowsChange={setSelectedRows}
+      // rowHeight={30}
+      headerRowHeight={24}
+      selectedCellHeaderStyle={selectedCellHeaderStyle}
+      selectedCellRowStyle={selectedCellRowStyle}
+
       className="fill-grid"
       rowClass={(row) =>
         row.id.includes("7") ? highlightClassname : undefined

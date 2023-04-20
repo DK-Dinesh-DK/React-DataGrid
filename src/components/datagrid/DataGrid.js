@@ -5,12 +5,13 @@ import React, {
   useImperativeHandle,
   useCallback,
   useMemo,
-  useEffect,
 } from "react";
-import { flushSync } from "react-dom";
+
+import useUpdateEffect from "@restart/hooks/useUpdateEffect";
+
+import { flushSync, createPortal } from "react-dom";
 import clsx from "clsx";
 import { groupBy as rowGrouper, isString, _ } from "lodash";
-import { createPortal } from "react-dom";
 import {
   ContextMenu,
   MenuItem,
@@ -67,6 +68,9 @@ import { exportToCsv, exportToPdf, exportToXlsx } from "./exportUtils";
 import { ExportButton } from "./ExportData";
 import Pagination from "rc-pagination";
 import "./pagination.css";
+import { useCalculatedColumnswithIdx } from "./hooks/useCalculatedColumnswithIdx";
+import { useCalculatedRowColumns } from "./hooks/useCalculatedRowColumns";
+import { useCalculatedColumnsWithTopHeader } from "./hooks/useCalculatedColumnsWithTopHeader";
 
 const initialPosition = {
   idx: -1,
@@ -140,6 +144,7 @@ function DataGrid(props, ref) {
     frameworkComponents,
     onGridReady,
     valueChangedCellStyle,
+    rowSelection,
     ...rest
   } = props;
 
@@ -147,18 +152,12 @@ function DataGrid(props, ref) {
    * defaults
    */
 
+  //console.log("raawRows :>> ", raawRows);
   const [selectedRows1, onSelectedRowsChange1] = useState();
   selectedRows = selectedRows ? selectedRows : [];
   const selection = rest.selection && SelectColumn;
   raawColumns = rest.selection ? [selection, ...raawColumns] : raawColumns;
 
-  // const enableColumnSort = raawColumns
-  //   ?.map((i) => i.sortable === true)
-  //   .includes(true);
-
-  const enableFilter = raawColumns
-    ?.map((i) => i?.filter === true)
-    .includes(true);
   const contextMenuItems =
     getContextMenuItems !== undefined ? getContextMenuItems() : [];
   function contextMenuRowRenderer(key, props) {
@@ -172,16 +171,43 @@ function DataGrid(props, ref) {
       </ContextMenuTrigger>
     );
   }
-
   const [headerHeightFromRef, setHeaderHeightFromRef] = useState();
+  const depth = (d) => (o) => {
+    o.depth = d;
+    (o.children || []).forEach(depth(d + 1));
+  };
+
+  raawColumns.forEach(depth(0));
+
+  //console.log("arr", raawColumns);
+
+  const cloneRaawColumns1 = raawColumns.slice();
+  const getArrayDepth = (arr) => {
+    if (Array.isArray(arr)) {
+      // if arr is an array, recurse over it
+      return 1 + Math.max(...arr.map(getArrayDepth));
+    }
+    if (arr.children?.length) {
+      // if arr is an object with a children property, recurse over the children
+      return 1 + Math.max(...arr.children.map(getArrayDepth));
+    }
+    return 0;
+  };
+  const arrayDepth = getArrayDepth(cloneRaawColumns1);
+  //console.log("arrayDepth", arrayDepth);
+  const headerheight =
+    (rawHeaderRowHeight ? rawHeaderRowHeight : 24) * arrayDepth;
+  // const headerheight = enableFilter? rawHeaderRowHeight * arrayDepth+46 : rawHeaderRowHeight * arrayDepth;
+
+  const enableFilter = raawColumns
+    ?.map((i) => i.filter === true && i.depth === arrayDepth - 1)
+    .includes(true);
+
   const defaultComponents = useDefaultComponents();
   const rowHeight = rawRowHeight ?? 24;
   const headerWithFilter = enableFilter ? 70 : undefined;
-  const headerRowHeight =
-    headerHeightFromRef ??
-    rawHeaderRowHeight ??
-    headerWithFilter ??
-    (typeof rowHeight === "number" ? rowHeight : 24);
+  const headerRowHeight = headerheight;
+  //console.log("headerRowHeight", headerheight, headerWithFilter);
   const summaryRowHeight =
     rawSummaryRowHeight ?? (typeof rowHeight === "number" ? rowHeight : 24);
   const rowRenderer =
@@ -206,17 +232,20 @@ function DataGrid(props, ref) {
    * states
    */
   const [afterFilter, setAfterFilter] = useState([]);
-
   const [defaultColumnDef, setDefaultColumnDef] =
     useState(defaultColumnOptions);
   const [rawGroupBy, setRawGroupBy] = useState(raawGroupBy);
   const [expandAll, setExpandAll] = useState(null);
-  useEffect(() => {
+  useUpdateEffect(() => {
     setExpandAll(null);
   }, [raawGroupBy, expandedGroupIds]);
-  useEffect(() => {
+  useUpdateEffect(() => {
     setRawGroupBy(raawGroupBy);
   }, [raawGroupBy]);
+  const { columns3 } = useCalculatedColumnsWithTopHeader({
+    raawColumns, //need to be added
+  });
+
   const [scrollTop, setScrollTop] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [columnWidths, setColumnWidths] = useState(() => new Map());
@@ -226,10 +255,14 @@ function DataGrid(props, ref) {
   const [draggedOverRowIdx, setOverRowIdx] = useState(undefined);
   const [sortColumns, setSortColumns] = useState([]);
   const [rawRows, setRawRows] = useState(raawRows);
+  // console.log("raawRows :>> ", raawRows);
+  // useUpdateEffect(() => {
+  //   setRawRows(() => raawRows);
+  //   console.log("raawRows :>> ", raawRows);
+  // }, [raawRows]);
   const [rawColumns, setRawColumns] = useState(
-    serialNumber ? [SerialNumberColumn, ...raawColumns] : raawColumns
+    serialNumber ? [SerialNumberColumn, ...raawColumns] : columns3
   );
-
   const [pagination, setPagination] = useState(tablePagination);
   const [suppressPagination, setSuppressPagination] = useState(
     suppressPaginationPanel ?? false
@@ -268,28 +301,82 @@ function DataGrid(props, ref) {
   const onSortColumnsChange = (sortColumns) => {
     setSortColumns(sortColumns.slice(-1));
   };
-  var defaultFilters = {};
-  raawColumns.forEach((rawCol) => {
-    if (rawCol.filter) defaultFilters[rawCol.field] = "";
-  });
 
+  useUpdateEffect(() => {
+    setRawColumns(
+      serialNumber ? [SerialNumberColumn, ...raawColumns] : columns3
+    );
+  }, [props.columnData]);
+
+  let flattedColumns;
+  const flat = (rawColumns) => (o) =>
+    o.children
+      ? o.children.flatMap(flat(rawColumns || o.headerName))
+      : { ...o, rawColumns };
+  const response = rawColumns;
+  flattedColumns = response.flatMap(flat());
+  const defaultFilters = {};
+  flattedColumns?.map((i) => (defaultFilters[i.field] = ""));
+  rawColumns?.map((i) => (defaultFilters[i.key] = ""));
+
+  const subColumn = [];
   const [filters, setFilters] = useState({ ...defaultFilters, enabled: true });
+  const [filterType, setFilterType] = useState("Contain");
+  //console.log("filterType11", filters);
 
-  let filterFunction = useCallback(
+  const ChildColumnSetup = (value) => {
+    subColumn.push(value);
+  };
+
+  const filterFunction = useCallback(
     (props) => {
-      return raawRows?.filter(function (val) {
-        for (var i = 0; i < props.length; i++)
-          if (!val[props[i][0]].includes(props[i][1])) return false;
-        return true;
-      });
+      if (filterType === "Contain") {
+        return raawRows?.filter(function (val) {
+          for (const element of props)
+            if (!val[element[0]].includes(element[1])) return false;
+          return true;
+        });
+      } else if (filterType === "Starts With...") {
+        return raawRows?.filter(function (val) {
+          for (const element of props)
+            if (!val[element[0]].startsWith(element[1])) return false;
+          return true;
+        });
+      } else if (filterType === "Ends With...") {
+        return raawRows?.filter(function (val) {
+          for (const element of props)
+            if (!val[element[0]].endsWith(element[1])) return false;
+          return true;
+        });
+      } else if (filterType === "Equals") {
+        return raawRows?.filter(function (val) {
+          for (const element of props) {
+            if (val[element[0]] !== element[1]) {
+              return false;
+            }
+          }
+          return true;
+        });
+      } else if (filterType === "Not Equals") {
+        return raawRows?.filter(function (val) {
+          for (const element of props) {
+            if (val[element[0]] === element[1]) {
+              return false;
+            }
+          }
+          return true;
+        });
+      }
     },
-    [raawRows]
+    [filterType, raawRows]
   );
 
   const sortedRows = useMemo(() => {
     const asArray = Object.entries(filters);
     const keys = asArray.filter(([key, value]) => value.length > 0);
+
     const filteredRows = filterFunction(keys);
+
     if (sortColumns.length === 0) return filteredRows;
     const { columnKey, direction } = sortColumns[0];
     let sortedRows = filteredRows;
@@ -299,9 +386,9 @@ function DataGrid(props, ref) {
         : a[columnKey].localeCompare(b[columnKey])
     );
     return direction === "DESC" ? sortedRows.reverse() : sortedRows;
-  }, [sortColumns, filters, filterFunction]);
+  }, [raawRows, sortColumns, filters]);
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     return setRawRows(sortedRows);
   }, [sortedRows]);
 
@@ -360,7 +447,54 @@ function DataGrid(props, ref) {
       rawRows.every((row) => selectedRows1.has(rowKeyGetter(row)))
     );
   }, [rawRows, selectedRows1, rowKeyGetter]);
-  let {
+
+  function flatten(into, node) {
+    if (node == null) return into;
+    if (Array.isArray(node)) return node.reduce(flatten, into);
+    into.push(node);
+
+    return flatten(into, node.children);
+  }
+
+  var rowArray = flatten([], rawColumns);
+
+  var value = false;
+  var rowColD = rowArray.slice();
+  rowColD = rowColD.filter(function (item) {
+    return item !== value;
+  });
+
+  var rowArray1 = rowColD.slice();
+  for (var i = 0; i < rowArray1.length; i++) {
+    if (rowArray1[i].haveChildren) {
+      rowArray1.splice(i, 1);
+      i--;
+    }
+  }
+
+  //console.log("columns3", rowArray1);
+
+  let groupingViaCommonProperty = Object.values(
+    rowArray1.reduce((acc, current) => {
+      acc[current.topHeader] = acc[current.topHeader] ?? [];
+      acc[current.topHeader].push(current.width);
+      return acc;
+    }, {})
+  );
+  var arr2 = groupingViaCommonProperty.map((arr) =>
+    arr.reduce((sum, item) => (sum += item))
+  );
+
+  const newData = rawColumns.slice().map((item1, index) => {
+    var itemFromArr2 = arr2.find((item2, index2) => index === index2);
+
+    if (itemFromArr2) {
+      item1.width = itemFromArr2;
+    }
+    return item1;
+  });
+
+  const {
     columns,
     colSpanColumns,
     colOverscanStartIdx,
@@ -372,7 +506,7 @@ function DataGrid(props, ref) {
     totalFrozenColumnWidth,
     groupBy,
   } = useCalculatedColumns({
-    rawColumns,
+    newData,
     columnWidths,
     scrollLeft,
     viewportWidth: gridWidth,
@@ -380,6 +514,83 @@ function DataGrid(props, ref) {
     rawGroupBy: rowGrouper ? rawGroupBy : undefined,
     enableVirtualization,
     frameworkComponents,
+  });
+
+  //console.log("columnData", rawColumns);
+
+  function flatten(into, node) {
+    if (node == null) return into;
+    if (Array.isArray(node)) return node.reduce(flatten, into);
+    into.push(node);
+
+    return flatten(into, node.children);
+  }
+
+  var rowData = flatten([], columns);
+  var value1 = false;
+
+  rowData = rowData.filter(function (item) {
+    return item !== value1;
+  });
+  const rowData1 = rowData.slice();
+  for (var i = 0; i < rowData1.length; i++) {
+    if (rowData1[i].haveChildren) {
+      rowData1.splice(i, 1);
+      i--;
+    }
+  }
+
+  const { columns4 } = useCalculatedColumnswithIdx({
+    rowData1, //need to be added
+    columnWidths,
+    scrollLeft,
+    viewportWidth: gridWidth,
+    defaultColumnOptions,
+    rawGroupBy: rowGrouper ? rawGroupBy : undefined,
+    enableVirtualization,
+    frameworkComponents,
+  });
+
+  let merged = [];
+  for (const element of rowData) {
+    merged.push({
+      ...element,
+      ...columns4.find((itmInner) => itmInner.field === element.field),
+    });
+  }
+
+  for (let ii = 0, leng = merged.length; ii < leng; ii++) {
+    merged[ii].children = undefined;
+  }
+
+  const regroupArray = (array) => {
+    const map = {};
+    array.forEach((item) => {
+      map[item.field] = item;
+      item.children = [];
+    });
+    array.forEach((item) => {
+      if (item.parent !== null) {
+        map[item.parent].children.push(item);
+      }
+    });
+    return array.filter((item) => item.parent === null);
+  };
+  for (var i = 0, len = regroupArray(merged).length; i < len; i++) {
+    if (regroupArray(merged)[i].haveChildren === true)
+      regroupArray(merged)[i].idx =
+        regroupArray(merged)[i].index + columns4.length;
+  }
+
+  const { columns5 } = useCalculatedRowColumns({
+    columns4,
+    columnWidths,
+    scrollLeft,
+    viewportWidth: gridWidth,
+    defaultColumnOptions,
+    rawGroupBy: rowGrouper ? rawGroupBy : undefined,
+    enableVirtualization,
+    frameworkComponents, //need to be added
   });
 
   const {
@@ -422,6 +633,512 @@ function DataGrid(props, ref) {
     columnWidths,
     isGroupRow,
   });
+  //column Api
+  function getColumnWidths() {
+    let keys = Array.from(columnMetrics.keys());
+    let columnKeys = [];
+    keys.map((key) => columnKeys.push(key.key));
+    let values = Array.from(columnMetrics.values());
+    let columnWidthValues = [];
+    values.map((value) => columnWidthValues.push(value.width));
+    let columnWidth = new Map(columnWidths);
+    for (let i = 0; i < columnWidthValues.length; i++) {
+      columnWidth.set(columnKeys[i], columnWidthValues[i]);
+    }
+    return columnWidth;
+  }
+  function getColumns() {
+    let columnObjects = [];
+    columns.forEach((column) => {
+      const index = raawColumns.findIndex((c) => c.field === column.field);
+      const userColDef = raawColumns[index];
+      const indexOfRowGroup = rawGroupBy?.findIndex(
+        (key) => key === column.key
+      );
+      const indexOfSort = sortColumns.findIndex(
+        (sortCol) => sortCol.columnKey === column.key
+      );
+      const sort = indexOfSort > -1 ? sortColumns[indexOfSort].direction : null;
+      const columnState = {
+        colId: column.field ?? column.key ?? `col_${column.idx}`,
+        columnIndex: column.idx,
+        width: templateColumns[column.idx],
+        frozen: column.frozen ?? undefined,
+        rowGroup: column.rowGroup ?? undefined,
+        rowGroupIndex: indexOfRowGroup > -1 ? indexOfRowGroup : null,
+        sort: sort,
+        userProvidedColDef: userColDef,
+      };
+      columnObjects.push(columnState);
+      // column.children?.forEach((colChild) => {
+      //   const columnState = {
+      //     colId: colChild.field ?? colChild.key ?? `col_${column.idx}`,
+      //     columnIndex: column.idx,
+      //     width: colChild.widt
+      //     frozen: colChild.frozen ?? undefined,
+      //     rowGroup: colChild.rowGroup ?? undefined,
+      //     userProvidedColDef: userColDef,
+      //   };
+      //   columnObjects.push(columnState);
+      // });
+    });
+    return columnObjects;
+  }
+  function moveColumn(colKey, toIndex) {
+    const key = typeof colKey === "string" ? colKey : colKey.colId;
+    const sourceColumnIndex = columns.findIndex((c) => c.field === key);
+    const targetColumnIndex =
+      toIndex < columns.length ? toIndex : sourceColumnIndex;
+    const reorderedColumns = [...columns];
+    reorderedColumns.splice(
+      targetColumnIndex,
+      0,
+      reorderedColumns.splice(sourceColumnIndex, 1)[0]
+    );
+    setRawColumns(reorderedColumns);
+  }
+  function moveColumns(columnsToMove, toIndex) {
+    let sourceColumns = [];
+    const reorderedColumns = [...columns];
+    columns.map((c) =>
+      columnsToMove.forEach((col) => {
+        const key = typeof col === "string" ? col : col.colId;
+        if (key === c.field) sourceColumns.push(c);
+      })
+    );
+    let valueAtPosition = columns[toIndex];
+    sourceColumns.forEach((v) =>
+      reorderedColumns.splice(reorderedColumns.indexOf(v), 1)
+    );
+    reorderedColumns.splice(
+      reorderedColumns.indexOf(valueAtPosition) + 1,
+      0,
+      ...sourceColumns
+    );
+    setRawColumns(reorderedColumns);
+  }
+  function moveColumnByIndex(fromIndex, toIndex) {
+    const sourceColumnIndex = fromIndex;
+    const targetColumnIndex =
+      toIndex < columns.length ? toIndex : sourceColumnIndex;
+    const reorderedColumns = [...columns];
+    reorderedColumns.splice(
+      targetColumnIndex,
+      0,
+      reorderedColumns.splice(sourceColumnIndex, 1)[0]
+    );
+    setRawColumns(reorderedColumns);
+  }
+  function getDisplayNameForColumn(column, location) {
+    let displayNameForCol;
+    columns.forEach((col) => {
+      if (column.colId === col.key && location === col.idx)
+        displayNameForCol = col.headerName;
+    });
+    return displayNameForCol;
+  }
+  function getDisplayedColAfter(column) {
+    let columnObjects = getColumns();
+    let displayedColAfterKey;
+    for (let index = 0; index < columns.length; index++) {
+      let col = columns[index];
+      let nextCol = columns[index + 1];
+      if (column.colId === col.key)
+        displayedColAfterKey = nextCol.parentColumn
+          ? nextCol.parentColumn.key || nextCol.parentColumn.field
+          : nextCol.key;
+    }
+    let displayedColAfter;
+    columnObjects.forEach((colObj) => {
+      if (colObj.colId === displayedColAfterKey) displayedColAfter = colObj;
+    });
+    return displayedColAfter;
+  }
+  function getDisplayedColBefore(column) {
+    let columnObjects = getColumns();
+    let displayedColBeforeKey;
+    for (let index = 0; index < columns.length; index++) {
+      let col = columns[index];
+      let prevCol = columns[index - 1];
+      if (column.colId === col.key)
+        displayedColBeforeKey = prevCol.parentColumn
+          ? prevCol.parentColumn.key || prevCol.parentColumn.field
+          : prevCol.key;
+    }
+    let displayedColBefore;
+    columnObjects.forEach((colObj) => {
+      if (colObj.colId === displayedColBeforeKey) displayedColBefore = colObj;
+    });
+    return displayedColBefore;
+  }
+  function getRowGroupColumns() {
+    let columnObjects = getColumns();
+    let rowGroupColumns = [];
+    columnObjects.forEach((colObject) => {
+      if (rawGroupBy?.includes(colObject.colId))
+        rowGroupColumns.push(colObject);
+    });
+    return rowGroupColumns;
+  }
+  function setRowGroupColumns(colKeys) {
+    rawGroupBy.length = 0;
+    colKeys.forEach((colKey) => {
+      typeof colKey === "string"
+        ? rawGroupBy.push(colKey)
+        : rawGroupBy.push(colKey.colId);
+    });
+    setRawColumns(raawColumns);
+  }
+  function addRowGroupColumn(colKey) {
+    typeof colKey === "string"
+      ? rawGroupBy.push(colKey)
+      : rawGroupBy.push(colKey.colId);
+    setRawColumns(raawColumns);
+  }
+  function addRowGroupColumns(colKeys) {
+    colKeys.forEach((colKey) => {
+      typeof colKey === "string"
+        ? rawGroupBy.push(colKey)
+        : rawGroupBy.push(colKey.colId);
+    });
+    setRawColumns(raawColumns);
+  }
+  function removeRowGroupColumn(colKey) {
+    const key = typeof colKey === "string" ? colKey : colKey.colId;
+    const indexOfKey = rawGroupBy?.findIndex((c) => c === key);
+    if (indexOfKey > -1) rawGroupBy?.splice(indexOfKey, 1);
+    setRawColumns(raawColumns);
+  }
+  function removeRowGroupColumns(colKeys) {
+    colKeys.forEach((colKey) => {
+      const key = typeof colKey === "string" ? colKey : colKey.colId;
+      const indexOfKey = rawGroupBy?.findIndex((c) => c === key);
+      if (indexOfKey > -1) rawGroupBy?.splice(indexOfKey, 1);
+    });
+    setRawColumns(raawColumns);
+  }
+  function moveRowGroupColumn(fromIndex, toIndex) {
+    if (fromIndex > -1 && toIndex < rawGroupBy?.length) {
+      var element = rawGroupBy[fromIndex];
+      rawGroupBy.splice(fromIndex, 1);
+      rawGroupBy.splice(toIndex, 0, element);
+      setRawColumns(columns);
+    }
+  }
+  function setColumnWidth(key, newWidth) {
+    const colKey = typeof key === "string" ? key : key.colId;
+    const newColumnWidths = new Map(columnWidths);
+    newColumnWidths.set(colKey, newWidth);
+    setColumnWidths(newColumnWidths);
+  }
+  function setColumnsWidth(newColumnWidths) {
+    const newColWidths = new Map(columnWidths);
+    newColumnWidths.forEach((col) => {
+      const colKey = typeof col.key === "string" ? col.key : col.key.colId;
+      const colWidth = col.newWidth;
+      newColWidths.set(colKey, colWidth);
+    });
+    setColumnWidths(newColWidths);
+  }
+  function autoSizeColumn(key) {
+    const colKey = typeof key === "string" ? key : key.colId;
+    const columnIndex = columns.findIndex((col) => col.key === colKey);
+    const column = columns[columnIndex];
+    handleColumnResize(column, "max-content");
+  }
+  function autoSizeColumns(colKeys) {
+    let columnObjects = getColumns();
+    const { style } = gridRef.current;
+    const newTemplateColumns = [...templateColumns];
+    const newColumnWidths = new Map(columnWidths);
+    colKeys.forEach((colKey) => {
+      const key = typeof colKey === "string" ? colKey : colKey.colId;
+      const index = columnObjects.findIndex((c) => c.colId === key);
+      newTemplateColumns[index] = "max-content";
+      style.gridTemplateColumns = newTemplateColumns.join(" ");
+      const measuringCell = gridRef.current.querySelector(
+        `[data-measuring-cell-key="${columns[index].key}"]`
+      );
+      const measuredWidth = measuringCell.getBoundingClientRect().width;
+      const measuredWidthPx = `${measuredWidth}px`;
+      if (newTemplateColumns[columns[index].idx] !== measuredWidthPx) {
+        newTemplateColumns[columns[index].idx] = measuredWidthPx;
+        style.gridTemplateColumns = newTemplateColumns.join(" ");
+      }
+      if (columnWidths.get(columns[index].key) === measuredWidth) return;
+      newColumnWidths.set(columns[index].key, measuredWidth);
+    });
+    setColumnWidths(newColumnWidths);
+    templateColumns = [...newTemplateColumns];
+  }
+  function autoSizeAllColumns() {
+    const { style } = gridRef.current;
+    const newTemplateColumns = [...templateColumns];
+    const newColumnWidths = new Map(columnWidths);
+    for (let index = 0; index < newTemplateColumns.length; index++) {
+      newTemplateColumns[index] = "max-content";
+      style.gridTemplateColumns = newTemplateColumns.join(" ");
+      const measuringCell = gridRef.current.querySelector(
+        `[data-measuring-cell-key="${columns[index].key}"]`
+      );
+      const measuredWidth = measuringCell.getBoundingClientRect().width;
+      const measuredWidthPx = `${measuredWidth}px`;
+      if (newTemplateColumns[columns[index].idx] !== measuredWidthPx) {
+        newTemplateColumns[columns[index].idx] = measuredWidthPx;
+        style.gridTemplateColumns = newTemplateColumns.join(" ");
+      }
+      if (columnWidths.get(columns[index].key) === measuredWidth) return;
+      newColumnWidths.set(columns[index].key, measuredWidth);
+    }
+    setColumnWidths(newColumnWidths);
+    templateColumns = [...newTemplateColumns];
+  }
+  function sizeColumnsToFit(gridWidth) {
+    let columnWidths = getColumnWidths();
+    let widthSum = 0;
+    let colWidthValues = Array.from(columnWidths.values());
+    colWidthValues.forEach((colWidth) => {
+      widthSum += colWidth;
+    });
+    var scale = gridWidth / widthSum;
+    const newColWidths = new Map(columnWidths);
+    let colWidths = Array.from(columnWidths.keys());
+    let sum = 0;
+    for (let index = 0; index < colWidthValues.length; index++) {
+      if (index === colWidthValues.length - 1) {
+        let width = gridWidth - sum;
+        newColWidths.set(colWidths[index], width);
+      } else {
+        let width = Math.round(colWidthValues[index] * scale);
+        newColWidths.set(colWidths[index], width);
+        sum += width;
+      }
+    }
+    setColumnWidths(newColWidths);
+  }
+  function getColumnState() {
+    var columns = Array.from(columnMetrics.keys());
+    var colStates = [];
+    columns.forEach((col) => {
+      const index = sortColumns.findIndex(
+        (sortCol) => sortCol.columnKey === col.key
+      );
+      const sort = index > -1 ? sortColumns[index].direction : null;
+      const indexOfRowGroup = rawGroupBy?.findIndex((key) => key === col.key);
+      const colState = {
+        colId: col.key ?? `col_${col.idx}`,
+        columnIndex: col.idx,
+        frozen: col.frozen ?? undefined,
+        width: templateColumns[col.idx],
+        rowGroup: col.rowGroup ?? undefined,
+        rowGroupIndex: indexOfRowGroup > -1 ? indexOfRowGroup : null,
+        sort: sort,
+      };
+      colStates.push(colState);
+    });
+    return colStates;
+  }
+  function applyColumnState(columnState) {
+    const colState = columnState.state;
+    const defaultState = columnState.defaultState ?? undefined;
+    const newColWidths = new Map(columnWidths);
+    colState.forEach((col) => {
+      const colKey = col.colId;
+      if (col.frozen) {
+        const index = columns.findIndex((c) => c.key === colKey);
+        columns[index].frozen = col.frozen;
+      }
+      if (col.width !== undefined) {
+        let width = isString(col.width)
+          ? Number(col.width.match(/\d+/)[0])
+          : col.width;
+        newColWidths.set(colKey, width);
+      }
+      if (col.rowGroup !== undefined) {
+        if (col.rowGroup) {
+          const index = columns.findIndex((c) => c.key === colKey);
+          columns[index].rowGroup = col.rowGroup;
+          addRowGroupColumn(colKey);
+        } else {
+          const index = columns.findIndex((c) => c.key === colKey);
+          columns[index].rowGroup = col.rowGroup;
+          removeRowGroupColumn(colKey);
+        }
+      }
+      if (col.rowGroupIndex !== undefined) {
+        if (col.rowGroupIndex !== null && col.rowGroup) {
+          const fromIndex = rawGroupBy.findIndex(
+            (groupCol) => groupCol === colKey
+          );
+          const toIndex = col.rowGroupIndex;
+          if (fromIndex > -1 && toIndex < rawGroupBy?.length)
+            moveRowGroupColumn(fromIndex, toIndex);
+        }
+      }
+      if (col.sort !== undefined) {
+        if (col.sort !== null) {
+          const index = sortColumns.findIndex(
+            (sortCol) => sortCol.columnKey === colKey
+          );
+          if (index === -1)
+            sortColumns.push({ columnKey: colKey, direction: col.sort });
+          if (index > -1 && sortColumns[index].direction !== col.sort)
+            sortColumns[index].direction = col.sort;
+          onSortColumnsChange(sortColumns);
+        } else {
+          const index = sortColumns.findIndex(
+            (sortCol) => sortCol.columnKey === colKey
+          );
+          if (index > -1) sortColumns.splice(index, 1);
+          onSortColumnsChange(sortColumns);
+        }
+      }
+      setColumnWidths(newColWidths);
+    });
+    if (defaultState) {
+      let keysOfColumns = [];
+      colState.map((col) => keysOfColumns.push(col.colId));
+      columns.forEach((column) => {
+        if (!keysOfColumns.includes(column.key)) {
+          if (defaultState.frozen !== undefined)
+            column.frozen = defaultState.frozen;
+          if (defaultState.width !== undefined) {
+            newColWidths.set(column.key, defaultState.width);
+          }
+          if (defaultState.rowGroup !== undefined) {
+            if (defaultState.rowGroup) {
+              const index = columns.findIndex((c) => c.key === column.key);
+              columns[index].rowGroup = defaultState.rowGroup;
+              addRowGroupColumn(column.key);
+            } else {
+              const index = columns.findIndex((c) => c.key === column.key);
+              columns[index].rowGroup = defaultState.rowGroup;
+              removeRowGroupColumn(column.key);
+            }
+          }
+          if (defaultState.sort !== undefined) {
+            if (defaultState.sort !== null) {
+              const index = sortColumns.findIndex(
+                (sortCol) => sortCol.columnKey === column.key
+              );
+              if (index === -1)
+                sortColumns.push({
+                  columnKey: column.key,
+                  direction: defaultState.sort,
+                });
+              if (
+                index > -1 &&
+                sortColumns[index].direction !== defaultState.sort
+              )
+                sortColumns[index].direction = defaultState.sort;
+              onSortColumnsChange(sortColumns);
+            } else {
+              const index = sortColumns.findIndex(
+                (sortCol) => sortCol.columnKey === column.key
+              );
+              if (index > -1) sortColumns.splice(index, 1);
+              onSortColumnsChange(sortColumns);
+            }
+          }
+        }
+      });
+      setColumnWidths(newColWidths);
+    }
+    setRawColumns(columns);
+  }
+  function isPinning() {
+    let isPinning = false;
+    columns.forEach((col) => {
+      if (col.frozen === true) isPinning = true;
+    });
+    return isPinning;
+  }
+  function setColumnPinned(key) {
+    const colKey = typeof key === "string" ? key : key.colId;
+    const columnIndex = columns.findIndex((col) => col.key === colKey);
+    columns[columnIndex].frozen = true;
+    setRawColumns(columns);
+  }
+  function setColumnsPinned(keys) {
+    for (let i = 0; i < columns.length; i++) {
+      for (let j = 0; j < keys.length; j++) {
+        const key = typeof keys[j] === "string" ? keys[j] : keys[j].colId;
+        const columnIndex = columns.findIndex((col) => col.key === key);
+        if (i === columnIndex) columns[i].frozen = true;
+      }
+    }
+    setRawColumns(columns);
+  }
+  function getSortColumns() {
+    let columnObjects = getColumns();
+    let sortColumns = [];
+    columnObjects.forEach((colObj) => {
+      if (colObj.sort !== null) sortColumns.push(colObj);
+    });
+    return sortColumns;
+  }
+  var columnApiObject = {
+    columnModel: {
+      columnDefs: raawColumns,
+      rowGroupColumns: getRowGroupColumns(),
+      sortColumns: getSortColumns(),
+    },
+  };
+  Object.setPrototypeOf(columnApiObject, {
+    // get columns
+    getColumns,
+    getColumn: (colKey) => {
+      let columnObjects = getColumns();
+      let colObject;
+      let key = typeof colKey === "string" ? colKey : colKey.colId;
+      columnObjects.forEach((columnObj) => {
+        if (columnObj.colId === key) colObject = columnObj;
+      });
+      return colObject;
+    },
+    getAllGridColumns: () => getColumns(),
+    //move columns
+    moveColumn,
+    moveColumns,
+    moveColumnByIndex,
+    //display names for column / column groups
+    getDisplayNameForColumn,
+    getDisplayedColAfter,
+    getDisplayedColBefore,
+    getAllDisplayedVirtualColumns: () => viewportColumns,
+    getAllDisplayedColumns: () => viewportColumns,
+    //row group columns
+    getRowGroupColumns,
+    setRowGroupColumns,
+    addRowGroupColumn,
+    addRowGroupColumns,
+    removeRowGroupColumn,
+    removeRowGroupColumns,
+    moveRowGroupColumn,
+    //column widths
+    setColumnWidth,
+    setColumnsWidth,
+    autoSizeColumn,
+    autoSizeColumns,
+    autoSizeAllColumns,
+    sizeColumnsToFit,
+    //column states
+    getColumnState,
+    applyColumnState,
+    resetColumnState: () => {
+      // // groupBy = [...rawGroupBy];
+      if (rawGroupBy?.length > 0) rawGroupBy.length = 0;
+      if (sortColumns?.length > 0) {
+        sortColumns.length = 0;
+        onSortColumnsChange(sortColumns);
+      }
+      setRawColumns(raawColumns);
+    },
+    //pinning columns
+    isPinning,
+    setColumnPinned,
+    setColumnsPinned,
+  });
 
   //column Api
   function getColumnWidths() {
@@ -460,17 +1177,17 @@ function DataGrid(props, ref) {
         userProvidedColDef: userColDef,
       };
       columnObjects.push(columnState);
-      column.children?.forEach((colChild) => {
-        const columnState = {
-          colId: colChild.field ?? colChild.key ?? `col_${column.idx}`,
-          columnIndex: column.idx,
-          width: colChild.width,
-          frozen: colChild.frozen ?? undefined,
-          rowGroup: colChild.rowGroup ?? undefined,
-          userProvidedColDef: userColDef,
-        };
-        columnObjects.push(columnState);
-      });
+      // column.children?.forEach((colChild) => {
+      //   const columnState = {
+      //     colId: colChild.field ?? colChild.key ?? `col_${column.idx}`,
+      //     columnIndex: column.idx,
+      //     width: colChild.width,
+      //     frozen: colChild.frozen ?? undefined,
+      //     rowGroup: colChild.rowGroup ?? undefined,
+      //     userProvidedColDef: userColDef,
+      //   };
+      //   columnObjects.push(columnState);
+      // });
     });
     return columnObjects;
   }
@@ -503,7 +1220,7 @@ function DataGrid(props, ref) {
     reorderedColumns.splice(
       reorderedColumns.indexOf(valueAtPosition) + 1,
       0,
-      ...sourceColumns
+      ...sourceColumnsz
     );
     setRawColumns(reorderedColumns);
   }
@@ -932,7 +1649,7 @@ function DataGrid(props, ref) {
 
   const hasGroups = groupBy.length > 0 && typeof rowGrouper === "function";
   const minColIdx = hasGroups ? -1 : 0;
-  const maxColIdx = columns.length - 1;
+  const maxColIdx = rowArray1.length - 1;
   const minRowIdx = -1 - topSummaryRowsCount;
   const maxRowIdx = rows.length + bottomSummaryRowsCount - 1;
   const selectedCellIsWithinSelectionBounds =
@@ -943,9 +1660,72 @@ function DataGrid(props, ref) {
   /**
    * The identity of the wrapper function is stable so it won't break memoization
    */
+  const [suppressRowClickSelection, setSuppressRowClickSelection] =
+    useState(false);
   const handleColumnResizeLatest = useLatestFunc(handleColumnResize);
   const onSortColumnsChangeLatest = useLatestFunc(onSortColumnsChange);
-  const onCellClickLatest = useLatestFunc(onCellClick);
+
+  const onCellClickLatest = useLatestFunc((params) => {
+    console.log("params :>> ", params);
+    const row = params.data;
+    const rowKey = rowKeyGetter(row);
+    const newSelectedRows =
+      selectedRows1 !== undefined ? Object.values(selectedRows1) : [];
+    let newSelectedRows1 = [];
+    if (
+      rowSelection?.toLowerCase() === "single" &&
+      !suppressRowClickSelection &&
+      (!props.selection || (props.selection && selectedPosition.idx !== 0))
+    ) {
+      console.log("inrowselection :>> ", selectedRows1);
+      if (selectedRows1 === undefined || !selectedRows1.has(rowKey)) {
+        if (!onSelectedRowsChange1) return;
+        if (selectedRows1 !== undefined)
+          newSelectedRows.splice(0, newSelectedRows.length);
+        newSelectedRows.push(rowKey);
+        newSelectedRows1 = [row];
+      } else {
+        newSelectedRows.pop(rowKey);
+        newSelectedRows1 = [];
+      }
+      onSelectedRowsChange1(new Set(newSelectedRows));
+      if (typeof onSelectedRowsChange === "function")
+        onSelectedRowsChange(newSelectedRows1);
+    } else if (
+      rowSelection?.toLowerCase() === "multiple" &&
+      (!props.selection || (props.selection && selectedPosition.idx !== 0))
+    ) {
+      if (
+        selectedRows1 === undefined ||
+        params.event.ctrlKey ||
+        props.rowMultiSelectWithClick
+      ) {
+        selectRow({
+          row,
+          checked:
+            selectedRows1 === undefined
+              ? true
+              : !selectedRows1.has(rowKeyGetter(row)),
+          isShiftClick: false,
+        });
+      } else {
+        if (selectedRows1 === undefined || !selectedRows1.has(rowKey)) {
+          if (!onSelectedRowsChange1) return;
+          if (selectedRows1 !== undefined)
+            newSelectedRows.splice(0, newSelectedRows.length);
+          newSelectedRows.push(rowKey);
+          newSelectedRows1 = [row];
+        } else {
+          newSelectedRows.pop(rowKey);
+          newSelectedRows1 = [];
+        }
+        onSelectedRowsChange1(new Set(newSelectedRows));
+        if (typeof onSelectedRowsChange === "function")
+          onSelectedRowsChange(newSelectedRows1);
+      }
+    }
+    if (onCellClick) onCellClick(params);
+  });
   const onCellDoubleClickLatest = useLatestFunc(onCellDoubleClick);
   const onCellContextMenuLatest = useLatestFunc(onCellContextMenu);
   const selectRowLatest = useLatestFunc(selectRow);
@@ -953,10 +1733,12 @@ function DataGrid(props, ref) {
   const handleFormatterRowChangeLatest = useLatestFunc(updateRow);
   const selectViewportCellLatest = useLatestFunc(
     (row, column, enableEditor) => {
+      // console.log("cccc", enableEditor);
       const rowIdx = rows.indexOf(row);
       selectCell({ rowIdx, idx: column.idx }, enableEditor);
     }
   );
+
   const selectGroupLatest = useLatestFunc((rowIdx) => {
     selectCell({ rowIdx, idx: -1 });
   });
@@ -1027,7 +1809,7 @@ function DataGrid(props, ref) {
     selectCell,
     api: apiObject,
     columnApi: columnApiObject,
-    node,
+    node: node,
   }));
 
   /**
@@ -1171,10 +1953,10 @@ function DataGrid(props, ref) {
       // event.nativeEvent.code cannot be used either as it would break copy/paste for the DVORAK layout
       const cKey = 67;
       const vKey = 86;
-      if (keyCode === cKey) {
-        handleCopy();
-        return;
-      }
+      // if (keyCode === cKey) {
+      //   handleCopy();
+      //   return;
+      // }
       if (keyCode === vKey) {
         handlePaste();
         return;
@@ -1247,10 +2029,10 @@ function DataGrid(props, ref) {
   }
   const [changedList, setChangedList] = useState([]);
   const [sample, setSample] = useState([]);
-  useEffect(() => {
+  useUpdateEffect(() => {
     setSample([...raawRows]);
   }, [raawRows]);
-  useEffect(() => {
+  useUpdateEffect(() => {
     setSample([...raawRows]);
   }, []);
   function updateRow(column, rowIdx, row) {
@@ -1331,7 +2113,7 @@ function DataGrid(props, ref) {
       return;
     }
 
-    const column = columns[selectedPosition.idx];
+    const column = columns4[selectedPosition.idx];
     column.editorOptions?.onCellKeyDown?.(event);
     if (event.isDefaultPrevented()) return;
 
@@ -1345,7 +2127,6 @@ function DataGrid(props, ref) {
       }));
     }
   }
-  // console.log("headerRowHeight", headerRowHeight);
 
   /**
    * utils
@@ -1376,7 +2157,7 @@ function DataGrid(props, ref) {
     return (
       isCellWithinViewportBounds(position) &&
       isSelectedCellEditable({
-        columns,
+        columns4,
         rows,
         selectedPosition: position,
         isGroupRow,
@@ -1397,6 +2178,7 @@ function DataGrid(props, ref) {
     } else {
       setSelectedPosition({ ...position, mode: "SELECT" });
     }
+    // console.log("position", position);
   }
 
   function scrollToColumn(idx) {
@@ -1614,7 +2396,7 @@ function DataGrid(props, ref) {
       return;
 
     const { idx, row } = selectedPosition;
-    const column = columns[idx];
+    const column = columns4[idx];
     const colSpan = getColSpan(column, lastFrozenColumnIndex, {
       type: "ROW",
       row,
@@ -1683,9 +2465,7 @@ function DataGrid(props, ref) {
   var node;
 
   var endRowIdxForRender;
-
   const [RowNodes, setRowNodes] = useState();
-
   function forEachNode(newFunction) {
     RowNodes.forEach((data) => {
       newFunction(data);
@@ -1740,7 +2520,7 @@ function DataGrid(props, ref) {
     }
     return RowNodes.slice(startIndex, endIndex + 1);
   }
-  var getModelObject = {
+  let getModelObject = {
     getRow: (index) => RowNodes[index],
     getRowNode: (idValue) => RowNodes.filter((data) => data.id === idValue),
     getRowCount: () => rows.length,
@@ -1860,6 +2640,7 @@ function DataGrid(props, ref) {
     }
     return leafNodes;
   }
+
   function forEachLeafNode(callback, rowNodes) {
     let updatedLeafNodes = [];
     for (let i = 0; i < rowNodes?.length ?? LeafNodes.length; i++) {
@@ -1897,7 +2678,10 @@ function DataGrid(props, ref) {
   function getSelectedRows() {
     return selectedRows1;
   }
-
+  function getValue(colKey, rowNode) {
+    const value = LeafNodes[rowNode.rowIndex].data[colKey];
+    return value;
+  }
   function selectAll(filteredRows) {
     if (!onSelectedRowsChange) return;
 
@@ -1927,7 +2711,6 @@ function DataGrid(props, ref) {
     }
     onSelectedRowsChange1(newSelectedRows);
   }
-
   function getSelectedNodes() {
     let selectedNodes = new Set();
     for (let i = 0; i < RowNodes.length; i++) {
@@ -2171,7 +2954,7 @@ function DataGrid(props, ref) {
     return result;
   }
   const [selectedData, setSelectedData] = useState(null);
-  useEffect(() => {
+  useUpdateEffect(() => {
     if (selectedPosition.mode === "EDIT") {
       if (columns[selectedPosition.idx].cellEditor) {
         setSelectedData(selectedPosition);
@@ -2181,6 +2964,111 @@ function DataGrid(props, ref) {
   function getEditingCells() {
     return { rowIndex: selectedData.rowIdx, column: columns[selectedData.idx] };
   }
+
+  function setRowNodeExpanded(rowNode, expanded, expandParents) {
+    let rData = rowNode.data;
+
+    let item = raawGroupBy?.map((value) => {
+      return rData[value];
+    });
+    let sample = [];
+    for (let i = 1; i <= item.length; i++) {
+      sample.push(item.slice(0, i).join("__"));
+    }
+
+    if (expanded && expandParents) onExpandedGroupIdsChange(new Set(sample));
+  }
+  const [showHorizontalScroll, setShowHorizontalScroll] = useState(false);
+  const [showVerticalScroll, setShowVerticalScroll] = useState(false);
+  if (showHorizontalScroll || showVerticalScroll) {
+    let gridDiv = document.getElementById("DataGrid");
+    if (showHorizontalScroll && showVerticalScroll) {
+      gridDiv.style.overflowX = "scroll";
+      gridDiv.style.overflowY = "scroll";
+    } else if (showHorizontalScroll) {
+      gridDiv.style.overflowX = "scroll";
+      gridDiv.style.overflowY = "auto";
+    } else if (showVerticalScroll) {
+      gridDiv.style.overflowY = "scroll";
+      gridDiv.style.overflowX = "auto";
+    }
+  }
+
+  function setAlwaysShowHorizontalScroll(show) {
+    setShowHorizontalScroll(show);
+  }
+  function setAlwaysShowVerticalScroll(show) {
+    setShowVerticalScroll(show);
+  }
+  function Scroll(index, rowCount, position, current) {
+    if (position === "top") {
+      current.scrollTo({
+        top: getRowTop(index),
+        behavior: "smooth",
+      });
+    } else if (
+      position === undefined ||
+      position === null ||
+      position === "bottom"
+    ) {
+      current.scrollTo({
+        top: getRowTop(index - rowCount + 2),
+        behavior: "smooth",
+      });
+    } else if (position === "middle") {
+      let visibile =
+        rowCount + (2 % 1) !== 0
+          ? Math.floor((rowCount + 2) / 2) - 2
+          : Math.floor((rowCount + 2) / 2);
+      current.scrollTo({
+        top: getRowTop(index - visibile),
+        behavior: "smooth",
+      });
+    }
+  }
+  const div_height = document.getElementById("DataGrid")?.clientHeight;
+  const rowCount = Math.floor(div_height / rowHeight);
+  function ensureIndexVisible(index, position) {
+    const { current } = gridRef;
+
+    if (!current) return;
+    Scroll(index, rowCount, position, current);
+  }
+
+  function ensureNodeVisible(rowNode, position) {
+    const { current } = gridRef;
+
+    let index;
+    if (rowNode.rowIndex) {
+      index = rowNode.rowIndex;
+    } else {
+      rows?.map((obj, idx) => {
+        if (JSON.stringify(rowNode) === JSON.stringify(obj)) {
+          index = idx;
+        }
+        return true;
+      });
+    }
+    if (!current) return;
+    Scroll(index, rowCount, position, current);
+  }
+
+  function ensureColumnVisible(key, position) {
+    let columnsValue = raawColumns.map((data) => {
+      return Object.values(data);
+    });
+    let index;
+    if (typeof key === "string") {
+      columnsValue.map((data, idx) => {
+        if (data.includes(key)) {
+          index = idx;
+        }
+      });
+    }
+
+    scrollToColumn(index);
+  }
+
   var apiObject = {
     getColumnDefs: () => rawColumns,
     setColumnDefs: (columns) => setRawColumns(columns),
@@ -2256,8 +3144,15 @@ function DataGrid(props, ref) {
     getVerticalPixelRange,
     getHorizontalPixelRange,
     isColumnFilterPresent,
-    setSuppressRowClickSelection: (value) =>      setSuppressRowClickSelection(value),
+    setSuppressRowClickSelection: (value) =>
+      setSuppressRowClickSelection(value),
     getEditingCells,
+    setRowNodeExpanded,
+    setAlwaysShowHorizontalScroll,
+    setAlwaysShowVerticalScroll,
+    ensureIndexVisible,
+    ensureNodeVisible,
+    ensureColumnVisible,
   };
 
   ///////////  start
@@ -2269,11 +3164,11 @@ function DataGrid(props, ref) {
     });
   }
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     setAfterFilter(getViewportRowsSample(rows));
   }, [rows, getViewportRowsSample]);
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     setRowNodes(getViewportRowsSample(raawRows));
   }, [expandedGroupIds, expandAll, raawRows, getViewportRowsSample]);
 
@@ -2306,7 +3201,7 @@ function DataGrid(props, ref) {
       const rowIdx = isRowOutsideViewport ? selectedRowIdx : viewportRowIdx;
 
       let rowColumns = viewportColumns;
-      const selectedColumn = columns[selectedIdx];
+      const selectedColumn = columns4[selectedIdx];
       // selectedIdx can be -1 if grouping is enabled
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (selectedColumn !== undefined) {
@@ -2315,7 +3210,7 @@ function DataGrid(props, ref) {
           rowColumns = [selectedColumn];
         } else {
           // if the row is within the viewport and cell is not, add the selected column to viewport columns
-          rowColumns = getRowViewportColumns(rowIdx);
+          rowColumns = regroupArray(merged);
         }
       }
 
@@ -2343,10 +3238,11 @@ function DataGrid(props, ref) {
             key={row.id}
             id={row.id}
             groupKey={row.groupKey}
-            viewportColumns={rowColumns}
+            viewportColumns={regroupArray(merged)}
             childRows={row.childRows}
             rowIdx={rowIdx}
             row={row}
+            rowArray={columns5}
             gridRowStart={gridRowStart}
             height={getRowHeight(rowIdx)}
             level={row.level}
@@ -2373,12 +3269,10 @@ function DataGrid(props, ref) {
       }
 
       function setDataValue(key, newValue) {
-        //console.log(row);
         let data = row;
         data[key] = newValue;
         let list = [...rawRows];
         list[rowIdx] = data;
-        //console.log("newList", list);
         setRawRows(list);
       }
       function setData(newValue) {
@@ -2443,11 +3337,12 @@ function DataGrid(props, ref) {
           rowIdx,
           rows,
           row,
+          headerheight: headerheight, //need to be added
           selectedCellRowStyle,
           api: apiObject,
           columnApi: columnApiObject,
           node,
-          viewportColumns: rowColumns,
+          viewportColumns: regroupArray(merged),
           isRowSelected,
           onRowClick: onRowClick,
           onCellClick: onCellClickLatest,
@@ -2456,6 +3351,7 @@ function DataGrid(props, ref) {
           onRowDoubleClick: onRowDoubleClick,
           rowClass,
           gridRowStart,
+          rowArray: columns4,
           height: getRowHeight(rowIdx),
           copiedCellIdx:
             copiedCell !== null && copiedCell.row === row
@@ -2470,6 +3366,7 @@ function DataGrid(props, ref) {
           selectedCellDragHandle: getDragHandle(rowIdx),
           selectedCellEditor: getCellEditor(rowIdx),
           handleReorderRow: handleReorderRow,
+          subColumn,
         })
       );
     }
@@ -2483,6 +3380,7 @@ function DataGrid(props, ref) {
   }
 
   let templateRows = `${headerRowHeight}px`;
+
   if (topSummaryRowsCount > 0) {
     templateRows += ` repeat(${topSummaryRowsCount}, ${summaryRowHeight}px)`;
   }
@@ -2495,8 +3393,18 @@ function DataGrid(props, ref) {
 
   const isGroupRowFocused =
     selectedPosition.idx === -1 && selectedPosition.rowIdx !== -2;
-
-  useEffect(() => {
+  useUpdateEffect(() => {
+    if (paginationAutoPageSize) {
+      if (raawRows.length <= 500) {
+        setSize(20);
+      } else if (1000 >= raawRows.length && raawRows.length > 500) {
+        setSize(30);
+      } else {
+        setSize(40);
+      }
+    }
+  }, [raawRows, paginationAutoPageSize]);
+  useUpdateEffect(() => {
     if (paginationAutoPageSize) {
       if (raawRows.length <= 500) {
         setSize(20);
@@ -2508,7 +3416,7 @@ function DataGrid(props, ref) {
     }
   }, [raawRows, paginationAutoPageSize]);
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     const target = document.getElementById("DataGrid");
     if (props.restriction?.copy) {
       target.addEventListener("copy", (event) => {
@@ -2526,13 +3434,21 @@ function DataGrid(props, ref) {
       target?.removeEventListener("paste", () => {})
     );
   }, [props.restriction?.paste, props.restriction?.copy]);
-
   const toolbarClassname = css`
     display: flex;
     justify-content: flex-end;
     gap: 8px;
     margin-block-end: 8px;
   `;
+  const jumpnext = document.getElementsByClassName("rc-pagination-jump-next");
+  if (jumpnext) {
+    jumpnext[0]?.setAttribute("title", "");
+  }
+  const jumpprev = document.getElementsByClassName("rc-pagination-jump-prev");
+  if (jumpprev) {
+    jumpprev[0]?.setAttribute("title", "");
+  }
+
   return (
     <>
       {props.export && (
@@ -2595,7 +3511,7 @@ function DataGrid(props, ref) {
               : undefined,
 
           gridTemplateRows: templateRows,
-          "--rdg-header-row-height": `${headerRowHeight}px`,
+          "--rdg-header-row-height": `${rowHeight}px`,
           "--rdg-summary-row-height": `${summaryRowHeight}px`,
           "--rdg-sign": isRtl ? -1 : 1,
           ...getLayoutCssVars(),
@@ -2626,12 +3542,15 @@ function DataGrid(props, ref) {
           <DataGridDefaultComponentsProvider value={defaultGridComponents}>
             <HeaderRow
               rows={rawRows}
-              columns={getRowViewportColumns(-1)}
-              handleReorderColumn={handleReorderColumn}
+              columns={regroupArray(merged)}
+              headerData={columns}
+              sortCol={columns4}
               selectedPosition={selectedPosition}
+              handleReorderColumn={handleReorderColumn}
               selectedCellHeaderStyle={selectedCellHeaderStyle}
               onColumnResize={handleColumnResizeLatest}
               allRowsSelected={allRowsSelected}
+              arrayDepth={arrayDepth}
               onAllRowsSelectionChange={selectAllRowsLatest}
               sortColumns={sortColumns}
               onSortColumnsChange={onSortColumnsChangeLatest}
@@ -2644,7 +3563,13 @@ function DataGrid(props, ref) {
               selectCell={selectHeaderCellLatest}
               shouldFocusGrid={!selectedCellIsWithinSelectionBounds}
               direction={direction}
+              headerheight={headerheight}
+              headerRowHeight={rawHeaderRowHeight}
+              rowArray={rowArray}
+              cellHeight={headerRowHeight}
               setFilters={setFilters}
+              setFilterType={setFilterType}
+              ChildColumnSetup={ChildColumnSetup}
             />
             {rows.length === 0 && noRowsFallback ? (
               noRowsFallback
@@ -2677,9 +3602,11 @@ function DataGrid(props, ref) {
                     />
                   );
                 })}
+
                 <RowSelectionChangeProvider value={selectRowLatest}>
-                  {getViewportRows()}
+                  {getViewportRows(rowArray)}
                 </RowSelectionChangeProvider>
+
                 {bottomSummaryRows?.map((row, rowIdx) => {
                   const gridRowStart =
                     headerRowsCount +
@@ -2744,15 +3671,17 @@ function DataGrid(props, ref) {
             <ContextMenu id="grid-context-menu" rtl={direction === "rtl"}>
               {contextMenuItems.map((item) =>
                 item.subMenu?.length > 0 ? (
-                  <SubMenu title={item.name}>
+                  <SubMenu title={item.name} key={item.name}>
                     {item.subMenu.map((subItem) => (
-                      <MenuItem onClick={subItem.action}>
+                      <MenuItem onClick={subItem.action} key={subItem.name}>
                         {subItem.name}
                       </MenuItem>
                     ))}
                   </SubMenu>
                 ) : (
-                  <MenuItem onClick={item.action}>{item.name}</MenuItem>
+                  <MenuItem onClick={item.action} key={item.name}>
+                    {item.name}
+                  </MenuItem>
                 )
               )}
             </ContextMenu>

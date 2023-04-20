@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { css } from "@linaria/core";
 
 import defaultHeaderRenderer from "./headerRenderer";
 import { getCellStyle, getCellClassname } from "./utils";
-import { useRovingCellRef } from "./hooks";
+import { useRovingCellRef } from "./hooks/useRovingCellRef";
 import { filterColumnClassName } from "./style";
 import { useDrag, useDrop } from "react-dnd";
 const cellResizable = css`
@@ -28,8 +28,12 @@ export default function HeaderCell({
   column,
   columns,
   rows,
+  cellHeight,
+  arrayDepth,
+  headerRowHeight,
   colSpan,
   isCellSelected,
+  selectedCellIdx,
   onColumnResize,
   allRowsSelected,
   onAllRowsSelectionChange,
@@ -41,22 +45,29 @@ export default function HeaderCell({
   selectedCellHeaderStyle,
   direction,
   setFilters,
+  setFilterType,
   handleReorderColumn,
+  ChildColumnSetup,
 }) {
+  //console.log("cell", headerRowHeight);
   const isRtl = direction === "rtl";
   const { ref, tabIndex, onFocus } = useRovingCellRef(isCellSelected);
+  const [sortableColumnKey, setSortableColumnKey] = useState();
   const sortIndex = sortColumns?.findIndex(
-    (sort) => sort.columnKey === column.key
+    (sort) => sort.columnKey === sortableColumnKey
   );
+
   const sortColumn =
     sortIndex !== undefined && sortIndex > -1
       ? sortColumns[sortIndex]
       : undefined;
+
   const sortDirection = sortColumn?.direction;
   const priority =
     sortColumn !== undefined && sortColumns.length > 1
       ? sortIndex + 1
       : undefined;
+
   const ariaSort =
     sortDirection && !priority
       ? sortDirection === "ASC"
@@ -64,9 +75,9 @@ export default function HeaderCell({
         : "descending"
       : undefined;
   var style = getCellStyle(column, colSpan);
-  selectedCellHeaderStyle && selectedPosition.idx === column.idx
-    ? (style = { ...style, ...selectedCellHeaderStyle })
-    : style;
+  // selectedCellHeaderStyle && selectedPosition.idx === column.idx
+  //   ? (style = { ...style, ...selectedCellHeaderStyle })
+  //   : style;
 
   const className = getCellClassname(
     column,
@@ -119,13 +130,41 @@ export default function HeaderCell({
     currentTarget.addEventListener("lostpointercapture", onLostPointerCapture);
   }
 
-  function onSort(ctrlClick) {
+  function onSort(ctrlClick, name, idx) {
+    var matches = [];
+
+    const recursiveSort = (cdata) => {
+      if (cdata.haveChildren === true) {
+        cdata.children.map((e, index) => {
+          return recursiveSort(e);
+        });
+      } else {
+        matches.push(cdata.headerName === name && cdata);
+      }
+    };
+
+    if (column.haveChildren === true) {
+      column.children.map((e) => {
+        return recursiveSort(e);
+      });
+    } else {
+      matches.push(column.headerName === name && column);
+    }
+
+    var value1 = false;
+
+    matches = matches.filter(function (item) {
+      return item !== value1;
+    });
+
+    setSortableColumnKey(matches[0].field);
+
     if (onSortColumnsChange == null) return;
-    const { sortDescendingFirst } = column;
+    const { sortDescendingFirst } = matches[0];
     if (sortColumn === undefined) {
       // not currently sorted
       const nextSort = {
-        columnKey: column.key,
+        columnKey: matches[0].field,
         direction: sortDescendingFirst ? "DESC" : "ASC",
       };
       onSortColumnsChange(
@@ -138,7 +177,7 @@ export default function HeaderCell({
         (sortDescendingFirst !== true && sortDirection === "ASC")
       ) {
         nextSortColumn = {
-          columnKey: column.key,
+          columnKey: matches[0].field,
           direction: sortDirection === "ASC" ? "DESC" : "ASC",
         };
       }
@@ -183,11 +222,10 @@ export default function HeaderCell({
   }
 
   function handleColumnsReorder(sourceKey, targetKey) {
-    //console.log("sourceKey", sourceKey, " targetKey", targetKey);
     const sourceColumnIndex = columns.findIndex((c) => c.field === sourceKey);
     const targetColumnIndex = columns.findIndex((c) => c.field === targetKey);
     const reorderedColumns = [...columns];
-    //console.log("reorderedColumns", reorderedColumns);
+
     reorderedColumns.splice(
       targetColumnIndex,
       0,
@@ -210,6 +248,7 @@ export default function HeaderCell({
       canDrop: monitor.canDrop(),
     }),
   });
+  //console.log("isCellSelected",selectedCellIdx)
   return (
     // rome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
     <div
@@ -226,21 +265,44 @@ export default function HeaderCell({
       tabIndex={shouldFocusGrid ? 0 : tabIndex}
       className={className}
       style={style}
-      onFocus={handleFocus}
-      onClick={onClick}
-      onDoubleClick={column.resizable ? onDoubleClick : undefined}
+      // onFocus={handleFocus}
+      // onClick={onClick}
+      // onDoubleClick={column.resizable ? onDoubleClick : undefined}
       onPointerDown={column.resizable ? onPointerDown : undefined}>
-      {headerRenderer({
-        column,
-        rows,
-        sortDirection,
-        priority,
-        onSort,
-        allRowsSelected,
-        onAllRowsSelectionChange,
-        isCellSelected,
-        setFilters,
-      })}
+      <div style={{ display: "flex", height: "100%", alignItems: "center" }}>
+        {headerRenderer({
+          column,
+          rows,
+          arrayDepth,
+          cellHeight,
+          sortDirection,
+          selectCell,
+          priority,
+          selectedCellIdx,
+          onSort,
+          allRowsSelected,
+          onAllRowsSelectionChange,
+          isCellSelected,
+          setFilters,
+          setFilterType,
+          style,
+          className,
+          ChildColumnSetup,
+
+          selectedPosition,
+          headerRowHeight,
+          selectedCellHeaderStyle,
+
+          //need to be chnaged
+
+          shouldFocusGrid,
+
+          handleFocus,
+          onClick,
+          onDoubleClick,
+          onpointerdown,
+        })}
+      </div>
     </div>
   );
 }

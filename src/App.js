@@ -28,8 +28,10 @@ import VariableRowHeight from "./demos/VariableRowHeight";
 import Animation from "./demos/Animation"
 import Pagination from "./demos/Pagination";
 import ExportFile from "./demos/ExportFile"
-// import Demos from "./demos/demo";
+import Demos from "./demos/demo";
 import AlignmentDataTypes from "./demos/AlignmentDataTypes";
+import MultilineHeader from "./demos/MultilineHeader";
+
 css`
   @at-root {
     :root,
@@ -149,14 +151,15 @@ function App() {
             path="variable-row-height"
             element={<VariableRowHeight direction={direction} />}
           />
-            {/* <Route
+            <Route
             path="demo"
             element={<Demos direction={direction} />}
-          /> */}
+          />
           <Route path="chnageinheight" element={<Animation direction={direction} />} />
 
           <Route path="alingment" element={<AlignmentDataTypes direction={direction} />} />
 
+          <Route path="multilineheader" element={<MultilineHeader direction={direction} />} />
           <Route path="*" element="Nothing to see here" />
         </Routes>
       </main>

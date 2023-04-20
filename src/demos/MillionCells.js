@@ -17,12 +17,14 @@ export default function MillionCells({ direction }) {
   const columns = useMemo(() => {
     const columns = [];
 
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 60; i++) {
       const key = String(i);
       columns.push({
        field: key,
         headerName: key,
-        frozen: i < 5,
+        topHeader:key,
+        haveChildren:false,
+        // frozen: i < 5,
         width: 80,
         resizable: true,
         valueFormatter: cellFormatter
@@ -39,6 +41,8 @@ export default function MillionCells({ direction }) {
       rowHeight={22}
       className="fill-grid"
       direction={direction}
+      headerRowHeight={24}
+      classheaderName="fill-grid"
     />
   );
 }

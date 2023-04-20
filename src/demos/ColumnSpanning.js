@@ -42,6 +42,8 @@ export default function ColumnSpanning({ direction }) {
       columns.push({
         field : key,
         headerName: key,
+        topHeader:key,
+        haveChildren:false,
         // frozen: i < 5,
         resizable: true,
         cellRenderer: cellFormatter,
@@ -78,6 +80,8 @@ export default function ColumnSpanning({ direction }) {
       rowHeight={22}
       className={clsx('fill-grid', colSpanClassname, rowSpanClassname)}
       direction={direction}
+      headerRowHeight={24}
+        classheaderName="fill-grid"
     />
   );
 }

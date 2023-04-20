@@ -9,8 +9,8 @@ import radioButtonEditor from "./radioButtonEditor";
 import sliderEditor from "./sliderEditor";
 import buttonEditor from "./buttonEditor";
 import timeEditor from "./timeEditor";
-import imageEditor from "./imageEditor";
-
+import imageViewer from "./imageViewer";
+import colorPicker from "./colorPicker";
 
 export {
   progressBarEditor,
@@ -24,5 +24,6 @@ export {
   sliderEditor,
   buttonEditor,
   timeEditor,
-  imageEditor,
+  imageViewer,
+  colorPicker,
 };
