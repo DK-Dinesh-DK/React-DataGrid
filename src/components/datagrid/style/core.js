@@ -69,6 +69,10 @@ const root = css`
     .rdg-row-groupRow-odd {
       background-color: #f3f8fc;
     }
+    .rdg-row-selected {
+      background-color: #ebf1dd;
+    }
+
     @layer Root {
       ${lightTheme}
       --rdg-selection-color: #66afe9;
@@ -139,7 +143,7 @@ export const focusSinkClassname = css`
   }
 `;
 
-export const filterColumnClassName = 'filter-cell';
+export const filterColumnClassName = "filter-cell";
 
 export const filterContainerClassname = css`
   .${filterColumnClassName} {

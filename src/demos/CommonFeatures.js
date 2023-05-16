@@ -1,14 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { css } from "@linaria/core";
 import { faker } from "@faker-js/faker";
 
-import { SelectColumn } from "../components/datagrid/Columns";
+// import { SelectColumn } from "../components/datagrid/Columns";
 import textEditor from "../components/datagrid/editors/textEditor";
 import { SelectCellFormatter } from "../components/datagrid/formatters/SelectCellFormatter";
 import DataGrid from "../components/datagrid/DataGrid";
 
-import { exportToCsv, exportToXlsx, exportToPdf } from "./UtilityExport";
 import textEditorClassname from "../components/datagrid/editors/textEditor";
 
 const toolbarClassname = css`
@@ -50,18 +49,17 @@ function TimestampFormatter({ timestamp }) {
 function CurrencyFormatter({ value }) {
   return <>{currencyFormatter.format(value)}</>;
 }
-const selectCellClassname = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+// const selectCellClassname = css`
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
 
-  > input {
-    margin: 0;
-  }
-`;
+//   > input {
+//     margin: 0;
+//   }
+// `;
 function getColumns(countries, direction) {
   return [
-    { ...SelectColumn, headerCellClass: selectCellClassname, cellClass: selectCellClassname },
     {
       field: "id",
       headerName: "ID",
@@ -77,7 +75,7 @@ function getColumns(countries, direction) {
       headerName: "Task",
       width: 120,
       frozen: true,
-      cellRenderer: textEditor,
+      cellEditor: textEditor,
       summaryFormatter({ row }) {
         return <>{row.totalCount} records</>;
       },
@@ -92,7 +90,8 @@ function getColumns(countries, direction) {
       field: "area",
       headerName: "Area",
       width: 120,
-      cellRenderer: textEditor,
+
+      // cellRenderer: textEditor,
     },
     {
       field: "country",
@@ -100,8 +99,9 @@ function getColumns(countries, direction) {
       width: 180,
       cellRenderer: (p) => (
         <select
-          className={textEditorClassname}
+          // className={textEditorClassname}
           value={p.row.country}
+          style={{ width: "100%" }}
           onChange={(e) =>
             p.onRowChange({ ...p.row, country: e.target.value }, true)
           }
@@ -119,19 +119,19 @@ function getColumns(countries, direction) {
       field: "contact",
       headerName: "Contact",
       width: 160,
-      cellRenderer: textEditor,
+      // cellRenderer: textEditor,
     },
     {
       field: "assignee",
       headerName: "Assignee",
       width: 150,
-      cellRenderer: textEditor,
+      // cellRenderer: textEditor,
     },
     {
       field: "progress",
       headerName: "Completion",
       width: 110,
-      formatter(props) {
+      valueFormater(props) {
         const value = props.row.progress;
         return (
           <>
@@ -140,7 +140,7 @@ function getColumns(countries, direction) {
           </>
         );
       },
-      editor({ row, onRowChange, onClose }) {
+      cellEditor({ row, onRowChange, onClose }) {
         return createPortal(
           <div
             dir={direction}
@@ -178,7 +178,7 @@ function getColumns(countries, direction) {
       field: "startTimestamp",
       headerName: "Start date",
       width: 100,
-      formatter(props) {
+      valueFormatter(props) {
         return <TimestampFormatter timestamp={props.row.startTimestamp} />;
       },
     },
@@ -186,7 +186,7 @@ function getColumns(countries, direction) {
       field: "endTimestamp",
       headerName: "Deadline",
       width: 100,
-      formatter(props) {
+      valueFormatter(props) {
         return <TimestampFormatter timestamp={props.row.endTimestamp} />;
       },
     },
@@ -194,7 +194,7 @@ function getColumns(countries, direction) {
       field: "budget",
       headerName: "Budget",
       width: 100,
-      formatter(props) {
+      valueFormatter(props) {
         return <CurrencyFormatter value={props.row.budget} />;
       },
     },
@@ -210,13 +210,13 @@ function getColumns(countries, direction) {
     {
       field: "version",
       headerName: "Version",
-      cellRenderer: textEditor,
+      // cellRenderer: textEditor,
     },
     {
       field: "available",
       headerName: "Available",
       width: 80,
-      formatter({ row, onRowChange, isCellSelected }) {
+      valueFormatter({ row, onRowChange, isCellSelected }) {
         return (
           <SelectCellFormatter
             value={row.available}
@@ -242,7 +242,7 @@ function createRows() {
   const now = Date.now();
   const rows = [];
 
-  for (let i = 0; i < 1000; i++) {
+  for (let i = 0; i < 100; i++) {
     rows.push({
       id: i,
       title: `Task #${i + 1}`,
@@ -299,8 +299,8 @@ function getComparator(sortColumn) {
 export default function CommonFeatures({ direction }) {
   const [rows, setRows] = useState(createRows);
   const [sortColumns, setSortColumns] = useState([]);
-  const [selectedRows, setSelectedRows] = useState(() => new Set());
-
+  // const [selectedRows, setSelectedRows] = useState(() => new Set());
+  const [selectedRows, setSelectedRows] = useState([]);
   const countries = useMemo(() => {
     return [...new Set(rows.map((r) => r.country))].sort(
       new Intl.Collator().compare
@@ -336,66 +336,41 @@ export default function CommonFeatures({ direction }) {
     });
   }, [rows, sortColumns]);
 
-  const gridElement = (
-    <DataGrid
-      rowKeyGetter={rowKeyGetter}
-      columnData={columns}
-      rowData={sortedRows}
-      // defaultColumnOptions={{
-      //   sortable: true,
-      //   resizable: true
-      // }}
-      // onRowClicked={(e) => {
-      //   console.log("Row Clicked", e);
-      // }}
-      // selectedRows={selectedRows}
-      // onSelectedRowsChange={setSelectedRows}
-      onRowsChange={setRows}
-      // sortColumns={sortColumns}
-      // onSortColumnsChange={setSortColumns}
-      // topSummaryRows={summaryRows}
-      // bottomSummaryRows={summaryRows}
-      className="fill-grid"
-      direction={direction}
-    />
-  );
+  const dataGridRef = useRef(null);
 
   return (
     <>
-      <div className={toolbarClassname}>
-        <ExportButton
-          onExport={() => exportToCsv(gridElement, "CommonFeatures.csv")}
-        >
-          Export to CSV
-        </ExportButton>
-        <ExportButton
-          onExport={() => exportToXlsx(gridElement, "CommonFeatures.xlsx")}
-        >
-          Export to XSLX
-        </ExportButton>
-        <ExportButton
-          onExport={() => exportToPdf(gridElement, "CommonFeatures.pdf")}
-        >
-          Export to PDF
-        </ExportButton>
-      </div>
-      {gridElement}
+      <button
+        onClick={() => {
+          console.log(dataGridRef.current.api.getEditingCells());
+        }}
+      >
+        getEditingCells
+      </button>
+
+      <DataGrid
+        ref={dataGridRef}
+        rowKeyGetter={rowKeyGetter}
+        columnData={columns}
+        restriction={{
+          copy: true,
+          paste: true,
+        }}
+        rowData={sortedRows}
+        onRowsChange={setRows}
+        
+        selectedRows={selectedRows}
+        onSelectedRowsChange={setSelectedRows}
+        topSummaryRows={summaryRows}
+        bottomSummaryRows={summaryRows}
+        showSelectedRows={true}
+        className="fill-grid"
+        direction={direction}
+        selection={true}
+        pagination={true}
+      />
     </>
   );
 }
 
-function ExportButton({ onExport, children }) {
-  const [exporting, setExporting] = useState(false);
-  return (
-    <button
-      disabled={exporting}
-      onClick={async () => {
-        setExporting(true);
-        await onExport();
-        setExporting(false);
-      }}
-    >
-      {exporting ? "Exporting" : children}
-    </button>
-  );
-}
+

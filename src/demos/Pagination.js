@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState } from "react";
 import { css } from "@linaria/core";
 
 import { SelectColumn } from "../components/datagrid/Columns";
@@ -24,7 +24,7 @@ const sortPriorityClassname = css`
 function createRows() {
   const rows = [];
 
-  for (let i = 1; i < 500; i++) {
+  for (let i = 1; i <= 500; i++) {
     rows.push({
       id: i,
       task: `Task ${i}`,
@@ -56,14 +56,14 @@ const columns = [
     field: "task",
     headerName: "Title",
     cellEditor: (props) => {
-      //console.log(props);
+      console.log(props);
       return textEditor(props);
     },
     sortable: true,
   },
   {
     field: "priority",
-    // headerName: "Priority",
+    headerName: "Priority",
     sortable: true,
   },
   {
@@ -78,10 +78,10 @@ const columns = [
   },
 ];
 
-export default function CustomizableComponents({ direction }) {
+export default function Pagination({ direction }) {
   const [rows, setRows] = useState(createRows);
   const [sortColumns, setSortColumns] = useState([]);
-  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRows, setSelectedRows] = useState(() => new Set());
 
   const sortedRows = useMemo(() => {
     if (sortColumns.length === 0) return rows;
@@ -97,11 +97,10 @@ export default function CustomizableComponents({ direction }) {
       return 0;
     });
   }, [rows, sortColumns]);
-  const dataGridRef = useRef(null);
 
   return (
     <DataGrid
-      className="fill-grid"
+      // className="fill-grid"
       columnData={columns}
       rowData={sortedRows}
       rowKeyGetter={rowKeyGetter}
@@ -112,14 +111,18 @@ export default function CustomizableComponents({ direction }) {
       onSelectedRowsChange={setSelectedRows}
       renderers={{ sortStatus, checkboxFormatter }}
       direction={direction}
-      showSelectedRows={true}
+      pagination={true}
+      defaultPage={3}
+      // paginationAutoPageSize={true}
+      // paginationPageSize={39}
+      // suppressPaginationPanel={true}
     />
   );
 }
+
 function checkboxFormatter({ onChange, ...props }, ref) {
   function handleChange(e) {
     onChange(e.target.checked, e.nativeEvent.shiftKey);
-    //console.log(props.selectedRows);
   }
 
   return <input type="checkbox" ref={ref} {...props} onChange={handleChange} />;
@@ -138,7 +141,7 @@ function sortStatus({ sortDirection, priority }) {
   );
 }
 function rowKeyGetter(row) {
-  return row.id;
+  return row?.id;
 }
 
 function getComparator(sortColumn) {

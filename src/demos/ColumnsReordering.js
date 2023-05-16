@@ -50,18 +50,13 @@ function createRows() {
 export default function ColumnsReordering({ direction }) {
   const [rows] = useState(createRows);
 
-  const selectedCellHeaderStyle = {
-    backgroundColor: 'red',
-    fontSize: "12px"
-  }
-
   
   return (
       <DataGrid
         columnData={columns}
         rowData={rows}
+        columnReordering={true}
         direction={direction}
-        selectedCellHeaderStyle={selectedCellHeaderStyle}
         defaultColumnOptions={{ width: '1fr' }}
       />
   );

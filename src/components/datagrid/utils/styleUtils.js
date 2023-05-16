@@ -1,22 +1,22 @@
-import React from 'react';
-import clsx from "clsx"
+import React from "react";
+import clsx from "clsx";
 
 import {
   cellClassname,
   cellFrozenClassname,
-  cellFrozenLastClassname
-} from "../style"
+  cellFrozenLastClassname,
+} from "../style";
 
 export function getRowStyle(rowIdx, height) {
   if (height !== undefined) {
     return {
       "--rdg-grid-row-start": rowIdx,
-      "--rdg-row-height": `${height}px`
-    }
+      "--rdg-row-height": `${height}px`,
+    };
   }
   return {
-    "--rdg-grid-row-start": rowIdx
-  }
+    "--rdg-grid-row-start": rowIdx,
+  };
 }
 export function getCellStyle(column, colSpan, rowSpan) {
   return {
@@ -25,8 +25,8 @@ export function getCellStyle(column, colSpan, rowSpan) {
     gridRowEnd: rowSpan !== undefined ? `span ${rowSpan}` : undefined,
     insetInlineStart: column.frozen
       ? `var(--rdg-frozen-left-${column.idx})`
-      : undefined
-  }
+      : undefined,
+  };
 }
 
 export function getCellClassname(column, ...extraClasses) {
@@ -34,8 +34,8 @@ export function getCellClassname(column, ...extraClasses) {
     cellClassname,
     {
       [cellFrozenClassname]: column.frozen,
-      [cellFrozenLastClassname]: column.isLastFrozenColumn
+      [cellFrozenLastClassname]: column.isLastFrozenColumn,
     },
     ...extraClasses
-  )
+  );
 }

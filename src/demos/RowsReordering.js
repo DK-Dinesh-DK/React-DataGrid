@@ -1,12 +1,18 @@
-import { useCallback, useState } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-
+import { useRef, useState } from "react";
+// import { DndProvider } from "react-dnd";
+// import { HTML5Backend } from "react-dnd-html5-backend";
+// import { SelectColumn } from "../components/datagrid/Columns";
 // import { DraggableRowRenderer } from './components/RowRenderers';
-import textEditor from '../components/datagrid/editors/textEditor';
-import DataGrid from '../components/datagrid/DataGrid';
-import { DraggableRowRenderer } from './DraggableRowRenderer';
-
+import textEditor from "../components/datagrid/editors/textEditor";
+import DataGrid from "../components/datagrid/DataGrid";
+// import { DraggableRowRenderer } from "./DraggableRowRenderer";
+// import { Checkbox } from "lai_webui";
+const frameworkComponents = {
+  abc: () => {
+    return <input type={"checkbox"} />;
+  },
+  cdd: (props) => <button />,
+};
 
 function createRows() {
   const rows = [];
@@ -16,8 +22,12 @@ function createRows() {
       id: i,
       task: `Task ${i}`,
       complete: Math.min(100, Math.round(Math.random() * 110)),
-      priority: ['Critical', 'High', 'Medium', 'Low'][Math.round(Math.random() * 3)],
-      issueType: ['Bug', 'Improvement', 'Epic', 'Story'][Math.round(Math.random() * 3)]
+      priority: ["Critical", "High", "Medium", "Low"][
+        Math.round(Math.random() * 3)
+      ],
+      issueType: ["Bug", "Improvement", "Epic", "Story"][
+        Math.round(Math.random() * 3)
+      ],
     });
   }
 
@@ -26,53 +36,82 @@ function createRows() {
 
 const columns = [
   {
-    field: 'id',
-    headerName: 'ID',
-    width: 80
+    key: "trial",
+    field: "",
+    width: 45,
+    cellRenderer: "abc",
   },
   {
-    field: 'task',
-    headerName: 'Title',
-    editor: textEditor
+    field: "id",
+    headerName: "ID",
+    width: 80,
+    rowDrag: true,
   },
   {
-    field: 'priority',
-    headerName: 'Priority'
+    field: "task",
+    headerName: "Title",
+    width: 200,
+    editor: textEditor,
   },
   {
-    field: 'issueType',
-    headerName: 'Issue Type'
+    field: "priority",
+    headerName: "Priority",
+    width: 200,
   },
   {
-    field: 'complete',
-    headerName: '% Complete'
-  }
+    field: "issueType",
+    headerName: "Issue Type",
+    width: 200,
+  },
+  {
+    field: "complete",
+    headerName: "% Complete",
+    width: 200,
+  },
 ];
+function rowKeyGetter(row) {
+  return row.id;
+}
 
 export default function RowsReordering({ direction }) {
   const [rows, setRows] = useState(createRows);
-
-  const rowRenderer = useCallback((key, props) => {
-    function onRowReorder(fromIndex, toIndex) {
-      setRows((rows) => {
-        const newRows = [...rows];
-        newRows.splice(toIndex, 0, newRows.splice(fromIndex, 1)[0]);
-        return newRows;
-      });
-    }
-
-    return <DraggableRowRenderer key={key} {...props} onRowReorder={onRowReorder} />;
-  }, []);
-
+  const [selectedRows, setSelectedRows] = useState([]);
+  const gridRef = useRef(null);
   return (
-    <DndProvider backend={HTML5Backend}>
+    <>
+      <button
+        onClick={() => {
+          gridRef.current.api.setSuppressRowDrag(true);
+        }}
+      >
+        setSuppressRowDrag
+      </button>
+      <button
+        onClick={() => {
+          console.log(gridRef.current.api.getVerticalPixelRange());
+        }}
+      >
+        getVerticalPixelRange
+      </button>
+      <button
+        onClick={() => {
+          console.log(gridRef.current.api.getHorizontalPixelRange());
+        }}
+      >
+        getHorizontalPixelRange
+      </button>
       <DataGrid
         columnData={columns}
         rowData={rows}
+        ref={gridRef}
+        rowKeyGetter={rowKeyGetter}
+        selectedRows={selectedRows}
+        onSelectedRowsChange={setSelectedRows}
+        serialNumber={true}
         onRowsChange={setRows}
-        renderers={{ rowRenderer }}
         direction={direction}
+        frameworkComponents={frameworkComponents}
       />
-    </DndProvider>
+    </>
   );
 }

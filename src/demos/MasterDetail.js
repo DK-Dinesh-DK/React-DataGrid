@@ -147,8 +147,8 @@ function ProductGrid({
     <div onKeyDown={onKeyDown}>
       <DataGrid
         ref={gridRef}
-        rows={products}
-        columns={productColumns}
+        rowData={products}
+        columnData={productColumns}
         rowKeyGetter={rowKeyGetter}
         style={{ blockSize: 250 }}
         direction={direction}
